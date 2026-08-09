@@ -338,11 +338,21 @@ L 级任务不得在关键方案尚未确认时直接进入高风险执行。
    - `findings.md`
 6. 只有在项目明确采用 BMAD-Solo 时才创建 `brain/` 或 `_bmad-output/`，不得污染普通仓库。
 
-### 9.7 BMAD-Solo 备份与还原位置约束
+### 9.7 BMAD-Solo 全局配置自举与漫游 (Dotfiles Sync)
 
-当收到口令执行“备份/还原/部署 bmad-solo”时，无论当前工作区在哪里：
-- 必须强制将目标仓库操作/克隆到用户的主目录下，具体路径为 `~/dotfiles-bmad-solo` 或 `~/dotfiles/gemini-bmad-solo`。
-- 严禁将其克隆到当前普通的业务项目目录（如 `~/Project/`）下。
+当收到口令执行“应用/部署/还原 bmad-solo”时，无论当前工作区在哪里，必须执行自举：
+1. 检查指令中是否包含目标 GitHub 仓库地址（例如 `git@github-dxa:zhaosan2023/dotfiles-bmad-solo.git`）。如果没有，强制提问获取。
+2. 强制克隆到 `~/dotfiles-bmad-solo`：
+   `git clone <Repo-URL> ~/dotfiles-bmad-solo`
+3. 强制建立全局系统映射（切勿修改这些路径）：
+   `mkdir -p ~/.gemini/config`
+   `ln -sf ~/dotfiles-bmad-solo/GEMINI.md ~/.gemini/GEMINI.md`
+   `ln -sf ~/dotfiles-bmad-solo/config/AGENTS.md ~/.gemini/config/AGENTS.md`
+   `rm -rf ~/.gemini/config/skills && ln -sf ~/dotfiles-bmad-solo/config/skills ~/.gemini/config/skills`
+
+当收到口令执行“备份/同步 bmad-solo”时：
+1. 自动跳转到 `~/dotfiles-bmad-solo`。
+2. 执行 `git add . && git commit -m "chore: auto-sync" && git push`。
 
 7. 不重复手写终端流水账；会话 Transcript 可用时，以其作为操作时间线。
 8. 解决重大 Bug、确认长期架构约束或发现可复用经验后：
