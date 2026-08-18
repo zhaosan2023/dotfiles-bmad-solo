@@ -45,41 +45,37 @@ if [ $DRY_RUN -eq 1 ]; then
     echo -e "${YELLOW}[DRY-RUN MODE] No files will be modified.${NC}"
 fi
 
-# We only install into the namespaced skills folder to prevent breaking existing Antigravity setups
-if [ -L "$GEMINI_CONFIG_DIR/skills" ]; then
-    REAL_PARENT=$(readlink -f "$GEMINI_CONFIG_DIR/skills")
-    if [ "$REAL_PARENT" = "$SCRIPT_DIR/config/skills" ]; then
-        echo -e "  [✔] The entire config/skills directory is already linked. bmad-solo is implicitly loaded."
-    else
-        echo -e "${RED}Error: $GEMINI_CONFIG_DIR/skills is a symlink pointing to $REAL_PARENT.${NC}"
-        echo -e "${RED}Please remove it manually to avoid conflicts.${NC}"
-        exit 1
-    fi
+# We only install into the plugins folder to prevent breaking existing setups
+PLUGIN_DIR="$GEMINI_CONFIG_DIR/plugins"
+TARGET_DIR="$PLUGIN_DIR/bmad-suite"
+
+if [ $DRY_RUN -eq 0 ]; then mkdir -p "$PLUGIN_DIR"; fi
+
+if [ -e "$TARGET_DIR" ] && [ ! -L "$TARGET_DIR" ]; then
+    echo -e "${RED}Error: $TARGET_DIR exists and is not a symlink. Please remove it manually to avoid conflicts.${NC}"
+    exit 1
+fi
+
+echo -e "${YELLOW}Linking BMAD-Suite Plugin to namespace...${NC}"
+
+if [ $DRY_RUN -eq 1 ]; then
+    echo "[DRY-RUN] Would create symlink: $TARGET_DIR -> $SCRIPT_DIR/bmad-suite"
 else
-    if [ $DRY_RUN -eq 0 ]; then mkdir -p "$GEMINI_CONFIG_DIR/skills"; fi
+    # Remove existing symlink if any (to avoid ln -sfn pointing to itself if broken)
+    rm -f "$TARGET_DIR"
+    
+    # Also clean up old V1 skill symlinks if they exist
+    rm -f "$GEMINI_CONFIG_DIR/skills/bmad-solo"
 
-    if [ -e "$TARGET_DIR" ] && [ ! -L "$TARGET_DIR" ]; then
-        echo -e "${RED}Error: $TARGET_DIR exists and is not a symlink. Please remove it manually to avoid conflicts.${NC}"
-        exit 1
-    fi
-
-    echo -e "${YELLOW}Linking BMAD-Solo skill to namespace...${NC}"
-
-    if [ $DRY_RUN -eq 1 ]; then
-        echo "[DRY-RUN] Would create symlink: $TARGET_DIR -> $SCRIPT_DIR/config/skills/bmad-solo"
-    else
-        # Remove existing symlink if any (to avoid ln -sfn pointing to itself if broken)
-        rm -f "$TARGET_DIR"
-        ln -s "$SCRIPT_DIR/config/skills/bmad-solo" "$TARGET_DIR"
-        echo -e "  [✔] Linked bmad-solo skill namespace"
-    fi
+    ln -s "$SCRIPT_DIR/bmad-suite" "$TARGET_DIR"
+    echo -e "  [✔] Linked bmad-suite plugin namespace"
 fi
 
 echo -e "\n${GREEN}======================================================${NC}"
-echo -e "${GREEN} BMAD-Solo (AGSL Lightweight) successfully bootstrapped! ${NC}"
+echo -e "${GREEN} BMAD-Suite (Plugin V2) successfully bootstrapped! ${NC}"
 echo -e "${GREEN}======================================================${NC}"
 echo -e "Next steps:"
 echo -e "1. Open your Antigravity IDE."
 echo -e "2. Execute: 'Developer: Reload Window'."
-echo -e "3. Type '/' in the chat to verify the '/bmad-solo' skill is active."
+echo -e "3. Type '/' in the chat to verify the '/bmad' skill is active."
 echo -e ""
