@@ -1,0 +1,671 @@
+建议将 dotfiles-bmad-solo 升级为“单入口、架构驱动、可暂停评审的主动工程循环”，而不是恢复企业级 BMAD 的多 Agent 编排。/bmad-solo 继续作为唯一入口，但复杂任务必须先重建工程状态、执行架构门禁、生成可评审的 Epic → Story → Task 计划，经确认后才能编码；执行中发生边界变化或重复失败时自动回到 Architect 思考模式。这样既保留个人开发的轻量性，也能利用 Antigravity 的 Skill、Artifact Review、Diff 和测试执行能力。
+
+Key findings
+
+当前问题不是“缺少 Architect 模式”，而是 Architect 只作为阶段性角色存在，没有成为编码过程的持续控制面。
+
+直接核对仓库后，关键缺口是：
+
+SKILL.md 主要执行“分级 → 选模式 → 选 Procedure → 编码 → Review”，没有编码前架构冲突门禁。
+mode-architect.md、mode-developer.md、mode-reviewer.md 过于简短，未定义架构影响分析、重审条件和证据回写。
+capability-map.md 注册了 9 个 Procedure，但目录中实际只有：
+architecture-decision.md
+build.md
+code-review.md
+build.md 强依赖目标项目中的 _bmad/scripts/render_skill.py，普通非 BMAD 项目可能直接无法运行。
+architecture-decision.md 和 code-review.md 也依赖未随 Solo 完整安装的脚本、配置、step files 和 customization 机制。
+_bmad-output/project-context.md 含字面量 \n，而且只能表达静态项目背景，不能表达任务假设、失败和开放验证义务。
+当前计划没有强制建立“需求 → 架构约束 → Epic → Story → Task → 验证证据”的追踪关系。
+
+因此，优化重点应是：
+
+先让 Solo 包完全自包含。
+把架构从 Markdown 背景升级为运行时门禁。
+为 M/L 任务强制输出并暂停评审实施计划。
+用结构化状态保存事实、假设、失败和验证证据。
+保留单 Agent，通过状态机切换思考模式，而不是模拟多人会议。
+Confirmed facts
+
+仓库已经有一些可以保留的基础：
+
+/bmad-solo 单入口和渐进加载设计符合个人开发需求。
+已有 S/M/L 分级。
+已定义 Product、Architect、Developer、Reviewer/QA、Operator 五种思考模式。
+M/L 任务已经要求 Reviewer 对抗式审查。
+Completion Gate 已要求检查 Diff、运行真实验证并报告风险。
+architecture-decision.md 中已有 architecture spine、架构不变量、稳定决策 ID、父级约束继承等有价值的设计。
+
+BMAD Method 官方工作流本身强调通过多个阶段逐步构建结构化上下文，而不是直接从需求跳到实现，这个思想可以保留；但 Solo 应把阶段压缩为单 Agent 的受控状态切换，而不是复制企业角色和大量工作流。
+
+Antigravity 已具备 Skill/Slash Command、Artifact Review、计划与 Diff 审查等能力，因此 BMAD-Solo 应输出可供 IDE 展示和审查的工程产物，而不是另造一套 IDE 或命令系统。
+
+What remains inference
+
+以下结论属于工程假设，尚未被该仓库的对照实验验证：
+
+结构化架构契约会比单纯要求“记住项目架构”更稳定。
+强制 M/L 计划评审能减少 Agent 闷头开发和需求遗忘。
+重复失败后回到架构层，会比继续局部打补丁更有效。
+独立的状态校正和架构 Review 能降低“单测通过即全部完成”的错误判断。
+增加门禁会提高质量，但也会增加 token、文件数量和执行时间。
+
+对于“该方案一定提高编码质量”，目前是 Insufficient evidence，必须通过真实任务对照验证。
+
+此外，graphharnessloop.pdf 可检索内容更接近 Graph/Loop Engineering 的设计说明或图文材料，并不是针对 AI Coding 的软件工程对照实验。它明确支持结构化输入输出、独立验证、checkpoint、retry、budget、共享状态和高风险人工中断，但不能直接证明某个 YAML Schema 或 Epic/Story 流程必然有效。
+
+What the evidence suggests
+1. 目标架构：Architecture-Grounded Solo Loop
+
+建议命名为 AGEL：Architecture-Grounded Engineering Loop。
+
+TEXT
+/bmad-solo
+    ↓
+Inspect：读取规则、代码、测试、Git、项目上下文
+    ↓
+Classify：按实际影响面确定 S/M/L
+    ↓
+Baseline：读取或建立架构契约
+    ↓
+Preflight：架构影响分析与冲突门禁
+    ↓
+Decide next action
+    ├── clarify
+    ├── discover
+    ├── experiment
+    ├── plan
+    ├── implement
+    ├── split-task
+    ├── reframe
+    ├── update-architecture
+    └── escalate
+    ↓
+M/L：生成 Epic → Story → Task 计划
+    ↓
+WAIT_FOR_PLAN_APPROVAL
+    ↓
+逐 Task 实现与验证
+    ↓
+触发事件 → Architecture Recheck
+    ↓
+行为验证 + 架构验证 + 对抗式 Review
+    ↓
+State Reconciliation
+    ↓
+完成 / 修正计划 / 请求决策
+
+它不是所有节点都独立运行的复杂 Graph：
+
+S 任务采用一条轻量 Loop。
+M 任务采用带计划检查点的 Loop。
+L 任务才允许把独立验证、架构审查等分支并行化。
+所有循环必须有重试上限、预算和人工中断点。
+
+这符合附件提出的原则：先从一个 Loop 开始，只有依赖关系、独立验证、恢复和权限控制确实要求时才升级为 Graph。
+
+2. 明确四种状态，避免“文档和代码混成一个真相”
+
+建议严格区分：
+
+Normative state：架构契约规定系统应该是什么。
+Actual state：代码、配置、测试和运行结果证明系统现在是什么。
+Believed state：Agent 当前对任务的假设和判断。
+Unknown state：尚无证据确认的部分。
+
+当代码与架构文档冲突时，不应静默选择任何一边，而应输出：
+
+TEXT
+ARCHITECTURE_DRIFT
+STALE_CONTRACT
+UNAPPROVED_DEVIATION
+INSUFFICIENT_EVIDENCE
+3. 精简运行时产物，避免重复真相源
+
+建议使用：
+
+TEXT
+_bmad-output/
+├── project-context.md
+├── architecture/
+│   ├── architecture-contract.yaml
+│   └── decisions/
+│       └── ADR-*.md
+├── tasks/
+│   └── TASK-*.yaml
+└── evidence/
+    └── TASK-*.jsonl
+
+brain/
+├── task.md
+└── implementation_plan.md
+
+职责如下：
+
+project-context.md
+已验证的技术栈、命令、服务、部署和回滚事实。
+architecture-contract.yaml
+规范状态和架构不变量。
+TASK-*.yaml
+当前任务的假设、影响面、失败记录、开放义务和下一动作。
+evidence/*.jsonl
+测试、Lint、Benchmark、Diff 检查和失败结果的追加式记录。
+brain/task.md
+当前会话待办镜像。
+brain/implementation_plan.md
+提供给 Antigravity Artifact Review 的人类可读计划。
+
+brain/* 不应成为长期架构事实来源；它应当由结构化任务状态渲染或同步，避免两个真相源。
+
+4. 架构契约最小 Schema
+YAML
+schema_version: 1
+baseline:
+  git_head: ""
+  last_verified_at: null
+
+components:
+  - id: domain
+    responsibilities: []
+    owns_data: []
+    allowed_dependencies: []
+    forbidden_dependencies: []
+
+interfaces:
+  - id: API-001
+    producer: ""
+    consumers: []
+    compatibility_policy: backward-compatible
+
+invariants:
+  - id: ARCH-INV-001
+    statement: "Domain must not depend on infrastructure"
+    severity: block
+    scope: [domain]
+    verification:
+      type: dependency-check
+      command: null
+
+data_ownership: []
+
+quality_budgets:
+  latency_p95_ms: null
+  memory_mb: null
+  throughput_rps: null
+
+change_policy:
+  requires_adr:
+    - public-interface-change
+    - dependency-direction-change
+    - data-ownership-change
+    - consistency-model-change
+  requires_human_approval:
+    - security-boundary-change
+    - destructive-migration
+
+规则：
+
+每个不变量必须有 ID、范围、严重级别和验证方式。
+没有自动验证方式的不变量只能标为人工 Review 项。
+Agent 可以提出架构契约修改，但不能静默修改 block 级不变量。
+L 级任务首次生成架构基线后必须由用户确认。
+5. 主动任务状态
+YAML
+schema_version: 1
+task_id: TASK-001
+level: M
+status: planning
+
+goal:
+  outcome: ""
+  acceptance_criteria: []
+  non_goals: []
+
+architecture_baseline:
+  contract_version: 1
+  git_head: ""
+  relevant_adrs: []
+  relevant_invariants: []
+
+impact:
+  components: []
+  interfaces: []
+  data: []
+  dependencies: []
+  runtime_paths: []
+  security: []
+
+claims:
+  - id: CLAIM-001
+    statement: ""
+    status: hypothesis
+    scope: local
+    evidence: []
+
+open_obligations:
+  - id: OBL-001
+    statement: ""
+    verification_method: ""
+    status: open
+
+failed_attempts: []
+
+architecture_verdict:
+  status: UNKNOWN
+  conflicts: []
+  accepted_warnings: []
+
+next_action:
+  type: architecture-preflight
+  reason: ""
+
+budgets:
+  same_failure_limit: 2
+  replan_limit: 3
+
+Claim 状态限制为：
+
+verified
+accepted
+hypothesis
+local-only
+refuted
+stale
+
+这样可以防止：
+
+单元测试通过被描述成系统集成完成。
+小样本 Benchmark 被描述成满足生产规模。
+当前环境可运行被描述成所有环境均验证通过。
+6. Architecture Preflight 门禁
+
+M/L 任务编码前必须输出：
+
+TEXT
+Architecture verdict: PASS | WARN | BLOCK | UNKNOWN
+
+Affected components:
+Affected interfaces:
+Data ownership impact:
+Dependency direction impact:
+Applicable invariants:
+Relevant ADRs:
+Assumptions:
+Conflicts:
+Required verification:
+Required next action:
+
+语义：
+
+PASS：未发现冲突，可以计划或实现。
+WARN：风险可接受，但必须记录缓解措施和验证义务。
+BLOCK：违反硬性不变量，禁止编码。
+UNKNOWN：信息不足，只能先调查、Spike 或 Benchmark。
+
+S 级只有同时满足以下条件才能走快速路径：
+
+仅修改一个既有组件。
+不改变公共接口。
+不增加跨层依赖。
+不改变数据所有权。
+不涉及缓存、事务、并发、安全或部署。
+不改变性能关键路径。
+
+否则自动升级为 M。
+
+7. 强制生成可评审的 Epic → Story → Task 计划
+
+brain/implementation_plan.md 应固定包含：
+
+MARKDOWN
+# Implementation Plan
+
+## Goal
+## Non-goals
+## Acceptance Criteria
+
+## Architecture Baseline
+- Relevant components
+- Applicable invariants
+- Relevant ADRs
+- Existing patterns to preserve
+
+## Impact Analysis
+- Interfaces
+- Data ownership
+- Dependencies
+- Runtime and deployment
+- Security and NFRs
+
+## Epic 1: <architecture-aligned outcome>
+
+### Story 1.1: <independently verifiable behavior>
+- Acceptance criteria
+- Affected components
+- Architecture invariants
+- Dependencies
+- Risks
+
+#### Task 1.1.1
+- Files expected to change
+- Coherent code change
+- Verification to run
+- Evidence to produce
+
+## Validation Matrix
+## Rollback Plan
+## Open Questions
+## Approval Status
+
+分解规则：
+
+Epic：跨 Story 的架构一致性结果，不应只是文件集合。
+Story：可独立验收的用户或系统行为。
+Task：一个最小、连贯、可独立验证的实现单元。
+每个 Story 必须映射验收标准、组件和架构不变量。
+每个 Task 必须声明预计文件、验证命令和证据。
+M/L 默认进入 WAIT_FOR_PLAN_APPROVAL，不得在输出计划后立即闷头编码。
+用户批准后记录计划摘要或哈希；实际实现显著偏离时重新暂停评审。
+8. 执行中的 Architecture Recheck
+
+出现以下任一事件时，Developer 必须停止并切回 Architect：
+
+修改公共接口。
+新增依赖或跨层调用。
+改变数据所有权、事务、缓存、并发或一致性。
+实现文件或调用路径明显超出计划。
+同类假设或补丁连续失败两次。
+为通过测试引入特殊分支或绕过既有 Port/Adapter。
+单元测试通过，但集成义务仍持续失败。
+算法复杂度、数据规模假设或 NFR 发生变化。
+发现架构契约与代码不一致。
+
+下一步不得默认继续编码，而应在以下动作中选择一个：
+
+更新计划。
+拆分 Story。
+执行区分性实验。
+创建 ADR。
+标记架构契约陈旧。
+请求用户决策。
+9. Build 改成架构约束下的微循环
+
+重写 build.md，默认不依赖目标项目 _bmad/scripts：
+
+TEXT
+1. Load approved task state.
+2. Confirm verdict is PASS or accepted WARN.
+3. Select one open Task.
+4. State files, invariant and expected evidence.
+5. Make the smallest coherent change.
+6. Run the narrowest relevant verification.
+7. Record actual output.
+8. Check re-evaluation triggers.
+9. Update claims and obligations.
+10. Continue or return to Architect.
+
+官方 Antigravity 最佳实践也强调实现前准备测试、实现后实际运行验证，因此该流程应复用 IDE 的终端和 Artifact Review，而不是只让模型口头自检。
+
+10. 推荐仓库文件改动
+TEXT
+config/skills/bmad-solo/
+├── SKILL.md
+├── references/
+│   ├── capability-map.md
+│   ├── active-engineering-loop.md
+│   ├── antigravity-adapter.md
+│   ├── mode-architect.md
+│   ├── mode-developer.md
+│   ├── mode-reviewer.md
+│   ├── contracts/
+│   │   ├── architecture-contract.template.yaml
+│   │   └── task-state.template.yaml
+│   ├── templates/
+│   │   ├── implementation-plan.template.md
+│   │   └── architecture-review.template.md
+│   └── procedures/
+│       ├── inspect-project.md
+│       ├── architecture-baseline.md
+│       ├── architecture-preflight.md
+│       ├── implementation-plan.md
+│       ├── build.md
+│       ├── architecture-recheck.md
+│       ├── verify.md
+│       ├── state-reconcile.md
+│       ├── correct-course.md
+│       ├── algorithm-fit.md
+│       └── code-review.md
+├── scripts/
+│   ├── validate-solo-package.py
+│   ├── validate-contract.py
+│   └── validate-task-state.py
+└── tests/
+    ├── fixtures/
+    └── test_scenarios.py
+Implementation Epics
+Epic 0：修复基础可执行性
+
+Story 0.1：BMAD-Solo 可在普通项目独立运行
+
+任务：
+
+修复 project-context.md 的字面量换行。
+校验 capability-map.md 的所有路径。
+删除尚不存在的映射，或补齐对应 Procedure。
+将 build.md 改为自包含流程。
+清理 architecture-decision.md、code-review.md 对未打包脚本和 step files 的硬依赖。
+新增 validate-solo-package.py。
+
+验收标准：
+
+所有引用路径真实存在。
+在不含 _bmad/ 的测试项目中可以加载 /bmad-solo。
+不会因缺少 render_skill.py 直接 HALT。
+安装脚本重复执行结果一致。
+Epic 1：建立架构与任务状态模型
+
+Story 1.1：从现有项目建立架构基线
+
+任务：
+
+新增 architecture-contract.template.yaml。
+实现 architecture-baseline.md。
+从代码、测试和文档提取组件、依赖和不变量。
+不确定内容标为 unknown，不得推断为事实。
+
+Story 1.2：保存任务级主动状态
+
+任务：
+
+新增 task-state.template.yaml。
+建立 claim、obligation、failure、next action 状态。
+增加 Git HEAD 或相关文件指纹，用于检测 stale 状态。
+
+验收标准：
+
+可以区分规范状态、实际状态和假设。
+修改相关代码后旧任务状态会被标记为 stale。
+架构冲突不会被静默覆盖。
+Epic 2：架构门禁与计划评审
+
+Story 2.1：按影响面分级任务
+
+任务：
+
+用接口、依赖、数据、安全、运行时和 NFR 影响替代单纯关键词路由。
+实现 S → M 自动升级规则。
+
+Story 2.2：编码前执行 Preflight
+
+任务：
+
+实现 PASS/WARN/BLOCK/UNKNOWN。
+将判定写入任务状态。
+BLOCK 和 UNKNOWN 禁止进入 Build。
+
+Story 2.3：生成 Epic/Story/Task 实施计划
+
+任务：
+
+新增计划模板。
+建立需求、架构、Story、Task、验证之间的追踪。
+M/L 输出后进入 WAIT_FOR_PLAN_APPROVAL。
+
+验收标准：
+
+复杂任务不会在没有计划的情况下编辑代码。
+用户可以在 Antigravity 中看到并审查完整计划。
+计划偏离时会自动重新暂停。
+Epic 3：执行、重审与状态校正
+
+Story 3.1：Task 级实现微循环
+
+一次只执行一个 Task。
+每个 Task 都产生验证证据。
+不允许提前关闭 Story。
+
+Story 3.2：重复失败触发问题重构
+
+同类失败两次后停止局部补丁。
+重新检查需求、接口、数据所有权、算法假设和架构约束。
+
+Story 3.3：完成前状态校正
+
+最终状态只能是：
+
+TEXT
+CONSISTENT
+CONDITIONALLY_CONSISTENT
+STALE_STATE
+ARCHITECTURE_DRIFT
+UNAPPROVED_DEVIATION
+INSUFFICIENT_EVIDENCE
+
+验收标准：
+
+单测通过但集成义务未关闭时不能标记完成。
+未批准公共接口变化时输出 UNAPPROVED_DEVIATION。
+Reviewer 可以根据 Diff 和证据重新推导结果，而不是复述 Developer 总结。
+Epic 4：Antigravity 原生融合
+
+Story 4.1：保留单入口并复用原生能力
+
+任务：
+
+/bmad-solo 继续作为唯一用户入口。
+brain/implementation_plan.md 作为 Artifact Review 展示面。
+复用 IDE 的 Diff、测试终端、Resume 和 Review 能力。
+Skill 不定义与 IDE 原生命令重名的替代命令。
+可用时用新上下文或 Subagent 执行 Reviewer；不可用时退回确定性检查加对抗式模式。
+
+Story 4.2：安全安装到 ~/.gemini
+
+任务：
+
+bs.sh 不应无条件覆盖已有 GEMINI.md、AGENTS.md。
+安装前检测现有文件或符号链接。
+使用命名空间符号链接或受控 managed block。
+提供 --dry-run、--uninstall 和冲突报告。
+不修改 Antigravity 原生知识库和默认 Slash Commands。
+
+验收标准：
+
+安装后原有用户配置仍保留。
+重复安装不产生重复配置。
+删除 BMAD-Solo 后可恢复原状。
+Epic 5：算法契约和效果评估
+
+针对搜索、调度、优化、缓存、批处理、并发和性能任务增加 algorithm-fit.md，要求声明：
+
+算法所属组件。
+输入输出语义。
+数据和中间状态所有者。
+时间、空间、I/O 和网络复杂度。
+确定性、精确性、幂等性。
+超时、失败、重试、回退和回滚。
+Correctness oracle、属性测试和 Benchmark。
+
+然后选择 10–20 个真实任务，对比原版与增强版：
+
+未批准架构偏差数。
+Review 阶段才发现的跨层问题数。
+重复调试次数。
+Story reopen 次数。
+NFR 回归数。
+把局部结果误报为整体完成的次数。
+Token 和执行时间增量。
+架构门禁误报率。
+人工介入次数和原因。
+Conflicting evidence or uncertainty
+BMAD-Solo 并非完全没有架构能力；现有 architecture-decision.md 已有较好的 architecture spine 思路。更准确的问题是：它没有被连接到每次计划、编码和调试决策。
+完整 Graph 不一定优于单 Loop。对个人开发的小任务使用过多节点、状态文件和审批会造成过度设计。
+YAML 契约本身不能保证正确；错误基线可能把错误长期固化，因此需要 stale 检测和人工确认。
+同一模型切换到 Reviewer 模式不等于真正独立审查。高风险任务应优先使用新上下文、Subagent 或确定性工具。
+Antigravity 官方能力支持 Skill、Artifact Review 和 Subagent 等设计方向，
+ 但当前本机的具体 ~/.gemini 加载和合并语义仍应通过安装测试确认，不能只依据假设硬编码。
+附件支持 Graph/Loop 的工程原则，但不提供本项目质量提升的量化证据。
+Open questions
+
+实施时建议采用以下默认政策，之后再通过配置开放：
+
+BMAD-Solo 默认必须能脱离完整 _bmad 独立运行。
+S 任务不生成持久化计划。
+M/L 任务默认必须暂停计划评审。
+架构基线可以自动生成，但首次生成必须标注假设。
+Agent 可以自动更新软性架构说明，不能自动修改硬性不变量。
+公共接口、数据所有权、安全边界和破坏性迁移必须由用户批准。
+Reviewer 优先使用独立上下文；不可用时采用同模型对抗式 Review 加确定性验证。
+_bmad-output 保存长期事实，brain 只保存当前会话和评审产物。
+
+仍需在编码前确认两个具体问题：
+
+当前 Antigravity 版本对 brain/ Artifact 的实际发现和展示规则。
+bs.sh 是继续支持完整 BMAD 项目作为可选后端，还是彻底移除 renderer 兼容层。
+Sources worth trusting most
+当前 dotfiles-bmad-solo 主分支源码：判断实际目录、依赖和路由行为的第一手依据。
+Antigravity 官方 CLI、Artifact Review、Skill 和 IDE 文档：判断融合边界和原生能力。
+BMAD Method 官方 workflow map：参考渐进式上下文、规划和交付阶段，但不应完整复制其企业流程。
+graphharnessloop.pdf：适合作为 Loop/Graph、checkpoint、budget 和验证设计的启发，不是质量实证。
+sol_solution2.txt、fable_solution2.txt：两份方案对架构门禁、主动状态和状态回写高度一致，但属于二次工程解读。
+改造后的真实 Diff、测试、返工和任务对照数据：最终判断方案是否有效的最强证据。
+Recommended next step
+
+建议先实现三个独立提交，不要一次引入所有能力。
+
+Commit 1：Package Integrity
+
+修复失效 Procedure 映射。
+消除核心流程对目标项目 _bmad/scripts 的硬依赖。
+修复 project-context.md。
+加入包完整性校验。
+
+Commit 2：Minimum Architecture Loop
+
+新增 architecture contract、task state、preflight 和 state reconciliation。
+修改 SKILL.md、三个 mode 和 Completion Gate。
+强制 M/L 输出 Epic/Story/Task 计划并暂停评审。
+
+Commit 3：Scenario Tests
+
+单文件修复走 S 快速路径。
+Controller 直连数据库返回 BLOCK。
+公共 API 变化要求 ADR。
+同类失败两次触发 reframe。
+架构文档与代码冲突返回 ARCHITECTURE_DRIFT。
+单测通过但集成义务开放时禁止完成。
+普通非 BMAD 项目可完整加载和运行。
+
+完成这三步后，再加入 Algorithm Contract、独立 Reviewer 和 A/B 评估。
+
+Summary
+
+最终目标不是让 /bmad-solo 变成缩小版企业 BMAD，而是把它改造成一个受架构约束的单 Agent 工程状态机：
+
+一个入口。
+多种思考模式自动切换。
+编码前必须检查架构。
+M/L 任务必须先输出可评审的 Epic、Story、Task。
+执行中发现边界变化或重复失败时自动重新规划。
+测试和 Diff 结果必须回写为有范围的证据。
+只有需求满足、架构一致、证据充分、状态准确时才允许完成。
+
+最优先落地的不是更多角色，而是四个核心能力：自包含执行、架构契约、计划审批门禁和状态校正。

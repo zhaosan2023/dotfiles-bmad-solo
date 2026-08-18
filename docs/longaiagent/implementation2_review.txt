@@ -1,0 +1,576 @@
+implementation2_gemini.txt 的战略方向正确，但不建议原样落地。它已经抓住“架构基线、M/L 计划审批、执行中重审、状态对账”四个核心问题，但目前仍偏声明式：Markdown 里的“必须暂停”并不能真正阻止 Agent 编辑代码，而且主路由、状态迁移、审批凭证、安装兼容与质量评估尚未形成可验证闭环。
+
+建议将其修订为下面的 AGSL v2 实施计划：保留 /bmad-solo 单入口和单 Agent 多思考模式，只在高风险路径增加确定性状态机、审批检查点和可选 Antigravity Hook，不把个人开发重新做成企业级多 Agent 编排。
+
+对现有实施计划的评审
+应保留的设计
+/bmad-solo 继续作为唯一入口。
+单 Agent 自动切换 Product、Architect、Developer、Reviewer、Operator 思考模式。
+S 任务走轻量循环，M/L 才生成完整计划。
+M/L 必须先生成 Epic → Story → Task，再等待用户批准。
+区分规范、代码事实、Agent 信念和未知项。
+公共接口、数据所有权、依赖方向等变化触发架构重审。
+同类失败达到上限后停止局部打补丁。
+最终完成不能只依赖 Developer 的总结，必须基于 Diff、测试和架构证据重新推导。
+采用 Loop-first：只有独立验证、恢复、权限隔离确有需要时才升级为局部 Graph。这符合 graphharnessloop.pdf 的核心原则。
+落地前必须修正的问题
+
+“强制阻断”目前只是提示词
+
+WAIT_FOR_PLAN_APPROVAL 写入 Markdown，并不能保证 Agent 不调用编辑工具。必须明确两种保障等级：
+
+Skill-only：流程约束，属于 best-effort。
+Plugin + pre-tool Hook：在写文件前执行状态检查，才接近真正的硬阻断。
+
+Antigravity 的 Skill 本身是以 SKILL.md 为入口的知识包
+；官方 Plugin 机制可以封装 Skill、Hook 和其他扩展能力
+。因此应先完成 Skill 兼容版本，再把硬门禁作为可选 Plugin Adapter，而不是在第一阶段假设已经具备拦截能力。
+
+核心路由文件没有进入修改清单
+
+当前 SKILL.md 仍然是“分级 → 选模式 → 选 Procedure → 编码 → Review”，mode-architect.md 也只有非常简短的职责描述。实施计划必须明确修改：
+
+SKILL.md
+config/AGENTS.md
+mode-architect.md
+mode-developer.md
+mode-reviewer.md
+Completion Gate
+
+否则新增 Procedure 不会成为主流程的不可跳过节点。
+
+缺少正式状态迁移契约
+
+需要定义允许的状态、迁移条件、失败状态和写代码权限，不能只画流程图。
+
+审批缺少可验证凭证
+
+必须记录批准的是哪一版计划，而不只是保存
+approved: true
+。批准后计划一旦发生实质变化，原批准应自动失效。
+
+YAML 与“自包含”目标存在依赖冲突
+
+Python 标准库不能解析 YAML。如果要求完全脱离 _bmad、uv、PyYAML 和网络运行，建议机器状态使用 JSON/JSONL，Markdown 作为人类评审投影。
+
+如果坚持 YAML，则必须随包固定 YAML 解析器依赖并测试离线安装，不能只写一个假设存在 PyYAML 的 Python 脚本。
+
+12 个“假想场景”不足以证明可执行
+
+测试必须分为：
+
+静态包完整性测试；
+确定性状态迁移测试；
+Installer 沙盒测试；
+Agent 行为场景测试；
+改造前后真实任务对照评估。
+
+安装策略不应继续覆盖整个全局配置
+
+当前 bs.sh 会使用
+ln -sf
+覆盖全局 GEMINI.md、AGENTS.md 和整个 skills 目录。新版默认只能安装命名空间内的 bmad-solo，不得覆盖用户已有 Skills 和 Antigravity 原生配置。
+
+AGSL v2 目标运行模型
+TEXT
+/bmad-solo
+  ↓
+INSPECT
+  读取项目规则、代码、测试、Git、已有架构资料
+  ↓
+CLASSIFY
+  根据实际影响面确定 S / M / L
+  ↓
+BASELINE
+  读取或建立相关架构基线
+  ↓
+PREFLIGHT
+  PASS | WARN | BLOCK | UNKNOWN
+  ↓
+DECIDE_ACTION
+  clarify | discover | experiment | plan | implement | escalate
+  ↓
+  ├─ S：短计划 → Task Loop
+  │
+  └─ M/L：生成 Epic → Story → Task
+             ↓
+        WAIT_FOR_PLAN_APPROVAL
+             ↓ 用户明确批准且摘要匹配
+        EXECUTING_TASK
+             ↓
+        VERIFY_TASK
+             ↓
+        发生边界变化或重复失败？
+             ├─ 是 → ARCHITECTURE_RECHECK
+             └─ 否 → 下一 Task
+  ↓
+ARCHITECTURE_POSTFLIGHT
+  ↓
+ADVERSARIAL_REVIEW
+  ↓
+FINAL_RECONCILIATION
+  ↓
+COMPLETE | REPLAN | BLOCKED | ESCALATED
+状态迁移硬规则
+当前状态	允许的下一状态	进入条件	允许修改生产代码
+INSPECTING	CLASSIFIED	已读取 Git、项目规则及相关代码	否
+CLASSIFIED	BASELINING	S/M/L 及理由已记录	否
+BASELINING	PREFLIGHT	基线已加载或标为 provisional	否
+PREFLIGHT	PLANNING	M/L 且 PASS/WARN	否
+PREFLIGHT	EXECUTING	S 且 PASS	是
+PREFLIGHT	EXPERIMENTING	UNKNOWN，且实验范围明确	仅实验文件
+PREFLIGHT	BLOCKED	违反硬不变量	否
+PLANNING	WAITING_APPROVAL	计划及摘要已生成	否
+WAITING_APPROVAL	EXECUTING	用户明确批准当前摘要	是
+EXECUTING	RECHECK	触发实质偏离或失败预算	否
+EXECUTING	VERIFYING	当前 Task 实现完成	否
+REVIEWING	RECONCILING	Review 结果及证据已保存	否
+RECONCILING	COMPLETE	所有硬义务关闭	否
+
+UNKNOWN 不允许直接实现生产方案，但可以执行受限的 Spike、Benchmark 或诊断实验。实验产物不能自动并入最终实现，必须先重新执行 Preflight。
+
+精确的 S/M/L 分类
+S 级必须同时满足
+修改位于一个既有组件内；
+不修改公共接口；
+不新增依赖或跨层调用；
+不改变数据所有权；
+不涉及事务、缓存、并发、安全；
+不改变部署拓扑；
+不触及性能关键路径。
+
+任一条件不满足，至少升级为 M。
+
+M 级
+多文件但仍处于一个清晰边界内；
+兼容性公共接口修改；
+新增内部依赖；
+有多个实现方案；
+需要跨组件协调，但不改变系统级安全、数据或部署边界。
+L 级触发条件
+安全边界或权限模型变化；
+数据所有权或一致性模型变化；
+破坏性数据库迁移；
+部署拓扑、服务拆分或基础设施变化；
+多个核心组件重构；
+难以回滚的公共协议变化；
+关键 NFR、并发模型或性能架构变化。
+
+分级结果必须记录 level、reasons、risk_dimensions 和 escalation_triggers，不能只由关键词决定。
+
+推荐目录结构
+TEXT
+config/skills/bmad-solo/
+├── SKILL.md
+├── references/
+│   ├── active-engineering-loop.md
+│   ├── antigravity-adapter.md
+│   ├── capability-map.md
+│   ├── mode-product.md
+│   ├── mode-architect.md
+│   ├── mode-developer.md
+│   ├── mode-reviewer.md
+│   ├── mode-operator.md
+│   └── procedures/
+│       ├── inspect-project.md
+│       ├── classify-task.md
+│       ├── establish-architecture-baseline.md
+│       ├── architecture-preflight.md
+│       ├── create-implementation-plan.md
+│       ├── record-plan-approval.md
+│       ├── build-task.md
+│       ├── verify-task.md
+│       ├── architecture-recheck.md
+│       ├── architecture-postflight.md
+│       ├── adversarial-review.md
+│       ├── state-reconcile.md
+│       ├── architecture-debug.md
+│       └── algorithm-fit.md
+├── contracts/
+│   ├── architecture-contract.schema.json
+│   ├── task-state.schema.json
+│   └── evidence-event.schema.json
+├── templates/
+│   ├── implementation-plan.template.md
+│   ├── architecture-review.template.md
+│   └── adr.template.md
+├── scripts/
+│   ├── bmad-solo-state.py
+│   ├── validate-solo-package.py
+│   └── render-artifacts.py
+└── tests/
+    ├── fixtures/
+    ├── test_package.py
+    ├── test_state_machine.py
+    ├── test_installer.sh
+    └── test_scenarios.py
+
+项目运行时产物：
+
+TEXT
+_bmad-output/
+├── project-context.md
+├── architecture/
+│   ├── architecture-contract.json
+│   └── decisions/
+│       └── ADR-*.md
+├── tasks/
+│   └── TASK-*.json
+├── evidence/
+│   └── TASK-*.jsonl
+└── plans/
+    └── TASK-*-implementation-plan.md
+
+brain/
+├── task.md
+└── implementation_plan.md
+
+_bmad-output 是持久化事实源；brain/implementation_plan.md 只是面向 Antigravity Artifact Review 的投影。Antigravity 官方实践本身推荐在实现前生成包含目标文件、依赖和逻辑变化的 implementation-plan artifact
+，因此这里应复用原生能力，而不是再造计划 UI。
+
+核心数据契约
+Architecture Contract
+
+至少包含：
+
+contract_version
+status: provisional | approved | stale
+baseline.git_head
+baseline.source_fingerprint
+components
+interfaces
+data_ownership
+invariants
+quality_budgets
+change_policy
+verification_methods
+
+每个硬不变量必须有：
+
+稳定 ID；
+适用范围；
+严重程度；
+验证方式；
+是否允许 ADR 例外；
+最近验证时间。
+
+新建 brownfield 基线时，不能把推断直接当成规范。推断内容必须标为 provisional，并在第一个 M/L 计划的 Architecture Baseline 部分一并交给用户批准，避免连续两次暂停。
+
+Task State
+
+关键字段：
+
+JSON
+{
+  "task_id": "TASK-001",
+  "level": "M",
+  "state": "WAITING_APPROVAL",
+  "goal": {},
+  "impact": {},
+  "architecture_baseline": {
+    "contract_version": 1,
+    "contract_digest": "",
+    "git_head": "",
+    "worktree_digest": ""
+  },
+  "architecture_verdict": {
+    "status": "PASS",
+    "warnings": [],
+    "conflicts": []
+  },
+  "plan": {
+    "path": "brain/implementation_plan.md",
+    "digest": "",
+    "approved_digest": null,
+    "approved_at": null,
+    "approved_by": null
+  },
+  "claims": [],
+  "open_obligations": [],
+  "failed_attempts": [],
+  "recheck_count": 0,
+  "replan_count": 0,
+  "next_action": {}
+}
+
+批准摘要建议计算：
+
+TEXT
+SHA-256(
+  normalized implementation plan
+  + architecture contract digest
+  + task acceptance criteria
+  + baseline Git/worktree digest
+)
+
+只有用户明确批准且
+approved_digest == plan.digest
+时，才能从 WAITING_APPROVAL 进入 EXECUTING。
+
+Implementation Plan 固定结构
+MARKDOWN
+# Implementation Plan
+
+## Goal
+## Non-goals
+## Acceptance Criteria
+
+## Architecture Baseline
+- Relevant components
+- Applicable invariants
+- Relevant ADRs
+- Existing patterns to preserve
+- Provisional assumptions
+
+## Impact Analysis
+- Interfaces
+- Data ownership
+- Dependencies
+- Runtime and deployment
+- Security
+- NFR and algorithm constraints
+
+## Epic 1: <architecture-aligned outcome>
+
+### Story 1.1: <independently verifiable behavior>
+- Acceptance criteria
+- Affected components
+- Applicable invariants
+- Dependencies
+- Risks
+
+#### Task 1.1.1
+- Expected files
+- Coherent change
+- Verification command
+- Evidence to produce
+- Rollback
+
+## Validation Matrix
+## Rollback Plan
+## Open Questions
+## Accepted Warnings
+## Approval Digest
+## Approval Status
+
+分解规则：
+
+Epic 表达架构一致的结果，不是文件分组。
+Story 必须是可独立验收的行为。
+Task 是最小连贯、可单独验证的代码变化。
+每个 Story 映射验收标准、组件和不变量。
+每个 Task 声明预期文件、验证命令和证据。
+新增测试文件、格式化变化等非实质偏离不触发重新审批。
+新组件、接口、依赖方向、数据所有权、验收标准或安全边界变化必须使批准失效。
+分阶段实施提交
+Commit 1：包完整性与安全安装
+
+修改：
+
+修复 capability-map.md 的失效 Procedure。
+将现有 build.md 从 _bmad/scripts/render_skill.py 解耦。
+清理 architecture-decision.md、code-review.md 的隐含外部依赖。
+修复 project-context.md 的字面 \n。
+新增 validate-solo-package.py。
+重写 bs.sh。
+
+Installer 要求：
+
+set -euo pipefail
+--dry-run
+--status
+--uninstall
+--mode skill|plugin
+只安装 bmad-solo 命名空间
+不覆盖已有 GEMINI.md、AGENTS.md 或整个 skills/
+保存安装 manifest
+重复安装幂等
+冲突时停止并报告
+
+默认先采用 Skill 模式；Plugin 模式只有在运行时探测确认当前 Antigravity 版本支持后启用。官方 Plugin 具有命名空间和 Hook 能力
+，但不能把 CLI 与 IDE 的具体加载路径直接视为完全相同，必须通过沙盒安装验证。
+
+Commit 2：主路由与确定性状态机
+
+修改：
+
+SKILL.md
+config/AGENTS.md
+三个核心 mode 文件
+Completion Gate
+
+新增：
+
+active-engineering-loop.md
+三个 JSON Schema
+bmad-solo-state.py
+
+CLI 至少支持：
+
+TEXT
+init
+classify
+set-verdict
+set-plan
+approve-plan
+can-edit
+record-evidence
+record-failure
+request-recheck
+reconcile
+
+验收：
+
+非法迁移返回非零退出码。
+WAITING_APPROVAL 下 can-edit 必须失败。
+计划摘要变化后批准自动失效。
+BLOCK 和 UNKNOWN 不能进入生产实现。
+Commit 3：架构基线、分级和 Preflight
+
+新增：
+
+classify-task.md
+establish-architecture-baseline.md
+architecture-preflight.md
+Architecture Contract 模板。
+
+验收：
+
+S 快速路径必须满足全部低风险条件。
+代码与契约冲突时输出 ARCHITECTURE_DRIFT，不得静默选边。
+没有足够证据时输出 UNKNOWN。
+硬不变量冲突时输出 BLOCK。
+Commit 4：Epic/Story/Task 计划与审批
+
+新增：
+
+create-implementation-plan.md
+record-plan-approval.md
+计划模板和 Artifact renderer。
+
+验收：
+
+M/L 在任何生产代码编辑前生成完整计划。
+生成计划后立即停止。
+只有用户明确批准当前摘要才能继续。
+首次 provisional 架构基线与计划合并评审。
+实质偏离后自动回到 WAITING_APPROVAL。
+Commit 5：Task 微循环、重审与调试
+
+重写 build.md：
+
+加载已批准任务状态。
+执行 can-edit。
+一次只选择一个 Task。
+声明文件、不变量和预期证据。
+做最小连贯修改。
+运行最窄但有效的验证。
+追加证据事件。
+检查重审触发器。
+更新 claims 和 obligations。
+继续、重审或停止。
+
+同一失败类别第二次发生后必须触发 ARCHITECTURE_RECHECK。每个循环必须有：
+
+same_failure_limit
+replan_limit
+recheck_limit
+明确的停止状态
+
+这对应附件 Graph Harness 中“每个循环必须有 hard stop 和 budget”的原则。
+
+Commit 6：独立 Review 与最终对账
+
+顺序调整为：
+
+TEXT
+Task verification
+→ Architecture Postflight
+→ Adversarial Review
+→ 修正或请求决策
+→ Final Reconciliation
+
+Reviewer 不读取 Developer 的结论作为事实，只读取：
+
+原始需求和验收标准；
+批准的计划；
+架构契约；
+Git Diff；
+实际命令输出；
+Evidence JSONL。
+
+最终状态限定为：
+
+TEXT
+CONSISTENT
+CONDITIONALLY_CONSISTENT
+STALE_STATE
+ARCHITECTURE_DRIFT
+UNAPPROVED_DEVIATION
+INSUFFICIENT_EVIDENCE
+
+L 级或高风险任务优先使用 Antigravity 新上下文/Subagent 进行 Reviewer；普通 M 任务保留同 Agent 对抗式切换，避免个人开发流程过重。
+
+Commit 7：测试线束与质量评估
+
+至少覆盖以下 12 个场景：
+
+单文件局部修复走 S 快速路径。
+S 任务出现公共接口变化自动升级 M。
+M 任务未批准时禁止编辑。
+修改计划后旧批准失效。
+WARN 未明确接受时禁止实现。
+BLOCK 不能进入 Build。
+UNKNOWN 只能进入受限实验。
+Controller 直接访问数据库被依赖不变量拦截。
+公共 API 变化要求 ADR 或重新批准。
+同类失败两次触发 Architecture Recheck。
+单测通过但集成义务开放时不能完成。
+架构契约与代码冲突时输出 ARCHITECTURE_DRIFT。
+
+另加 Installer 测试：
+
+已存在 GEMINI.md；
+已存在第三方 Skills；
+重复安装；
+断裂符号链接；
+dry-run 无副作用；
+uninstall 只删除本工具管理的文件。
+
+最后选择 10–20 个真实任务，对照原版和 AGSL v2，记录：
+
+未批准架构偏差数；
+Review 阶段才发现的跨层问题；
+重复调试次数；
+Story reopen 次数；
+局部结果误报为整体完成的次数；
+NFR 回归；
+Token 与耗时增量；
+门禁误报率；
+人工介入次数。
+建议的默认决策
+同意 M/L 强制计划审批。
+S 不生成完整持久化计划，但仍执行轻量 Preflight。
+首次架构基线与第一个 M/L 计划合并审批。
+Agent 不得静默修改硬性架构不变量。
+UNKNOWN 允许受限实验，不允许直接实施生产方案。
+brain/* 只作为 Antigravity 展示层，不作为长期真相源。
+默认安装单独的 bmad-solo Skill；Plugin/Hook 作为第二阶段增强。
+architecture-debug 进入核心版本，algorithm-fit 保留为按条件加载的扩展。
+不新增与 Antigravity 原生 /goal、/grill-me、Artifact、Diff 或 Review 功能重叠的命令；继续只暴露 /bmad-solo。
+完成定义
+
+AGSL v2 只有同时满足以下条件才算落地：
+
+所有 Capability 映射均指向真实文件。
+普通非 BMAD 项目可以离线运行核心流程。
+不覆盖用户既有 Antigravity 配置。
+所有状态迁移通过确定性测试。
+M/L 未批准时无法合法进入 EXECUTING。
+每个 Task 都有范围明确的验证证据。
+计划偏离会使批准失效。
+Reviewer 能从原始 Diff 和证据重新推导结论。
+开放硬义务未关闭时不能声明完成。
+真实任务对照评估显示架构偏差和晚期返工下降，并如实报告增加的 Token、时间与人工成本。
+
+因此，建议不要直接执行 implementation2_gemini.txt 的六个 Epic，而是按上述七个 Commit 修订后再落地。最优先的四项仍然是：包自包含、主路由改造、可验证审批状态机、Task 级架构重审闭环；Algorithm Contract、多分支 Graph 和高级 Plugin Hook 应放在核心循环稳定之后。
