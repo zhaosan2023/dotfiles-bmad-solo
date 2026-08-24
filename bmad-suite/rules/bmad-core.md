@@ -88,6 +88,29 @@ AI 须根据当前**任务阶段、缺失产物和风险级别**自动切换思�
 
 ---
 
+## 第 4.5 章：产物路由表（Output Routing）
+
+AI 生成或更新任何持久化产物时，必须根据以下表格选择存放位置。不得默认存放到 `docs/`、项目根目录或其他未列出的位置。
+
+| 产物类型 | 存放位置 | 示例 |
+|---|---|---|
+| 会话级任务状态与步骤 | `brain/task.md` | 当前任务的 TODO、进度、短期 Findings |
+| 实施计划（待审批） | `brain/implementation_plan.md` | Epic/Story/Task 分解 |
+| 项目全局事实基线 | `_bmad-output/project-context.md` | 技术栈、启动命令、服务端口、部署方式 |
+| 架构契约 | `_bmad-output/architecture/architecture-contract.yaml` | 组件边界、不变量 |
+| 架构决策记录 (ADR) | `_bmad-output/architecture/decisions/ADR-YYYYMMDD-[topic].md` | 技术选型、重大变更理由 |
+| 重大 Findings / 复盘报告 | `_bmad-output/architecture/decisions/ADR-YYYYMMDD-[topic].md` | 容灾恢复经验、重大 Bug 根因 |
+| 特性规范 / Spec | `_bmad-output/specs/` | 新功能的详细设计 |
+| 算法契约 | `_bmad-output/architecture/algorithm-contract-[name].md` | 算法选型与 NFR |
+
+**路由规则**：
+1. 如果产物是“此次会话中的过程性记录”→ `brain/task.md`。
+2. 如果产物是“跨会话需要持久化的架构经验或重大决策”→ 走 ADR 流程存入 `_bmad-output/architecture/decisions/`。
+3. 如果产物是“对项目全局事实基线的更新”（如新增了一个服务端口）→ 更新 `_bmad-output/project-context.md`。
+4. 任何不确定归属的产物，**必须询问用户**，不得自行创建新路径。
+
+---
+
 ## 第五章：分层与信息存放
 
 项目级信息分别存放在：

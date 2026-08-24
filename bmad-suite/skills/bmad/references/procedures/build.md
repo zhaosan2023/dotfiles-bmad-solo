@@ -45,7 +45,9 @@ description: >
    - Same class of fix failed twice.
 
 7. **Update task state.** Mark the current task unit as complete in
-   `brain/task.md`. Record any new findings or risks.
+   `brain/task.md`. Record any new findings or risks in `brain/task.md`.
+   If findings represent cross-session architectural lessons, trigger
+   `record-findings` per the Output Routing table in `bmad-core.md`.
 
 8. **Continue or return.** If more task units remain and no recheck
    triggered, go to step 2. Otherwise, return to the router for

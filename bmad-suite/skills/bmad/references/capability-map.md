@@ -17,3 +17,4 @@
 | algorithm-fit | Architect | 算法或 NFR 敏感任务 | procedures/algorithm-fit.md | Algorithm Contract |
 | architecture-debug | Architect/Developer | 重复失败或跨边界修复 | procedures/architecture-debug.md | Hypothesis log + decision |
 | correct-course | Architect/Product | BLOCK 或架构漂移 | procedures/correct-course.md | ADR、拆分或升级决定 |
+| record-findings | Reviewer/Operator | 重大 Bug 修复完成、容灾恢复或关键经验教训 | procedures/record-findings.md | ADR, project-context 更新, 或 KI |
