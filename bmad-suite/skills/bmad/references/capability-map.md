@@ -1,13 +1,19 @@
 # BMAD-Solo Capability Map
 
-| Capability | Mode | Trigger condition | Procedure | Required output |
+> Only reference procedures that exist in `procedures/`.
+> Capabilities marked `[Commit 2]` or `[Commit 3]` will be added in future commits.
+
+## Active Capabilities
+
+| Capability | Mode | Trigger | Procedure | Required Output |
 |---|---|---|---|---|
-| clarify-requirements | Product | 验收标准不明确 | procedures/clarify-requirements.md | Acceptance Criteria |
-| create-product-brief | Product | 新产品或大功能 | procedures/create-product-brief.md | Product Brief |
 | architecture-decision | Architect | 存在多个重大技术方案 | procedures/architecture-decision.md | ADR |
-| implementation-plan | Architect | M/L 级任务准备实现 | procedures/implementation-plan.md | brain/implementation_plan.md |
 | build | Developer | 约束与计划已充分 | procedures/build.md | Code + Tests |
 | code-review | Reviewer | 出现代码 Diff | procedures/code-review.md | Review findings |
-| test-design | Reviewer | 高风险或复杂行为 | procedures/test-design.md | Test matrix |
-| diagnose-runtime | Operator | 服务异常或用户要求查日志 | procedures/diagnose-runtime.md | Diagnosis |
-| deploy | Operator | 用户明确授权部署 | procedures/deploy.md | Deployment evidence |
+| architecture-baseline | Architect | 缺少或架构状态陈旧 | procedures/architecture-baseline.md | Architecture Contract |
+| architecture-preflight | Architect | 所有 M/L 编码任务 | procedures/architecture-preflight.md | PASS/WARN/BLOCK/UNKNOWN |
+| architecture-recheck | Architect | 关键变更或重复失败 | procedures/architecture-recheck.md | Updated verdict |
+| state-reconcile | Reviewer | 完成前 | procedures/state-reconcile.md | Consistency verdict |
+| algorithm-fit | Architect | 算法或 NFR 敏感任务 | procedures/algorithm-fit.md | Algorithm Contract |
+| architecture-debug | Architect/Developer | 重复失败或跨边界修复 | procedures/architecture-debug.md | Hypothesis log + decision |
+| correct-course | Architect/Product | BLOCK 或架构漂移 | procedures/correct-course.md | ADR、拆分或升级决定 |

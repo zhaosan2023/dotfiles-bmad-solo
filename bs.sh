@@ -32,8 +32,11 @@ if [ $UNINSTALL -eq 1 ]; then
     echo -e "${YELLOW}Uninstalling BMAD-Solo V2...${NC}"
     if [ $DRY_RUN -eq 1 ]; then
         echo "[DRY-RUN] Would remove $TARGET_DIR"
+        echo "[DRY-RUN] Would remove rules from $GEMINI_CONFIG_DIR/rules/"
     else
         rm -rf "$TARGET_DIR"
+        rm -f "$GEMINI_CONFIG_DIR/rules/bmad-constitution.md"
+        rm -f "$GEMINI_CONFIG_DIR/rules/bmad-core.md"
         echo -e "${GREEN}Successfully uninstalled bmad-solo from $TARGET_DIR${NC}"
     fi
     exit 0
@@ -60,6 +63,7 @@ echo -e "${YELLOW}Linking BMAD-Suite Plugin to namespace...${NC}"
 
 if [ $DRY_RUN -eq 1 ]; then
     echo "[DRY-RUN] Would create symlink: $TARGET_DIR -> $SCRIPT_DIR/bmad-suite"
+    echo "[DRY-RUN] Would link rules into $GEMINI_CONFIG_DIR/rules/"
 else
     # Remove existing symlink if any (to avoid ln -sfn pointing to itself if broken)
     rm -f "$TARGET_DIR"
@@ -69,6 +73,12 @@ else
 
     ln -s "$SCRIPT_DIR/bmad-suite" "$TARGET_DIR"
     echo -e "  [✔] Linked bmad-suite plugin namespace"
+    
+    # Explicitly link rules so they appear in the Customizations UI
+    mkdir -p "$GEMINI_CONFIG_DIR/rules"
+    ln -sf "$SCRIPT_DIR/bmad-suite/rules/bmad-constitution.md" "$GEMINI_CONFIG_DIR/rules/bmad-constitution.md"
+    ln -sf "$SCRIPT_DIR/bmad-suite/rules/bmad-core.md" "$GEMINI_CONFIG_DIR/rules/bmad-core.md"
+    echo -e "  [✔] Linked global rules to $GEMINI_CONFIG_DIR/rules/"
 fi
 
 echo -e "\n${GREEN}======================================================${NC}"

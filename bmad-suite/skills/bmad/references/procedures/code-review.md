@@ -1,90 +1,80 @@
 ---
 name: bmad-code-review
-description: 'Adversarial code review using parallel review layers and structured triage. Use when the user says "run code review" or "review this code"'
+description: >
+  Adversarial code review with architecture awareness.
+  Self-contained — no external script, renderer, or step-file
+  dependencies required.
 ---
 
-# Code Review Workflow
+# Code Review Procedure
 
-**Goal:** Review code changes adversarially. No noise, no filler.
+## Objective
 
-Subagents, when the capability is available, are an important part of this workflow. Use them as directed by the workflow steps.
-If you need an explicit user instruction to run them, ask once now for the whole workflow run.
+Review code changes adversarially. The Reviewer's stance is the
+opposite of the Developer's. Do not defend the implementation;
+find what is wrong, missing, or fragile.
 
-## Conventions
+## Inputs
 
-- Bare paths (e.g. `checklist.md`) resolve from the skill root.
-- `{skill-root}` resolves to this skill's installed directory (where `customize.toml` lives).
-- `{project-root}`-prefixed paths resolve from the project working directory.
-- `{skill-name}` resolves to the skill directory's basename.
+Read only these sources (do NOT read the Developer's process narrative):
 
-## On Activation
+1. User requirements and acceptance criteria.
+2. Git Diff of the changes.
+3. Test and verification evidence (actual terminal output).
+4. Architecture contract (if exists): `_bmad-output/architecture/architecture-contract.yaml`.
+5. Implementation plan: `brain/implementation_plan.md`.
+6. Active task state: `brain/task.md`.
 
-### Step 1: Resolve the Workflow Block
+## Review Checklist
 
-Run: `python3 {project-root}/_bmad/scripts/resolve_customization.py --skill {skill-root} --key workflow`
+### Correctness
+- [ ] Does the code implement what was requested?
+- [ ] Are edge cases and error paths handled?
+- [ ] Are there off-by-one, null, or type errors?
+- [ ] Does the logic match the stated acceptance criteria?
 
-**If the script fails**, resolve the `workflow` block yourself by reading these three files in base → team → user order and applying the same structural merge rules as the resolver:
+### Testing
+- [ ] Were tests actually run (real terminal output exists)?
+- [ ] Do tests cover the changed behavior?
+- [ ] Are there missing test cases for boundary conditions?
+- [ ] Is any test modified to hide a real defect?
 
-1. `{skill-root}/customize.toml` — defaults
-2. `{project-root}/_bmad/custom/{skill-name}.toml` — team overrides
-3. `{project-root}/_bmad/custom/{skill-name}.user.toml` — personal overrides
+### Architecture (M/L tasks)
+- [ ] Is the code implemented in the correct component?
+- [ ] Are there undeclared new dependencies?
+- [ ] Is data written by the correct owner?
+- [ ] Are public interfaces changed without approval/ADR?
+- [ ] Are dependency directions preserved?
+- [ ] Is a local-only result being claimed as system-verified?
+- [ ] Has the architecture contract drifted from actual code?
 
-Any missing file is skipped. Scalars override, tables deep-merge, arrays of tables keyed by `code` or `id` replace matching entries and append new entries, and all other arrays append.
+### Security
+- [ ] Are there hardcoded secrets, tokens, or credentials?
+- [ ] Are user inputs validated and sanitized?
+- [ ] Are permissions and access controls correct?
 
-### Step 2: Execute Prepend Steps
+### Maintainability
+- [ ] Is the code readable and well-structured?
+- [ ] Are existing patterns and conventions followed?
+- [ ] Is there unnecessary complexity or over-engineering?
+- [ ] Are comments and documentation accurate?
 
-Execute each entry in `{workflow.activation_steps_prepend}` in order before proceeding.
+## Verdict
 
-### Step 3: Load Persistent Facts
+Output one of:
 
-Treat every entry in `{workflow.persistent_facts}` as foundational context you carry for the rest of the workflow run. Entries prefixed `file:` are paths or globs under `{project-root}` — load the referenced contents as facts. All other entries are facts verbatim.
+| Verdict | Meaning |
+|---|---|
+| **APPROVE** | All checks pass, no issues found. |
+| **APPROVE_WITH_DEBT** | Minor issues recorded as tech debt, acceptable to merge. |
+| **CHANGES_REQUIRED** | Issues must be fixed before completion. |
+| **ARCHITECTURE_DECISION_REQUIRED** | Architecture conflict found, needs ADR or user decision. |
+| **INSUFFICIENT_EVIDENCE** | Cannot determine correctness — tests missing, no output, or scope unclear. |
 
-### Step 4: Load Config
+## Rules
 
-Load config from `{project-root}/_bmad/bmm/config.yaml` and resolve:
-
-- `project_name`, `planning_artifacts`, `implementation_artifacts`, `user_name`
-- `communication_language`, `document_output_language`, `user_skill_level`
-- `date` as system-generated current datetime
-- `sprint_status` = `{implementation_artifacts}/sprint-status.yaml`
-- `project_context` = `**/project-context.md` (load if exists)
-- YOU MUST ALWAYS SPEAK OUTPUT in your Agent communication style with the config `{communication_language}`
-
-### Step 5: Greet the User
-
-Greet `{user_name}`, speaking in `{communication_language}`.
-
-### Step 6: Execute Append Steps
-
-Execute each entry in `{workflow.activation_steps_append}` in order.
-
-Activation is complete. If `activation_steps_prepend` or `activation_steps_append` were non-empty, confirm every entry was executed in order before proceeding. Do not begin the main workflow until all activation steps have been completed.
-
-## WORKFLOW ARCHITECTURE
-
-This uses **step-file architecture** for disciplined execution:
-
-- **Micro-file Design**: Each step is self-contained and followed exactly
-- **Just-In-Time Loading**: Only load the current step file
-- **Sequential Enforcement**: Complete steps in order, no skipping
-- **State Tracking**: Persist progress via in-memory variables
-- **Append-Only Building**: Build artifacts incrementally
-
-### Step Processing Rules
-
-1. **READ COMPLETELY**: Read the entire step file before acting
-2. **FOLLOW SEQUENCE**: Execute sections in order
-3. **WAIT FOR INPUT**: Halt at checkpoints and wait for human
-4. **LOAD NEXT**: When directed, read fully and follow the next step file
-
-### Critical Rules (NO EXCEPTIONS)
-
-- **NEVER** load multiple step files simultaneously
-- **ALWAYS** read entire step file before execution
-- **NEVER** skip steps or optimize the sequence
-- **ALWAYS** follow the exact instructions in the step file
-- **ALWAYS** halt at checkpoints and wait for human input
-
-## FIRST STEP
-
-Read fully and follow: `./steps/step-01-gather-context.md`
+- Test passing is NOT the end condition for review.
+- Do not re-summarize the Developer's explanation as your own finding.
+- If claims contradict evidence, flag the contradiction explicitly.
+- Debugging findings discovered during review must be recorded.
+- For M/L tasks, verify that State Reconciliation was performed.
