@@ -1,0 +1,9 @@
+{
+  "hooks": [
+    {
+      "event": "pre_tool_execution",
+      "action": "echo 'Plugin hook triggered (placeholder)'",
+      "enabled": false
+    }
+  ]
+}

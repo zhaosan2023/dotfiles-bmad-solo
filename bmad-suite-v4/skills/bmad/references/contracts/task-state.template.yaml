@@ -1,0 +1,51 @@
+schema_version: 1
+task_id: "TASK-001"
+level: "M"
+status: "planning"
+
+goal:
+  outcome: ""
+  acceptance_criteria: []
+  non_goals: []
+
+architecture_baseline:
+  contract_version: 1
+  git_head: ""
+  relevant_adrs: []
+  relevant_invariants: []
+
+impact:
+  components: []
+  interfaces: []
+  data: []
+  dependencies: []
+  runtime_paths: []
+  security: []
+
+claims:
+  - id: CLAIM-001
+    statement: "Hypothesis statement here"
+    status: hypothesis  # verified | accepted | hypothesis | local-only | refuted | stale
+    scope: local
+    evidence: []
+
+open_obligations:
+  - id: OBL-001
+    statement: "Must verify behavior in edge cases"
+    verification_method: "unit test"
+    status: open
+
+failed_attempts: []
+
+architecture_verdict:
+  status: UNKNOWN  # PASS | WARN | BLOCK | UNKNOWN
+  conflicts: []
+  accepted_warnings: []
+
+next_action:
+  type: architecture-preflight
+  reason: "Architecture fit has not been evaluated"
+
+budgets:
+  same_failure_limit: 2
+  replan_limit: 3

@@ -1,0 +1,47 @@
+schema_version: 1
+
+baseline:
+  git_head: ""
+  last_verified_at: null
+
+components:
+  - id: core-domain
+    responsibilities: 
+      - "Business logic and core entities"
+    owns_data: []
+    allowed_dependencies: []
+    forbidden_dependencies: 
+      - "infrastructure"
+      - "api-layer"
+
+interfaces:
+  - id: API-001
+    producer: "api-layer"
+    consumers: ["external-clients"]
+    compatibility_policy: "backward-compatible"
+
+invariants:
+  - id: ARCH-INV-001
+    statement: "Domain layer must not depend on infrastructure"
+    severity: block
+    scope: ["core-domain"]
+    verification:
+      type: "dependency-check"
+      command: null
+
+data_ownership: []
+
+quality_budgets:
+  latency_p95_ms: null
+  memory_mb: null
+  throughput_rps: null
+
+change_policy:
+  requires_adr:
+    - "public-interface-change"
+    - "dependency-direction-change"
+    - "data-ownership-change"
+    - "consistency-model-change"
+  requires_human_approval:
+    - "security-boundary-change"
+    - "destructive-migration"
