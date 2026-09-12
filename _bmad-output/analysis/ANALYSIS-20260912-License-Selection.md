@@ -33,7 +33,7 @@ The repository `dotfiles-bmad-solo` houses shell scripts (like `bs.sh`), agent p
 
 ## 4. The Verdict (Lock 4)
 - **Verdict:** `FEASIBLE` -> **MIT License**
-- **Author Identity:** veryfd
+- **Author Identity:** zhaosan2023
 - **Year:** 2026
 
 ### Handoff to /bmad-solo
