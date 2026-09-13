@@ -66,11 +66,17 @@ show_status() {
     TARGET_PLUGIN="$GEMINI_CONFIG_DIR/plugins/bmad-suite"
     if [ -L "$TARGET_PLUGIN" ]; then
         DEST=$(readlink "$TARGET_PLUGIN")
-        echo -e "  Plugin  : $TARGET_PLUGIN -> ${GREEN}$DEST${NC}"
+        if [[ "$DEST" == *".versions/"* ]]; then
+            ACTIVE_TAG=$(echo "$DEST" | sed -E 's|.*/\.versions/([^/]+)/.*|\1|')
+            echo -e "  Active Mode : ${YELLOW}Isolated Snapshot Tag: $ACTIVE_TAG${NC}"
+        else
+            echo -e "  Active Mode : ${GREEN}Rolling Latest (main)${NC}"
+        fi
+        echo -e "  Plugin      : $TARGET_PLUGIN -> ${GREEN}$DEST${NC}"
     elif [ -e "$TARGET_PLUGIN" ]; then
-        echo -e "  Plugin  : $TARGET_PLUGIN (${YELLOW}Regular directory, not symlink${NC})"
+        echo -e "  Plugin      : $TARGET_PLUGIN (${YELLOW}Regular directory, not symlink${NC})"
     else
-        echo -e "  Plugin  : ${RED}Not installed${NC}"
+        echo -e "  Plugin      : ${RED}Not installed${NC}"
     fi
 
     for RULE in bmad-constitution.md bmad-core.md; do
@@ -169,36 +175,43 @@ fi
 
 if [ -n "$SWITCH_TAG" ]; then
     echo -e "${YELLOW}======================================================${NC}"
-    echo -e "${YELLOW} GitOps: Checking out Release Tag: $SWITCH_TAG... ${NC}"
+    echo -e "${YELLOW} GitOps: Activating Release Tag: $SWITCH_TAG (Shadow Snapshot)... ${NC}"
     echo -e "${YELLOW}======================================================${NC}"
     if ! git -C "$SCRIPT_DIR" rev-parse "refs/tags/$SWITCH_TAG" >/dev/null 2>&1; then
         echo -e "${RED}Error: Tag '$SWITCH_TAG' does not exist in repository.${NC}"
         echo -e "Run '$0 --tags' to see available release tags."
         exit 1
     fi
-    if ! git -C "$SCRIPT_DIR" diff-index --quiet HEAD -- 2>/dev/null; then
-        echo -e "${RED}Error: Uncommitted changes detected in repository.${NC}"
-        echo -e "Please commit or stash your changes before switching tags."
-        exit 1
-    fi
-    git -C "$SCRIPT_DIR" checkout "tags/$SWITCH_TAG"
-    echo -e "${GREEN}[✔] Successfully checked out tag $SWITCH_TAG${NC}\n"
-fi
 
-if [ $SWITCH_LATEST -eq 1 ]; then
+    VERSION_CACHE="$SCRIPT_DIR/.versions/$SWITCH_TAG"
+    if [ ! -d "$VERSION_CACHE" ]; then
+        echo -e "  [i] Extracting tag $SWITCH_TAG snapshot to .versions/$SWITCH_TAG..."
+        mkdir -p "$VERSION_CACHE"
+        git -C "$SCRIPT_DIR" archive "tags/$SWITCH_TAG" | tar -x -C "$VERSION_CACHE"
+    fi
+
+    SOURCE_SUITE="$VERSION_CACHE/bmad-suite-v4"
+    if [ ! -d "$SOURCE_SUITE" ] && [ -d "$VERSION_CACHE/bmad-suite" ]; then
+        SOURCE_SUITE="$VERSION_CACHE/bmad-suite"
+    fi
+    VERSION_TITLE="BMAD-Solo Tag $SWITCH_TAG (Isolated Snapshot)"
+    COMMAND_TIPS="  • /bmad-solo  : V4 Engineering Loop (Isolated Snapshot: $SWITCH_TAG)\n  • /ana-solo   : Dedicated Deep Analysis Channel"
+    echo -e "${GREEN}[✔] Target suite isolated at: $SOURCE_SUITE${NC}\n"
+elif [ $SWITCH_LATEST -eq 1 ]; then
     echo -e "${YELLOW}======================================================${NC}"
     echo -e "${YELLOW} GitOps: Returning to main branch (latest V4)... ${NC}"
     echo -e "${YELLOW}======================================================${NC}"
-    if ! git -C "$SCRIPT_DIR" diff-index --quiet HEAD -- 2>/dev/null; then
-        echo -e "${RED}Error: Uncommitted changes detected in repository.${NC}"
-        echo -e "Please commit or stash your changes before switching to latest."
-        exit 1
+    if git -C "$SCRIPT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        CURRENT_BRANCH=$(git -C "$SCRIPT_DIR" branch --show-current 2>/dev/null || echo "")
+        if [ -n "$CURRENT_BRANCH" ] && [ "$CURRENT_BRANCH" != "main" ]; then
+            git -C "$SCRIPT_DIR" checkout main 2>/dev/null || true
+        fi
     fi
-    git -C "$SCRIPT_DIR" checkout main
+    SOURCE_SUITE="$SCRIPT_DIR/bmad-suite-v4"
+    VERSION_TITLE="BMAD-Solo V4 (Analyst Closed-Loop + /ana-solo + 4 Convergence Locks)"
+    COMMAND_TIPS="  • /bmad-solo  : V4 Engineering Loop (with Analyst Gate)\n  • /ana-solo   : Dedicated Deep Analysis Channel"
     echo -e "${GREEN}[✔] Successfully returned to main branch (latest V4)${NC}\n"
-fi
-
-if [ "$VERSION" = "v3" ]; then
+elif [ "$VERSION" = "v3" ]; then
     SOURCE_SUITE="$SCRIPT_DIR/bmad-suite-v3"
     VERSION_TITLE="BMAD-Solo V3 (Stable Baseline)"
     COMMAND_TIPS="  • /bmad-solo  : V3 Standard Engineering Loop"

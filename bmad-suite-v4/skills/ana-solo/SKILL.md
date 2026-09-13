@@ -75,6 +75,27 @@ Every `/ana-solo` run strictly enforces these 4 stopping gates to prevent infini
 
 ---
 
+## Terminal & Tool Execution Invariants (Anti-Hang Shield)
+
+Whenever `/ana-solo` executes system exploration, log inspection, or diagnostic commands, it MUST strictly adhere to `bmad-constitution.md` and enforce the following invariants:
+
+1. **Foreground Synchronization Lock**:
+   - For all exploratory and diagnostic commands, **`WaitMsBeforeAsync` MUST be set to `10000ms` (10 seconds)**.
+   - NEVER use 5000ms or lower for fast inspection tasks to eliminate in-flight event drop deadlocks.
+2. **Bounded Timeout**:
+   - Lightweight exploration and status checks: `timeout 15s <cmd>`.
+   - Heavier queries or tests: `timeout 30s <cmd>`.
+   - Prevents unclosed subshells or stalled I/O from hanging indefinitely.
+3. **Fail-Closed Stdin**:
+   - All terminal commands must append `< /dev/null` and pass non-interactive flags (e.g. `git --no-pager`, `DEBIAN_FRONTEND=noninteractive`).
+4. **Tool Orthogonality Axiom (VFS Monopoly)**:
+   - **Strictly Forbidden**: NEVER write or execute multi-line python code via `python3 -c "..."` in `run_command`.
+   - **Strictly Forbidden**: NEVER use shell redirection (`cat << 'EOF'`, `echo >`) to write files.
+   - For file reading and inspection, ALWAYS use native tools (`view_file`, `grep_search`).
+   - If complex data parsing is required (e.g. SQLite databases, large JSON blobs), **first write a clean scratch script** to `<appDataDir>/brain/<conversation-id>/scratch/` via `write_to_file`, then execute it cleanly via `python3 scratch/script.py < /dev/null`.
+
+---
+
 ## Handoff to `/bmad-solo` (Execution Bridge)
 
 Every completed analysis produces:
