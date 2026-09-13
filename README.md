@@ -30,10 +30,22 @@
 git clone git@github.com:zhaosan2023/dotfiles-bmad-solo.git
 cd dotfiles-bmad-solo
 
-# 默认安装当前主力 V4 版本
+# 默认安装当前主力 V4 版本（开箱即用最新）
 ./bs.sh
 
-# 如需切换安装历史 V3 基线
+# 查看当前运行版本、分支与软链状态
+./bs.sh --status
+
+# 查看历史 Release Tags（如 v4.0.0, v4.1.0 等）
+./bs.sh --tags
+
+# 精准回退到指定历史小版本并即刻生效
+./bs.sh --tag v4.0.0
+
+# 一键返回 main 主线最新版本
+./bs.sh --latest
+
+# 如需切换安装历史 V3 架构基线
 ./bs.sh v3
 
 # 卸载插件与规则
