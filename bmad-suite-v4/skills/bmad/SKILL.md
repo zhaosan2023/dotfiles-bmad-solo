@@ -139,7 +139,8 @@ A code task is complete only when:
 
 - Acceptance criteria are satisfied.
 - Relevant implementation is finished.
-- Behavioral verification has real output.
+- Behavioral verification has real output strictly congruent with modification footprint (or verified clean diff for pure sync tasks).
+- Downstream verification locks (Footprint, Affinity, VFS, Minimal Assertion) and Execution Monad invariants hold.
 - Applicable architecture invariants have evidence (M/L).
 - No blocking architecture conflict remains (M/L).
 - Deviations are approved and recorded (M/L).
