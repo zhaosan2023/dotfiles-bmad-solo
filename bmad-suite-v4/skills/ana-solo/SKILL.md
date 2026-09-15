@@ -75,24 +75,25 @@ Every `/ana-solo` run strictly enforces these 4 stopping gates to prevent infini
 
 ---
 
-## Terminal & Tool Execution Invariants (Anti-Hang Shield)
+## Terminal Execution Penta-Invariants (Anti-Hang & Single-Flight Shield)
 
-Whenever `/ana-solo` executes system exploration, log inspection, or diagnostic commands, it MUST strictly adhere to `bmad-constitution.md` and enforce the following invariants:
+Whenever `/ana-solo` executes system exploration, log inspection, or diagnostic commands, it MUST strictly adhere to `bmad-constitution.md` and enforce the following five invariants without exception:
 
-1. **Foreground Synchronization Lock**:
+1. **Single-Flight Monad Lock (单飞排队强锁)**:
+   - **Strictly Forbidden**: NEVER launch a new `run_command` while ANY background task is still running or uncollected.
+   - If a background task is pending, you must wait for its completion callback, monitor it via `manage_task(status)`, or actively terminate it via `manage_task(kill)` before initiating any new command. Zero task collisions allowed!
+2. **Universal Bounded Timeout (零例外全量超时)**:
+   - **Strictly Forbidden**: NEVER execute any naked terminal command. ALL commands (including `docker inspect`, `docker ps`, `git status`, `ls`, etc.) MUST be explicitly prepended with `timeout 15s <cmd>` (or `timeout 30s <cmd>` for heavy database/build tasks). No command is exempt!
+3. **Foreground Synchronization Lock (前台同步强锁)**:
    - For all exploratory and diagnostic commands, **`WaitMsBeforeAsync` MUST be set to `10000ms` (10 seconds)**.
    - NEVER use 5000ms or lower for fast inspection tasks to eliminate in-flight event drop deadlocks.
-2. **Bounded Timeout**:
-   - Lightweight exploration and status checks: `timeout 15s <cmd>`.
-   - Heavier queries or tests: `timeout 30s <cmd>`.
-   - Prevents unclosed subshells or stalled I/O from hanging indefinitely.
-3. **Fail-Closed Stdin**:
+4. **Fail-Closed Stdin (输入封闭公理)**:
    - All terminal commands must append `< /dev/null` and pass non-interactive flags (e.g. `git --no-pager`, `DEBIAN_FRONTEND=noninteractive`).
-4. **Tool Orthogonality Axiom (VFS Monopoly)**:
+5. **Tool Orthogonality Axiom (VFS Monopoly / 工具正交公理)**:
    - **Strictly Forbidden**: NEVER write or execute multi-line python code via `python3 -c "..."` in `run_command`.
    - **Strictly Forbidden**: NEVER use shell redirection (`cat << 'EOF'`, `echo >`) to write files.
    - For file reading and inspection, ALWAYS use native tools (`view_file`, `grep_search`).
-   - If complex data parsing is required (e.g. SQLite databases, large JSON blobs), **first write a clean scratch script** to `<appDataDir>/brain/<conversation-id>/scratch/` via `write_to_file`, then execute it cleanly via `python3 scratch/script.py < /dev/null`.
+   - If complex data parsing or database inspection is required, **first write a clean scratch script** to `<appDataDir>/brain/<conversation-id>/scratch/` via `write_to_file`, then execute it cleanly via `timeout 30s python3 scratch/script.py < /dev/null`.
 
 ---
 

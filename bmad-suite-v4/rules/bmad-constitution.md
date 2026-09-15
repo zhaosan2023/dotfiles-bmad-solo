@@ -140,21 +140,28 @@ alwaysApply: true
 
 无法验证时，必须说明未验证项、阻塞原因及用户可执行的验证命令。不得修改测试来掩盖真实缺陷，也不得把"代码看起来正确"描述为"验证通过"。
 
-## 8.5 终端命令执行三守恒律（物理防挂起内核）
+## 8.5 终端命令执行五大守恒铁律（物理防挂起与单飞排队内核）
 
-为彻底杜绝终端命令死锁、交互挂起、无界超时与在途竞态事件丢失，所有通过 `run_command` 发起的终端调用**必须绝对遵从以下三守恒律**：
+为彻底杜绝终端命令死锁、交互挂起、无界超时、孤儿任务悬挂与在途竞态事件丢失，所有通过 `run_command` 发起的终端调用**必须绝对遵从以下五大守恒铁律（Penta-Invariants）**：
 
-1. **守恒律一：前台同步强锁（Foreground Locking）**
-   - 除显式标记为长期后台守护进程（如 `npm run dev` 且显式声明 `IsDaemon: true`）外，**所有命令的 `WaitMsBeforeAsync` 必须一律设为 `10000ms`（10秒上限）**。
-   - 严禁短检查、单测、Git 命令因等待时间过短被 IDE 错误打上 Background 标签，物理杜绝 2.5 秒事件丢失死锁。
-2. **守恒律二：有界超时兜底（Bounded Timeout）**
-   - 任何可能存在网络连接、外部容器交互、构建编译或测试执行的命令，**必须显式包裹 Linux 内核级超时**：
-     - 轻量探测与状态检查：`timeout 15s <cmd>`
-     - 单元测试与构建：`timeout 30s <cmd>`（超重型任务显式指定更长上限）。
+1. **铁律一：单飞排队强锁（Single-Flight Monad Lock）**
+   - **绝对禁止并发命令**：在前序任何后台命令（如 `task-xxx`）尚未完成、未收到系统通知或未显式注销前，**严禁发起任何新的 `run_command`**。
+   - 存在在途任务时，必须通过 `manage_task(status)` 查看状态、等待其自然回调，或显式调用 `manage_task(kill)` 终结前置任务后，方可启动新任务。绝对禁止产生未认领、无监管的孤儿任务（Orphan Task）。
+2. **铁律二：零例外全量超时（Universal Bounded Timeout）**
+   - **绝对禁止裸命令执行**：任何命令（包括轻量探测如 `docker inspect`、`docker ps`、`git status`、`ls`、`find` 等），**必须一律显式包裹 Linux 内核级超时**，无任何例外：
+     - 探测、状态排查与轻量操作：`timeout 15s <cmd>`
+     - 单元测试、构建与数据库操作：`timeout 30s <cmd>`（超重型任务显式指定更长上限）。
    - 超时由操作系统直接发送 `SIGTERM` 强杀退出（退出码 124），确保在确定时限内必定返回输出，绝对禁止无界死等。
-3. **守恒律三：输入封闭与非交互（Fail-Closed Stdin）**
+3. **铁律三：前台同步强锁（Foreground Synchronization Lock）**
+   - 除显式标记为长期后台守护进程（如 `npm run dev` 且显式声明 `IsDaemon: true`）外，**所有命令的 `WaitMsBeforeAsync` 必须一律设为 `10000ms`（10秒上限）**。
+   - 严禁快速检查、单测、Git 命令因等待时间过短被 IDE 错误推入 Background 异步队列，物理杜绝在途事件丢失与抢占死锁。
+4. **铁律四：输入封闭与非交互（Fail-Closed Stdin）**
    - 严禁执行任何等待人类输入的命令。凡可能读取 stdin 的命令必须显式重定向输入封闭（如 `< /dev/null`）。
    - 通用命令行工具必须显式携带非交互或静默参数（如 `git --no-pager`、`apt-get -y`、`rm -f`、`DEBIAN_FRONTEND=noninteractive`）。严禁调用 `less`、`more`、`vi` 等交互式分页器与编辑器。
+5. **铁律五：工具正交公理（Tool Orthogonality Axiom / VFS 垄断原则）**
+   - **绝对禁止终端拼接脚本**：严禁在 `run_command` 中通过 `python3 -c "..."` 执行多行代码，严禁在 Shell 中使用 `cat << 'EOF'`、`echo >` 覆写文件。
+   - 文件的创建与修改必须 100% 走 IDE 原生工具（`write_to_file`、`replace_file_content`），0ms 同步落盘。
+   - 若必须执行复杂数据排查或脚本化诊断，**必须先通过 `write_to_file` 将脚本写入 `<appDataDir>/brain/<conversation-id>/scratch/` 目录**，再以单行命令 `timeout 30s python3 scratch/script.py < /dev/null` 干净调用。
 
 ## 9. 停止条件
 

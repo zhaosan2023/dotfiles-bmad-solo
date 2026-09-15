@@ -21,34 +21,51 @@
 
 ---
 
-## 🚀 快速开始
+## 🚀 快速开始与部署
 
-项目提供了一键安装脚本 `bs.sh`，默认自动挂载 **V4** 版本的插件与规则到系统环境：
+本项目采用**双层分离物理镜像架构 (Physical Mirror Architecture)**：
+无论将仓库克隆在本地何处（如 `~/project/dotfiles-bmad-solo` 或 `~/dotfiles-bmad-solo`），安装引擎均会将插件与规则以**实体物理目录**（通过 `rsync -a --delete`）部署至 `~/.gemini/config/`。这彻底消除了符号链接在 Antigravity 多工作区安全沙箱下的跨域越界权限阻断，确保在任意业务项目（如 `orignalscanner`、`watchhusm` 等）中均能 100% 免鉴权高速直读并遵循终端防挂起守恒律。
+
+### 方式 A：一键远程免克隆安装 (One-Line Quick Bootstrap)
+
+在任意全新主机上运行：
 
 ```bash
-# 克隆仓库
-git clone git@github.com:zhaosan2023/dotfiles-bmad-solo.git
-cd dotfiles-bmad-solo
+curl -fsSL https://raw.githubusercontent.com/zhaosan2023/dotfiles-bmad-solo/main/install.sh | bash
+```
 
-# 默认安装当前主力 V4 版本（开箱即用最新）
+### 方式 B：本地 GitOps 部署与更新
+
+```bash
+# 1. 克隆仓库至任意路径
+git clone git@github.com:zhaosan2023/dotfiles-bmad-solo.git ~/project/dotfiles-bmad-solo
+cd ~/project/dotfiles-bmad-solo
+
+# 2. 物理部署当前主力 V4 版本（开箱即用）
 ./bs.sh
 
-# 查看当前运行版本、分支与软链状态
+# 3. 查看全局安装状态、Commit、时间戳与 Manifest 审计
 ./bs.sh --status
 
-# 查看历史 Release Tags（如 v4.0.0, v4.1.0 等）
+# 4. 一键从 GitHub 拉取最新提交并自动物理同步到全局
+./bs.sh --update
+
+# 5. 查看历史 Release Tags（如 v4.0.0, v4.1.0 等）
 ./bs.sh --tags
 
-# 精准回退到指定历史小版本并即刻生效
-./bs.sh --tag v4.0.0
+# 6. 精准回退到指定历史小版本并物理激活
+./bs.sh --tag v4.1.0
 
-# 一键返回 main 主线最新版本
+# 7. 随时一键切回 main 主线最新物理镜像
 ./bs.sh --latest
 
-# 如需切换安装历史 V3 架构基线
+# 8. 模拟执行（无任何写入副作用）
+./bs.sh --dry-run
+
+# 9. 切换安装历史 V3 架构基线
 ./bs.sh v3
 
-# 卸载插件与规则
+# 10. 卸载全局插件与规则
 ./bs.sh --uninstall
 ```
 

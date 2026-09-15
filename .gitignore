@@ -2,6 +2,7 @@
 *.bak*
 *.tmp
 .versions/
+docs/tmp-*
 
 # Python cache
 __pycache__/

@@ -100,6 +100,14 @@ Ops 同样需要经历影响分析、前置验证与 QA 审查，但其验证环
      - 严禁在 Shell 终端使用 `cat << 'EOF'`、`echo >`、`python3 -c "open().write()"` 等脚本创建或修改文件。文件操作必须且只能调用 IDE 原生文件系统工具（`write_to_file`、`replace_file_content`），0ms 同步落盘，切断终端挂起。
    - **收敛锁 4：最小充分断言锁 (Minimal Sufficient Assertion Lock)**：
      - 纯 Git 协同任务以 `git diff` 审查排除敏感信息与脏文件为最小充分通过证据，严禁擅自启动容器执行无意义的依赖扫描。
+3. **终端执行五大守恒铁律 (Penta-Invariants Enforcement)**：
+   - 任何阶段发起终端命令，必须严格遵从 `bmad-constitution.md` 8.5 节五大守恒铁律：
+     1. **单飞排队强锁 (Single-Flight Monad Lock)**：严禁在未终结或未认领在途后台命令时发起任何新命令，彻底杜绝孤儿任务与并发死锁。
+     2. **零例外全量超时 (Universal Bounded Timeout)**：所有命令（含轻量探测如 `docker inspect`、`docker ps`、`ls`）一律前缀 `timeout 15s`（或测试/构建 `timeout 30s`）。
+     3. **前台同步强锁 (Foreground Synchronization Lock)**：`WaitMsBeforeAsync` 一律设为 `10000ms`（10秒上限）。
+     4. **输入封闭公理 (Fail-Closed Stdin)**：一律尾缀 `< /dev/null` 并附加静默/非交互参数。
+     5. **工具正交公理 (Tool Orthogonality Axiom)**：排查脚本必须先写入 `scratch/` 文件再单行调用，严禁终端拼接 `python3 -c`。
+4. **验证与交付纪律**：
    - **禁止凭空承诺测试通过**：未在终端实际运行并通过相关命令前，严禁将任务标记为 `[x]` 或声称已完成。
    - **Code Review 必选门禁**：M/L 级任务提交前必须显式进行一次 Reviewer 模式漏洞筛查。
    - **重复失败门禁**：同类修复连续失败两次，必须停止局部打补丁，重新审查架构假设和问题定义。

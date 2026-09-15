@@ -9,13 +9,16 @@ NC='\033[0m' # No Color
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GEMINI_CONFIG_DIR="$HOME/.gemini/config"
-TARGET_DIR="$GEMINI_CONFIG_DIR/skills/bmad-solo"
+PLUGIN_DIR="$GEMINI_CONFIG_DIR/plugins"
+TARGET_DIR="$PLUGIN_DIR/bmad-suite"
+RULES_DIR="$GEMINI_CONFIG_DIR/rules"
 
 DRY_RUN=0
 UNINSTALL=0
 VERSION="v4"
 SWITCH_TAG=""
 SWITCH_LATEST=0
+UPDATE_REMOTE=0
 
 show_help() {
     echo -e "${YELLOW}Usage:${NC} $0 [options] [v3 | v4]"
@@ -24,8 +27,9 @@ show_help() {
     echo "  v4, 4, --v4       Install/activate BMAD-Solo V4 (Default active suite)"
     echo "  v3, 3, --v3       Install/activate BMAD-Solo V3 (Historical baseline)"
     echo ""
-    echo -e "${GREEN}GitOps Version Inspection & Rollback:${NC}"
-    echo "  --status, -s      Show current Git branch, commit, active tag, and symlinks"
+    echo -e "${GREEN}GitOps Version Inspection & Updates:${NC}"
+    echo "  --update, -u      Fetch & pull latest from origin and deploy physical mirror"
+    echo "  --status, -s      Show Git status, deployed mirror status, commit, and manifest"
     echo "  --tags, -l        List all available release tags (v4.0.0, v4.1.0, etc.)"
     echo "  --tag <tag>, -t   Checkout specific release tag and activate immediately"
     echo "  --latest          Switch back to main branch (latest V4)"
@@ -41,9 +45,11 @@ show_status() {
     echo -e "${YELLOW}======================================================${NC}"
     echo -e "${YELLOW} BMAD-Solo Environment & Version Status ${NC}"
     echo -e "${YELLOW}======================================================${NC}"
+    CURRENT_SHORT_COMMIT=""
     if git -C "$SCRIPT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
         BRANCH=$(git -C "$SCRIPT_DIR" branch --show-current 2>/dev/null || echo "")
         COMMIT=$(git -C "$SCRIPT_DIR" log -1 --format="%h (%s)" 2>/dev/null || echo "Unknown")
+        CURRENT_SHORT_COMMIT=$(git -C "$SCRIPT_DIR" rev-parse --short HEAD 2>/dev/null || echo "")
         EXACT_TAG=$(git -C "$SCRIPT_DIR" describe --tags --exact-match 2>/dev/null || echo "")
         TAG_DESC=$(git -C "$SCRIPT_DIR" describe --tags 2>/dev/null || echo "No tag")
         
@@ -51,6 +57,7 @@ show_status() {
             BRANCH="[HEAD detached at ${EXACT_TAG:-$TAG_DESC}]"
         fi
         
+        echo -e "Git Repo Path      : ${GREEN}$SCRIPT_DIR${NC}"
         echo -e "Git Branch / State : ${GREEN}$BRANCH${NC}"
         echo -e "Git Commit         : $COMMIT"
         if [ -n "$EXACT_TAG" ]; then
@@ -62,32 +69,54 @@ show_status() {
         echo -e "Git Repository     : ${RED}Not inside a git repository${NC}"
     fi
     
-    echo -e "\nInstalled Symlinks:"
+    echo -e "\nInstalled Global Runtime Environment:"
     TARGET_PLUGIN="$GEMINI_CONFIG_DIR/plugins/bmad-suite"
     if [ -L "$TARGET_PLUGIN" ]; then
         DEST=$(readlink "$TARGET_PLUGIN")
-        if [[ "$DEST" == *".versions/"* ]]; then
-            ACTIVE_TAG=$(echo "$DEST" | sed -E 's|.*/\.versions/([^/]+)/.*|\1|')
-            echo -e "  Active Mode : ${YELLOW}Isolated Snapshot Tag: $ACTIVE_TAG${NC}"
+        echo -e "  Plugin Mode : ${YELLOW}Legacy Symlink${NC} (⚠️ Subject to cross-workspace permission barriers)"
+        echo -e "  Plugin Path : $TARGET_PLUGIN -> $DEST"
+        echo -e "  Action      : ${YELLOW}Run './bs.sh' to upgrade to physical mirror${NC}"
+    elif [ -d "$TARGET_PLUGIN" ]; then
+        MANIFEST="$TARGET_PLUGIN/.manifest.json"
+        if [ -f "$MANIFEST" ]; then
+            INSTALLED_VER=$(python3 -c "import json; print(json.load(open('$MANIFEST')).get('installed_version', 'Unknown'))" 2>/dev/null || echo "Unknown")
+            DEPLOY_COMMIT=$(python3 -c "import json; print(json.load(open('$MANIFEST')).get('source_commit', ''))" 2>/dev/null || echo "")
+            DEPLOY_TIME=$(python3 -c "import json; print(json.load(open('$MANIFEST')).get('deploy_timestamp', 'Unknown'))" 2>/dev/null || echo "Unknown")
+            SOURCE_REPO=$(python3 -c "import json; print(json.load(open('$MANIFEST')).get('source_repository', 'Unknown'))" 2>/dev/null || echo "Unknown")
+            
+            echo -e "  Plugin Mode : ${GREEN}Physical Mirror (Active Sandbox Safe)${NC}"
+            echo -e "  Version     : $INSTALLED_VER"
+            echo -e "  Deployed At : $DEPLOY_TIME"
+            echo -e "  Source Repo : $SOURCE_REPO"
+            echo -e "  Plugin Path : $TARGET_PLUGIN"
+            
+            if [ -n "$CURRENT_SHORT_COMMIT" ] && [ -n "$DEPLOY_COMMIT" ]; then
+                if [ "$CURRENT_SHORT_COMMIT" = "$DEPLOY_COMMIT" ]; then
+                    echo -e "  Sync Status : ${GREEN}[✔] UP-TO-DATE with local HEAD ($DEPLOY_COMMIT)${NC}"
+                else
+                    echo -e "  Sync Status : ${YELLOW}[!] STALE (Deployed: $DEPLOY_COMMIT, Local HEAD: $CURRENT_SHORT_COMMIT)${NC}"
+                    echo -e "                ${YELLOW}Run './bs.sh' to synchronize local changes.${NC}"
+                fi
+            fi
         else
-            echo -e "  Active Mode : ${GREEN}Rolling Latest (main)${NC}"
+            echo -e "  Plugin Mode : ${GREEN}Physical Directory (No Manifest)${NC}"
+            echo -e "  Plugin Path : $TARGET_PLUGIN"
+            echo -e "  Sync Status : ${YELLOW}[!] Run './bs.sh' to generate deployment manifest.${NC}"
         fi
-        echo -e "  Plugin      : $TARGET_PLUGIN -> ${GREEN}$DEST${NC}"
-    elif [ -e "$TARGET_PLUGIN" ]; then
-        echo -e "  Plugin      : $TARGET_PLUGIN (${YELLOW}Regular directory, not symlink${NC})"
     else
-        echo -e "  Plugin      : ${RED}Not installed${NC}"
+        echo -e "  Plugin Path : ${RED}Not installed${NC}"
     fi
 
+    echo -e "\nGlobal Rules Status:"
     for RULE in bmad-constitution.md bmad-core.md; do
         RULE_PATH="$GEMINI_CONFIG_DIR/rules/$RULE"
         if [ -L "$RULE_PATH" ]; then
             DEST=$(readlink "$RULE_PATH")
-            echo -e "  Rule    : $RULE -> ${GREEN}$DEST${NC}"
-        elif [ -e "$RULE_PATH" ]; then
-            echo -e "  Rule    : $RULE (${YELLOW}Regular file${NC})"
+            echo -e "  Rule : $RULE -> ${YELLOW}$DEST (Legacy symlink)${NC}"
+        elif [ -f "$RULE_PATH" ]; then
+            echo -e "  Rule : $RULE -> ${GREEN}$RULE_PATH (Physical File)${NC}"
         else
-            echo -e "  Rule    : $RULE (${RED}Missing${NC})"
+            echo -e "  Rule : $RULE -> ${RED}Missing${NC}"
         fi
     done
     echo -e "${YELLOW}======================================================${NC}"
@@ -100,6 +129,7 @@ list_tags() {
     if git -C "$SCRIPT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
         git -C "$SCRIPT_DIR" --no-pager tag -l -n1
         echo -e "\n${GREEN}Tip:${NC} Rollback to any tag: ./bs.sh --tag <tag>"
+        echo -e "     Update from remote: ./bs.sh --update"
         echo -e "     Return to latest:   ./bs.sh --latest"
     else
         echo -e "${RED}Error: Not a git repository.${NC}"
@@ -129,6 +159,10 @@ while [[ $# -gt 0 ]]; do
             fi
             SWITCH_TAG="$2"
             shift 2
+            ;;
+        --update|-u)
+            UPDATE_REMOTE=1
+            shift
             ;;
         --latest)
             SWITCH_LATEST=1
@@ -173,6 +207,30 @@ if [ $UNINSTALL -eq 1 ]; then
     exit 0
 fi
 
+if [ $UPDATE_REMOTE -eq 1 ]; then
+    echo -e "${YELLOW}======================================================${NC}"
+    echo -e "${YELLOW} GitOps: Fetching & Pulling Latest from GitHub...     ${NC}"
+    echo -e "${YELLOW}======================================================${NC}"
+    if ! git -C "$SCRIPT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        echo -e "${RED}Error: $SCRIPT_DIR is not a git repository.${NC}"
+        exit 1
+    fi
+    
+    echo -e "  [i] Fetching latest commits and tags from origin..."
+    git -C "$SCRIPT_DIR" fetch --tags origin
+    
+    CURRENT_BRANCH=$(git -C "$SCRIPT_DIR" branch --show-current 2>/dev/null || echo "")
+    if [ -n "$CURRENT_BRANCH" ] && [ "$CURRENT_BRANCH" != "main" ]; then
+        echo -e "  [i] Switching branch from $CURRENT_BRANCH to main..."
+        git -C "$SCRIPT_DIR" checkout main
+    fi
+    
+    echo -e "  [i] Pulling latest changes on branch 'main'..."
+    git -C "$SCRIPT_DIR" pull --ff-only origin main
+    echo -e "${GREEN}[✔] Local repository is up to date with origin/main.${NC}\n"
+    SWITCH_LATEST=1
+fi
+
 if [ -n "$SWITCH_TAG" ]; then
     echo -e "${YELLOW}======================================================${NC}"
     echo -e "${YELLOW} GitOps: Activating Release Tag: $SWITCH_TAG (Shadow Snapshot)... ${NC}"
@@ -210,7 +268,7 @@ elif [ $SWITCH_LATEST -eq 1 ]; then
     SOURCE_SUITE="$SCRIPT_DIR/bmad-suite-v4"
     VERSION_TITLE="BMAD-Solo V4 (Analyst Closed-Loop + /ana-solo + 4 Convergence Locks)"
     COMMAND_TIPS="  • /bmad-solo  : V4 Engineering Loop (with Analyst Gate)\n  • /ana-solo   : Dedicated Deep Analysis Channel"
-    echo -e "${GREEN}[✔] Successfully returned to main branch (latest V4)${NC}\n"
+    echo -e "${GREEN}[✔] Successfully selected main branch (latest V4)${NC}\n"
 elif [ "$VERSION" = "v3" ]; then
     SOURCE_SUITE="$SCRIPT_DIR/bmad-suite-v3"
     VERSION_TITLE="BMAD-Solo V3 (Stable Baseline)"
@@ -236,38 +294,56 @@ echo -e "${YELLOW} Bootstrapping $VERSION_TITLE... ${NC}"
 echo -e "${YELLOW}======================================================${NC}"
 
 if [ $DRY_RUN -eq 1 ]; then
-    echo -e "${YELLOW}[DRY-RUN MODE] No files will be modified.${NC}"
+    echo -e "${YELLOW}[DRY-RUN MODE] Actions will be simulated without modifications.${NC}"
 fi
 
-# We install into the plugins folder
-PLUGIN_DIR="$GEMINI_CONFIG_DIR/plugins"
-TARGET_DIR="$PLUGIN_DIR/bmad-suite"
-
-if [ $DRY_RUN -eq 0 ]; then mkdir -p "$PLUGIN_DIR"; fi
-
-if [ -e "$TARGET_DIR" ] && [ ! -L "$TARGET_DIR" ]; then
-    echo -e "${RED}Error: $TARGET_DIR exists and is not a symlink. Please remove it manually to avoid conflicts.${NC}"
-    exit 1
-fi
-
-echo -e "${YELLOW}Linking $VERSION_TITLE Plugin to namespace...${NC}"
+echo -e "${YELLOW}Deploying $VERSION_TITLE Physical Mirror to namespace...${NC}"
 
 if [ $DRY_RUN -eq 1 ]; then
-    echo "[DRY-RUN] Would create symlink: $TARGET_DIR -> $SOURCE_SUITE"
-    echo "[DRY-RUN] Would link rules into $GEMINI_CONFIG_DIR/rules/"
+    echo "[DRY-RUN] Would remove any legacy symlinks at: $TARGET_DIR"
+    echo "[DRY-RUN] Would sync physical directory: $SOURCE_SUITE/ -> $TARGET_DIR/"
+    echo "[DRY-RUN] Would copy rules into $RULES_DIR/"
+    echo "[DRY-RUN] Would generate deployment manifest: $TARGET_DIR/.manifest.json"
 else
-    # Remove existing symlink
-    rm -f "$TARGET_DIR"
+    # Remove legacy symlinks or old target if it was a symlink
+    if [ -L "$TARGET_DIR" ] || [ -f "$TARGET_DIR" ]; then
+        rm -rf "$TARGET_DIR"
+    fi
     rm -f "$GEMINI_CONFIG_DIR/skills/bmad-solo"
+    mkdir -p "$TARGET_DIR" "$RULES_DIR"
 
-    ln -s "$SOURCE_SUITE" "$TARGET_DIR"
-    echo -e "  [✔] Linked plugin namespace ($VERSION) -> $SOURCE_SUITE"
-    
-    # Explicitly link rules so they appear in the Customizations UI
-    mkdir -p "$GEMINI_CONFIG_DIR/rules"
-    ln -sf "$SOURCE_SUITE/rules/bmad-constitution.md" "$GEMINI_CONFIG_DIR/rules/bmad-constitution.md"
-    ln -sf "$SOURCE_SUITE/rules/bmad-core.md" "$GEMINI_CONFIG_DIR/rules/bmad-core.md"
-    echo -e "  [✔] Linked global rules to $GEMINI_CONFIG_DIR/rules/"
+    # Physical mirror of plugin directory
+    rsync -a --delete "$SOURCE_SUITE/" "$TARGET_DIR/"
+    echo -e "  [✔] Mirrored plugin contents ($VERSION) -> $TARGET_DIR (Physical Directory)"
+
+    # Physical copy of global rules (remove old symlinks first)
+    for RULE in bmad-constitution.md bmad-core.md; do
+        RULE_TARGET="$RULES_DIR/$RULE"
+        rm -f "$RULE_TARGET"
+        if [ -f "$SOURCE_SUITE/rules/$RULE" ]; then
+            cp -f "$SOURCE_SUITE/rules/$RULE" "$RULE_TARGET"
+            echo -e "  [✔] Copied rule: $RULE -> $RULES_DIR/ (Physical File)"
+        fi
+    done
+
+    # Write deployment manifest for GitOps auditing
+    COMMIT_HASH=$(git -C "$SCRIPT_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")
+    COMMIT_FULL=$(git -C "$SCRIPT_DIR" rev-parse HEAD 2>/dev/null || echo "unknown")
+    COMMIT_DATE=$(git -C "$SCRIPT_DIR" log -1 --format="%cd" --date=iso 2>/dev/null || echo "unknown")
+    DEPLOY_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+    cat <<EOF > "$TARGET_DIR/.manifest.json"
+{
+  "installed_version": "$VERSION_TITLE",
+  "source_repository": "$SCRIPT_DIR",
+  "source_commit": "$COMMIT_HASH",
+  "source_commit_full": "$COMMIT_FULL",
+  "commit_date": "$COMMIT_DATE",
+  "deploy_timestamp": "$DEPLOY_TIME",
+  "deploy_type": "physical_mirror"
+}
+EOF
+    echo -e "  [✔] Generated deployment manifest: $TARGET_DIR/.manifest.json"
 fi
 
 echo -e "\n${GREEN}======================================================${NC}"
@@ -280,8 +356,9 @@ echo -e "1. Open your Antigravity IDE."
 echo -e "2. Execute: 'Developer: Reload Window'."
 echo -e "3. Version & Rollback management:
    • Check active version:  ./bs.sh --status
+   • Pull remote updates:   ./bs.sh --update
    • View release tags:     ./bs.sh --tags
-   • Rollback to tag:       ./bs.sh --tag <tag> (e.g. ./bs.sh --tag v4.0.0)
+   • Rollback to tag:       ./bs.sh --tag <tag> (e.g. ./bs.sh --tag v4.1.0)
    • Return to latest:      ./bs.sh --latest
    • Switch major version:  ./bs.sh v3 | ./bs.sh v4"
 echo -e ""

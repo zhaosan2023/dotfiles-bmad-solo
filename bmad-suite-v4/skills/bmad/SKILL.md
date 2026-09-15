@@ -118,7 +118,14 @@ Read project context
 Run `architecture-preflight` for all M/L tasks.
 S tasks only if fast-path criteria failed.
 
-### During Implementation
+### During Implementation & Terminal Operations
+Enforce the **Terminal Execution Penta-Invariants** (`bmad-constitution.md` 8.5) on every `run_command`:
+- **Single-Flight Monad Lock**: Never launch a command while any background task is in-flight.
+- **Universal Bounded Timeout**: Always prepend `timeout 15s` (or `timeout 30s`), zero exemptions.
+- **Foreground Synchronization Lock**: `WaitMsBeforeAsync: 10000ms`.
+- **Fail-Closed Stdin**: Append `< /dev/null` and non-interactive flags.
+- **Tool Orthogonality Axiom**: VFS monopoly; diagnostic scripts write to `scratch/`, never inline `python -c`.
+
 Re-run architecture check when any of these occur:
 - Public interface changes
 - New dependency or cross-layer call introduced
@@ -140,10 +147,11 @@ A code task is complete only when:
 - Acceptance criteria are satisfied.
 - Relevant implementation is finished.
 - Behavioral verification has real output strictly congruent with modification footprint (or verified clean diff for pure sync tasks).
-- Downstream verification locks (Footprint, Affinity, VFS, Minimal Assertion) and Execution Monad invariants hold.
+- Downstream verification locks (Footprint, Affinity, Tool Orthogonality, Minimal Assertion) and Terminal Execution Penta-Invariants hold.
 - Applicable architecture invariants have evidence (M/L).
 - No blocking architecture conflict remains (M/L).
 - Deviations are approved and recorded (M/L).
 - Claimed task state matches repository facts (M/L).
 - Reviewer/QA has inspected the Diff independently.
 - Unverified obligations and residual risks are reported.
+

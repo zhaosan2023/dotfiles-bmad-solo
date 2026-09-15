@@ -1,0 +1,143 @@
+name: BMAD Suite CI & Security Gate
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint-and-audit:
+    name: Lint & Security Contract Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Shell Syntax Verification
+        run: |
+          echo "Verifying Bash syntax..."
+          bash -n bs.sh
+          if [ -f install.sh ]; then
+            bash -n install.sh
+          fi
+          echo "[✔] Bash syntax clean!"
+
+      - name: Validate Plugin JSON Structure
+        run: |
+          python3 -c "
+          import json, glob, sys
+          files = glob.glob('**/plugin.json', recursive=True)
+          if not files:
+              print('Error: No plugin.json found!')
+              sys.exit(1)
+          for p in files:
+              with open(p) as f:
+                  data = json.load(f)
+              print(f'[✔] Valid plugin JSON: {p} (name: {data.get(\"name\")})')
+          "
+
+      - name: Verify Anti-Hang Terminal Penta-Invariants
+        run: |
+          echo "Auditing anti-hang contract in skills, constitution & core..."
+          # Single-Flight Monad Lock
+          grep -q "Single-Flight" bmad-suite-v4/skills/ana-solo/SKILL.md
+          grep -q "单飞排队强锁" bmad-suite-v4/rules/bmad-constitution.md
+          grep -q "Single-Flight" bmad-suite-v4/rules/bmad-core.md
+          grep -q "Single-Flight" bmad-suite-v4/skills/bmad/SKILL.md
+          # Foreground Synchronization Lock (10000ms)
+          grep -q "WaitMsBeforeAsync" bmad-suite-v4/skills/ana-solo/SKILL.md
+          grep -q "10000ms" bmad-suite-v4/skills/ana-solo/SKILL.md
+          grep -q "WaitMsBeforeAsync" bmad-suite-v4/rules/bmad-constitution.md
+          grep -q "10000ms" bmad-suite-v4/rules/bmad-constitution.md
+          # Universal Bounded Timeout
+          grep -q "timeout 15s" bmad-suite-v4/skills/ana-solo/SKILL.md
+          grep -q "timeout 15s" bmad-suite-v4/rules/bmad-constitution.md
+          # Fail-Closed Stdin
+          grep -q "< /dev/null" bmad-suite-v4/skills/ana-solo/SKILL.md
+          grep -q "< /dev/null" bmad-suite-v4/rules/bmad-constitution.md
+          # Tool Orthogonality Axiom
+          grep -q "Tool Orthogonality" bmad-suite-v4/skills/ana-solo/SKILL.md
+          grep -q "工具正交公理" bmad-suite-v4/rules/bmad-constitution.md
+          echo "[✔] All Terminal Execution Penta-Invariants Verified!"
+
+  test-physical-mirror-install:
+    name: Physical Mirror Installation & GitOps Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Test Installation into Sandbox Home
+        run: |
+          # Use a clean sandbox home
+          TEST_HOME="$RUNNER_TEMP/test_home"
+          mkdir -p "$TEST_HOME"
+          export HOME="$TEST_HOME"
+
+          # 1. Test Dry-Run Mode
+          echo "=== Testing Dry-Run Mode ==="
+          ./bs.sh --dry-run
+          if [ -d "$HOME/.gemini" ]; then
+            echo "FAILED: Dry-run should not create files!"
+            exit 1
+          fi
+
+          # 2. Test Live Physical Mirror Installation
+          echo "=== Testing Physical Mirror Installation ==="
+          ./bs.sh
+
+          TARGET_PLUGIN="$HOME/.gemini/config/plugins/bmad-suite"
+          TARGET_MANIFEST="$TARGET_PLUGIN/.manifest.json"
+          RULE_CONST="$HOME/.gemini/config/rules/bmad-constitution.md"
+          RULE_CORE="$HOME/.gemini/config/rules/bmad-core.md"
+
+          # Assert Physical Directory (NOT Symlink!)
+          if [ -L "$TARGET_PLUGIN" ]; then
+            echo "FAILED: $TARGET_PLUGIN is a symlink! Must be a physical directory."
+            exit 1
+          fi
+          if [ ! -d "$TARGET_PLUGIN" ]; then
+            echo "FAILED: $TARGET_PLUGIN physical directory does not exist!"
+            exit 1
+          fi
+
+          # Assert Manifest Exists and is Valid
+          if [ ! -f "$TARGET_MANIFEST" ]; then
+            echo "FAILED: Manifest $TARGET_MANIFEST does not exist!"
+            exit 1
+          fi
+          python3 -c "
+          import json
+          with open('$TARGET_MANIFEST') as f:
+              m = json.load(f)
+          assert m.get('deploy_type') == 'physical_mirror', 'Invalid deploy_type'
+          assert 'source_commit' in m, 'Missing source_commit'
+          print('Manifest verification passed:', m)
+          "
+
+          # Assert Rules are Physical Files
+          for r in "$RULE_CONST" "$RULE_CORE"; do
+            if [ -L "$r" ]; then
+              echo "FAILED: $r is a symlink! Must be a physical file."
+              exit 1
+            fi
+            if [ ! -f "$r" ]; then
+              echo "FAILED: Rule $r does not exist!"
+              exit 1
+            fi
+          done
+
+          # 3. Test Status Inspection
+          echo "=== Testing Status Inspection ==="
+          ./bs.sh --status
+
+          # 4. Test Latest Switch
+          echo "=== Testing Latest Switch ==="
+          ./bs.sh --latest
+
+          echo "[✔] All Physical Mirror & GitOps Tests PASSED!"
