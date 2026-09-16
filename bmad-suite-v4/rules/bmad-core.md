@@ -103,7 +103,7 @@ Ops 同样需要经历影响分析、前置验证与 QA 审查，但其验证环
 3. **终端执行五大守恒铁律 (Penta-Invariants Enforcement)**：
    - 任何阶段发起终端命令，必须严格遵从 `bmad-constitution.md` 8.5 节五大守恒铁律：
      1. **单飞排队强锁 (Single-Flight Monad Lock)**：严禁在未终结或未认领在途后台命令时发起任何新命令，彻底杜绝孤儿任务与并发死锁。
-     2. **零例外全量超时 (Universal Bounded Timeout)**：所有命令（含轻量探测如 `docker inspect`、`docker ps`、`ls`）一律前缀 `timeout 15s`（或测试/构建 `timeout 30s`）。
+     2. **零例外全量超时与弹性分级 (Universal Bounded Timeout with Duration Elasticity)**：所有命令无例外前缀 `timeout`。三级弹性分级：探测级 `timeout 15s`（docker inspect, git status）；验证级 `timeout 30s`（单元测试, lint）；构建级 `timeout 600s`（cargo build --release, docker compose build, npm install）并必须配合 `schedule` 看门狗每 120 秒检查进度。
      3. **前台同步强锁 (Foreground Synchronization Lock)**：`WaitMsBeforeAsync` 一律设为 `10000ms`（10秒上限）。
      4. **输入封闭公理 (Fail-Closed Stdin)**：一律尾缀 `< /dev/null` 并附加静默/非交互参数。
      5. **工具正交公理 (Tool Orthogonality Axiom)**：排查脚本必须先写入 `scratch/` 文件再单行调用，严禁终端拼接 `python3 -c`。

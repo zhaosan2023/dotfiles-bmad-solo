@@ -82,8 +82,12 @@ Whenever `/ana-solo` executes system exploration, log inspection, or diagnostic 
 1. **Single-Flight Monad Lock (单飞排队强锁)**:
    - **Strictly Forbidden**: NEVER launch a new `run_command` while ANY background task is still running or uncollected.
    - If a background task is pending, you must wait for its completion callback, monitor it via `manage_task(status)`, or actively terminate it via `manage_task(kill)` before initiating any new command. Zero task collisions allowed!
-2. **Universal Bounded Timeout (零例外全量超时)**:
-   - **Strictly Forbidden**: NEVER execute any naked terminal command. ALL commands (including `docker inspect`, `docker ps`, `git status`, `ls`, etc.) MUST be explicitly prepended with `timeout 15s <cmd>` (or `timeout 30s <cmd>` for heavy database/build tasks). No command is exempt!
+2. **Universal Bounded Timeout with Duration Elasticity (零例外全量超时与弹性分级)**:
+   - **Strictly Forbidden**: NEVER execute any naked terminal command. ALL commands MUST be explicitly prepended with `timeout` using three-tier duration elasticity:
+     - **Tier 1 — Probe (15s)**: Status queries and lightweight ops (`docker inspect`, `docker ps`, `git status`, `ls`, etc.) → `timeout 15s <cmd>`.
+     - **Tier 2 — Verify (30s)**: Unit tests, lint, type checks (`pytest`, `cargo test -p xxx`, `npm test`) → `timeout 30s <cmd>`.
+     - **Tier 3 — Build (600s)**: Full compilation, Docker image builds, dependency installs (`docker compose build`, `cargo build --release`, `npm install`) → `timeout 600s <cmd>`, with mandatory safety harness: `schedule` watchdog every 120s, `WaitMsBeforeAsync: 5000ms`, kill on 2 consecutive zero-progress checks.
+   - No command is exempt!
 3. **Foreground Synchronization Lock (前台同步强锁)**:
    - For all exploratory and diagnostic commands, **`WaitMsBeforeAsync` MUST be set to `10000ms` (10 seconds)**.
    - NEVER use 5000ms or lower for fast inspection tasks to eliminate in-flight event drop deadlocks.

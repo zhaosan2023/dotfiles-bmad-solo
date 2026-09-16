@@ -147,10 +147,15 @@ alwaysApply: true
 1. **铁律一：单飞排队强锁（Single-Flight Monad Lock）**
    - **绝对禁止并发命令**：在前序任何后台命令（如 `task-xxx`）尚未完成、未收到系统通知或未显式注销前，**严禁发起任何新的 `run_command`**。
    - 存在在途任务时，必须通过 `manage_task(status)` 查看状态、等待其自然回调，或显式调用 `manage_task(kill)` 终结前置任务后，方可启动新任务。绝对禁止产生未认领、无监管的孤儿任务（Orphan Task）。
-2. **铁律二：零例外全量超时（Universal Bounded Timeout）**
-   - **绝对禁止裸命令执行**：任何命令（包括轻量探测如 `docker inspect`、`docker ps`、`git status`、`ls`、`find` 等），**必须一律显式包裹 Linux 内核级超时**，无任何例外：
-     - 探测、状态排查与轻量操作：`timeout 15s <cmd>`
-     - 单元测试、构建与数据库操作：`timeout 30s <cmd>`（超重型任务显式指定更长上限）。
+2. **铁律二：零例外全量超时与弹性分级（Universal Bounded Timeout with Duration Elasticity）**
+   - **绝对禁止裸命令执行**：任何命令**必须一律显式包裹 Linux 内核级超时**，无任何例外。按命令类型实行三级弹性分级：
+     - **Tier 1 — 探测级（15 秒）**：状态查询与轻量操作（`docker inspect`、`docker ps`、`git status`、`ls`、`find`、`cat`）一律 `timeout 15s <cmd>`。
+     - **Tier 2 — 验证级（30 秒）**：单模块测试、Lint、类型检查（`pytest tests/test_xxx.py`、`cargo test -p xxx`、`npm test`）一律 `timeout 30s <cmd>`。
+     - **Tier 3 — 构建级（600 秒 / 10 分钟上限）**：完整编译、Docker 镜像构建、全量依赖安装（`docker compose build`、`cargo build --release`、`npm install`）使用 `timeout 600s <cmd>`，并**必须**配合以下安全护栏：
+       1. 命令前在响应中声明："长编译任务，预计耗时 N 分钟，已设置 10 分钟硬超时"；
+       2. `WaitMsBeforeAsync` 设为 `5000ms`（合法放入后台）；
+       3. 必须设置 `schedule` 看门狗（每 120 秒检查一次 `manage_task(status)`）；
+       4. 若连续 2 次检查发现日志无新增输出，判定为异常卡死，立即 `manage_task(kill)` 终结。
    - 超时由操作系统直接发送 `SIGTERM` 强杀退出（退出码 124），确保在确定时限内必定返回输出，绝对禁止无界死等。
 3. **铁律三：前台同步强锁（Foreground Synchronization Lock）**
    - 除显式标记为长期后台守护进程（如 `npm run dev` 且显式声明 `IsDaemon: true`）外，**所有命令的 `WaitMsBeforeAsync` 必须一律设为 `10000ms`（10秒上限）**。
