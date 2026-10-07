@@ -12,6 +12,11 @@ GEMINI_CONFIG_DIR="$HOME/.gemini/config"
 PLUGIN_DIR="$GEMINI_CONFIG_DIR/plugins"
 TARGET_DIR="$PLUGIN_DIR/bmad-suite"
 RULES_DIR="$GEMINI_CONFIG_DIR/rules"
+ROO_GLOBAL_DIR="$HOME/.roo"
+ROO_RULES_DIR="$ROO_GLOBAL_DIR/rules"
+ROO_ANA_DIR="$ROO_GLOBAL_DIR/rules-ana-architect"
+ROO_ENG_DIR="$ROO_GLOBAL_DIR/rules-bmad-engineer"
+
 
 DRY_RUN=0
 UNINSTALL=0
@@ -119,6 +124,50 @@ show_status() {
             echo -e "  Rule : $RULE -> ${RED}Missing${NC}"
         fi
     done
+
+    echo -e "\nRoo Code Native Environment Status:"
+    if [ -d "$ROO_RULES_DIR" ]; then
+        echo -e "  Global Rules  : ${GREEN}$ROO_RULES_DIR${NC}"
+        for R in 01-bmad-constitution.md 02-bmad-core.md; do
+            if [ -f "$ROO_RULES_DIR/$R" ]; then
+                echo -e "    - $R: ${GREEN}[✔] Present${NC}"
+            else
+                echo -e "    - $R: ${RED}[✘] Missing${NC}"
+            fi
+        done
+    else
+        echo -e "  Global Rules  : ${RED}Not deployed${NC}"
+    fi
+
+    if [ -d "$ROO_ANA_DIR" ] && [ -f "$ROO_ANA_DIR/01-ana-solo-core.md" ]; then
+        echo -e "  Ana-Architect : ${GREEN}[✔] Rules active at $ROO_ANA_DIR${NC}"
+    else
+        echo -e "  Ana-Architect : ${RED}[✘] Missing rules${NC}"
+    fi
+
+    if [ -d "$ROO_ENG_DIR" ] && [ -f "$ROO_ENG_DIR/01-bmad-engineer-core.md" ]; then
+        echo -e "  Bmad-Engineer : ${GREEN}[✔] Rules active at $ROO_ENG_DIR${NC}"
+    else
+        echo -e "  Bmad-Engineer : ${RED}[✘] Missing rules${NC}"
+    fi
+
+    for ST_PATH in \
+        "$HOME/.antigravity-ide-server/data/User/globalStorage/rooveterinaryinc.roo-cline/settings" \
+        "$HOME/.vscode-server/data/User/globalStorage/rooveterinaryinc.roo-cline/settings" \
+        "$HOME/.config/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings"; do
+        if [ -f "$ST_PATH/custom_modes.yaml" ]; then
+            echo -e "  Global Modes  : ${GREEN}$ST_PATH/custom_modes.yaml${NC}"
+            python3 -c "
+import yaml
+try:
+    data = yaml.safe_load(open('$ST_PATH/custom_modes.yaml'))
+    modes = [m['slug'] for m in data.get('customModes', [])]
+    print('    - Modes:', ', '.join(modes))
+except Exception as e:
+    print('    - Error parsing YAML:', e)
+" 2>/dev/null || true
+        fi
+    done
     echo -e "${YELLOW}======================================================${NC}"
 }
 
@@ -202,6 +251,8 @@ if [ $UNINSTALL -eq 1 ]; then
         rm -rf "$GEMINI_CONFIG_DIR/plugins/bmad-suite"
         rm -f "$GEMINI_CONFIG_DIR/rules/bmad-constitution.md"
         rm -f "$GEMINI_CONFIG_DIR/rules/bmad-core.md"
+        rm -rf "$ROO_RULES_DIR" "$ROO_ANA_DIR" "$ROO_ENG_DIR"
+
         echo -e "${GREEN}Successfully uninstalled bmad-suite from $GEMINI_CONFIG_DIR${NC}"
     fi
     exit 0
@@ -297,6 +348,100 @@ if [ $DRY_RUN -eq 1 ]; then
     echo -e "${YELLOW}[DRY-RUN MODE] Actions will be simulated without modifications.${NC}"
 fi
 
+
+deploy_roo_suite() {
+    local ROO_SOURCE="$SOURCE_SUITE/roo"
+    if [ ! -d "$ROO_SOURCE" ]; then
+        return 0
+    fi
+    echo -e "\n${YELLOW}Deploying Roo Code BMAD-Solo V4.2 Native Environment...${NC}"
+    if [ $DRY_RUN -eq 1 ]; then
+        echo "[DRY-RUN] Would deploy Roo rules to $ROO_GLOBAL_DIR"
+        return 0
+    fi
+
+    mkdir -p "$ROO_RULES_DIR" "$ROO_ANA_DIR" "$ROO_ENG_DIR"
+
+    # 1. Sync global rules
+    if [ -d "$ROO_SOURCE/rules" ]; then
+        rsync -a --delete "$ROO_SOURCE/rules/" "$ROO_RULES_DIR/"
+        echo -e "  [✔] Mirrored Roo Global Rules -> $ROO_RULES_DIR/"
+    fi
+
+    # 2. Sync mode-specific rules
+    if [ -d "$ROO_SOURCE/rules-ana-architect" ]; then
+        rsync -a --delete "$ROO_SOURCE/rules-ana-architect/" "$ROO_ANA_DIR/"
+        echo -e "  [✔] Mirrored Roo Ana-Architect Rules -> $ROO_ANA_DIR/"
+    fi
+    if [ -d "$ROO_SOURCE/rules-bmad-engineer" ]; then
+        rsync -a --delete "$ROO_SOURCE/rules-bmad-engineer/" "$ROO_ENG_DIR/"
+        echo -e "  [✔] Mirrored Roo Bmad-Engineer Rules -> $ROO_ENG_DIR/"
+    fi
+
+    # 3. Safe merge/update custom_modes.yaml
+    local ROO_SETTINGS_SRC="$ROO_SOURCE/settings/custom_modes.yaml"
+    if [ -f "$ROO_SETTINGS_SRC" ]; then
+        local DETECTED_STORAGE_DIRS=(
+            "$HOME/.antigravity-ide-server/data/User/globalStorage/rooveterinaryinc.roo-cline/settings"
+            "$HOME/.vscode-server/data/User/globalStorage/rooveterinaryinc.roo-cline/settings"
+            "$HOME/.config/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings"
+        )
+        for ST_DIR in "${DETECTED_STORAGE_DIRS[@]}"; do
+            local PARENT_DIR
+            PARENT_DIR=$(dirname "$ST_DIR")
+            if [ -d "$PARENT_DIR" ] || [ -d "$ST_DIR" ]; then
+                mkdir -p "$ST_DIR"
+                local TARGET_YAML="$ST_DIR/custom_modes.yaml"
+                python3 - <<PY
+import yaml, os
+
+src_file = "$ROO_SETTINGS_SRC"
+dst_file = "$TARGET_YAML"
+
+with open(src_file, 'r', encoding='utf-8') as f:
+    src_data = yaml.safe_load(f) or {}
+
+src_modes = {m['slug']: m for m in src_data.get('customModes', [])}
+
+if os.path.exists(dst_file):
+    try:
+        with open(dst_file, 'r', encoding='utf-8') as f:
+            dst_data = yaml.safe_load(f) or {}
+    except Exception:
+        dst_data = {}
+else:
+    dst_data = {}
+
+existing_modes = dst_data.get('customModes', [])
+merged_modes = []
+seen_slugs = set()
+
+for m in existing_modes:
+    slug = m.get('slug')
+    if slug in src_modes:
+        merged_modes.append(src_modes[slug])
+        seen_slugs.add(slug)
+    else:
+        merged_modes.append(m)
+        seen_slugs.add(slug)
+
+for slug, m in src_modes.items():
+    if slug not in seen_slugs:
+        merged_modes.append(m)
+        seen_slugs.add(slug)
+
+dst_data['customModes'] = merged_modes
+
+with open(dst_file, 'w', encoding='utf-8') as f:
+    yaml.dump(dst_data, f, allow_unicode=True, sort_keys=False)
+
+print(f"  [✔] Merged Roo custom_modes.yaml -> {dst_file}")
+PY
+            fi
+        done
+    fi
+}
+
 echo -e "${YELLOW}Deploying $VERSION_TITLE Physical Mirror to namespace...${NC}"
 
 if [ $DRY_RUN -eq 1 ]; then
@@ -345,6 +490,9 @@ else
 EOF
     echo -e "  [✔] Generated deployment manifest: $TARGET_DIR/.manifest.json"
 fi
+
+deploy_roo_suite
+
 
 echo -e "\n${GREEN}======================================================${NC}"
 echo -e "${GREEN} $VERSION_TITLE successfully activated! ${NC}"
