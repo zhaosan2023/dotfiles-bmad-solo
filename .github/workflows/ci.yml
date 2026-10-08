@@ -2,142 +2,112 @@ name: BMAD Suite CI & Security Gate
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
   lint-and-audit:
-    name: Lint & Security Contract Audit
+    name: Configuration Contracts and Syntax
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PIP_DISABLE_PIP_VERSION_CHECK: '1'
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
-      - name: Shell Syntax Verification
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install YAML Dependency
+        run: timeout 600s python3 -m pip install --no-input 'PyYAML==6.0.1' < /dev/null
+
+      - name: Shell Syntax and Diff Verification
         run: |
-          echo "Verifying Bash syntax..."
-          bash -n bs.sh
-          if [ -f install.sh ]; then
-            bash -n install.sh
-          fi
-          echo "[✔] Bash syntax clean!"
+          timeout 15s bash -n bs.sh < /dev/null
+          timeout 15s bash -n install.sh < /dev/null
+          timeout 15s git --no-pager diff --check < /dev/null
 
       - name: Validate Plugin JSON Structure
         run: |
-          python3 -c "
-          import json, glob, sys
-          files = glob.glob('**/plugin.json', recursive=True)
+          timeout 30s python3 -c '
+          import json, pathlib
+          files = sorted(pathlib.Path(".").glob("**/plugin.json"))
           if not files:
-              print('Error: No plugin.json found!')
-              sys.exit(1)
-          for p in files:
-              with open(p) as f:
-                  data = json.load(f)
-              print(f'[✔] Valid plugin JSON: {p} (name: {data.get(\"name\")})')
-          "
+              raise SystemExit("No plugin.json found")
+          for path in files:
+              data = json.loads(path.read_text(encoding="utf-8"))
+              if not isinstance(data, dict) or not isinstance(data.get("name"), str):
+                  raise SystemExit(f"Invalid plugin structure: {path}")
+              print(f"Valid plugin JSON: {path}")
+          ' < /dev/null
 
-      - name: Verify Anti-Hang Terminal Penta-Invariants
-        run: |
-          echo "Auditing anti-hang contract in skills, constitution & core..."
-          # Single-Flight Monad Lock
-          grep -q "Single-Flight" bmad-suite-v4/skills/ana-solo/SKILL.md
-          grep -q "单飞排队强锁" bmad-suite-v4/rules/bmad-constitution.md
-          grep -q "Single-Flight" bmad-suite-v4/rules/bmad-core.md
-          grep -q "Single-Flight" bmad-suite-v4/skills/bmad/SKILL.md
-          # Foreground Synchronization Lock (10000ms)
-          grep -q "WaitMsBeforeAsync" bmad-suite-v4/skills/ana-solo/SKILL.md
-          grep -q "10000ms" bmad-suite-v4/skills/ana-solo/SKILL.md
-          grep -q "WaitMsBeforeAsync" bmad-suite-v4/rules/bmad-constitution.md
-          grep -q "10000ms" bmad-suite-v4/rules/bmad-constitution.md
-          # Universal Bounded Timeout
-          grep -q "timeout 15s" bmad-suite-v4/skills/ana-solo/SKILL.md
-          grep -q "timeout 15s" bmad-suite-v4/rules/bmad-constitution.md
-          # Fail-Closed Stdin
-          grep -q "< /dev/null" bmad-suite-v4/skills/ana-solo/SKILL.md
-          grep -q "< /dev/null" bmad-suite-v4/rules/bmad-constitution.md
-          # Tool Orthogonality Axiom
-          grep -q "Tool Orthogonality" bmad-suite-v4/skills/ana-solo/SKILL.md
-          grep -q "工具正交公理" bmad-suite-v4/rules/bmad-constitution.md
-          echo "[✔] All Terminal Execution Penta-Invariants Verified!"
+      - name: Validate Roo Configuration and Metadata Contracts
+        run: timeout 30s python3 scripts/validate-roo-contracts.py < /dev/null
+
+      - name: Test Configuration Contracts
+        run: timeout 30s python3 -m unittest discover -s tests/roo_contracts -p 'test_*.py' < /dev/null
 
   test-physical-mirror-install:
-    name: Physical Mirror Installation & GitOps Test
+    name: Isolated Asset Safety and GitOps Contracts
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      PIP_DISABLE_PIP_VERSION_CHECK: '1'
+      GIT_TERMINAL_PROMPT: '0'
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
 
-      - name: Test Installation into Sandbox Home
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install YAML Dependency
+        run: timeout 600s python3 -m pip install --no-input 'PyYAML==6.0.1' < /dev/null
+
+      - name: Test Asset Protection in Bounded Sequential Groups
+        shell: bash
         run: |
-          # Use a clean sandbox home
-          TEST_HOME="$RUNNER_TEMP/test_home"
-          mkdir -p "$TEST_HOME"
-          export HOME="$TEST_HOME"
-
-          # 1. Test Dry-Run Mode
-          echo "=== Testing Dry-Run Mode ==="
-          ./bs.sh --dry-run
-          if [ -d "$HOME/.gemini" ]; then
-            echo "FAILED: Dry-run should not create files!"
+          set -euo pipefail
+          shopt -s nullglob
+          groups=(tests/roo_distribution/test_asset_safety*.py)
+          if [ "${#groups[@]}" -eq 0 ]; then
+            printf '%s\n' 'Missing asset safety tests' >&2
             exit 1
           fi
-
-          # 2. Test Live Physical Mirror Installation
-          echo "=== Testing Physical Mirror Installation ==="
-          ./bs.sh
-
-          TARGET_PLUGIN="$HOME/.gemini/config/plugins/bmad-suite"
-          TARGET_MANIFEST="$TARGET_PLUGIN/.manifest.json"
-          RULE_CONST="$HOME/.gemini/config/rules/bmad-constitution.md"
-          RULE_CORE="$HOME/.gemini/config/rules/bmad-core.md"
-
-          # Assert Physical Directory (NOT Symlink!)
-          if [ -L "$TARGET_PLUGIN" ]; then
-            echo "FAILED: $TARGET_PLUGIN is a symlink! Must be a physical directory."
-            exit 1
-          fi
-          if [ ! -d "$TARGET_PLUGIN" ]; then
-            echo "FAILED: $TARGET_PLUGIN physical directory does not exist!"
-            exit 1
-          fi
-
-          # Assert Manifest Exists and is Valid
-          if [ ! -f "$TARGET_MANIFEST" ]; then
-            echo "FAILED: Manifest $TARGET_MANIFEST does not exist!"
-            exit 1
-          fi
-          python3 -c "
-          import json
-          with open('$TARGET_MANIFEST') as f:
-              m = json.load(f)
-          assert m.get('deploy_type') == 'physical_mirror', 'Invalid deploy_type'
-          assert 'source_commit' in m, 'Missing source_commit'
-          print('Manifest verification passed:', m)
-          "
-
-          # Assert Rules are Physical Files
-          for r in "$RULE_CONST" "$RULE_CORE"; do
-            if [ -L "$r" ]; then
-              echo "FAILED: $r is a symlink! Must be a physical file."
-              exit 1
-            fi
-            if [ ! -f "$r" ]; then
-              echo "FAILED: Rule $r does not exist!"
-              exit 1
-            fi
+          for group in "${groups[@]}"; do
+            timeout 30s python3 -m unittest discover -s tests/roo_distribution -p "${group##*/}" < /dev/null
           done
 
-          # 3. Test Status Inspection
-          echo "=== Testing Status Inspection ==="
-          ./bs.sh --status
+      - name: Test GitOps and Three IDE Layouts in Bounded Sequential Groups
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          groups=(tests/roo_distribution/test_gitops*.py)
+          if [ "${#groups[@]}" -eq 0 ]; then
+            printf '%s\n' 'Missing GitOps tests' >&2
+            exit 1
+          fi
+          for group in "${groups[@]}"; do
+            timeout 30s python3 -m unittest discover -s tests/roo_distribution -p "${group##*/}" < /dev/null
+          done
 
-          # 4. Test Latest Switch
-          echo "=== Testing Latest Switch ==="
-          ./bs.sh --latest
-
-          echo "[✔] All Physical Mirror & GitOps Tests PASSED!"
+      - name: State Verification Boundary
+        run: printf '%s\n' 'Isolated disk-asset tests do not verify Roo runtime loading or permission enforcement.'

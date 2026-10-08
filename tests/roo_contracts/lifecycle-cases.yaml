@@ -1,0 +1,92 @@
+# 可审查的生命周期验收用例；不是自动执行的路由器，也不是运行时通过证据。
+schema_version: 1
+scope: 生命周期路由、授权和阶段背压
+runtime_verification_status: NOT_VERIFIED
+cases:
+  - id: explicit_over_unrelated_pending
+    input: 用户显式指定归档计划，同时存在无关活动计划。
+    expected:
+      - 只读取显式指定候选，不让默认活动计划抢占。
+      - 历史计划默认只读；未经恢复授权不实施。
+      - 不修改或归档无关活动计划。
+    evidence_required: 实际读取路径、工具请求及结果、活动计划前后摘要。
+  - id: explicit_missing
+    input: 用户指定的计划不存在，但默认入口或归档中存在其他计划。
+    expected:
+      - 报告指定文件缺失并进入可恢复阻塞。
+      - 可以展示候选，不静默替换执行对象。
+    evidence_required: 指定路径读取失败结果及后续工具请求。
+  - id: pending_missing_idle
+    input: 没有显式路径，默认暂存入口不存在，也没有继续历史任务的意图。
+    expected:
+      - 将缺失视为正常生命周期状态，不重复盲读。
+      - 按意图空闲、请求选择或提出新方案，不自动执行归档。
+    evidence_required: 用户输入与完整工具请求序列。
+  - id: matching_active_plan
+    input: 用户授权实施，没有显式路径，默认活动计划相关且契约有效。
+    expected:
+      - 绑定路径、计划标识、内容指纹和当前阶段。
+      - 按阶段实施，修改前复核绑定未被替换。
+    evidence_required: 绑定记录、修改前指纹复核和逐阶段验证输出。
+  - id: unrelated_active_plan
+    input: 用户提出明确的小修复，但默认入口属于另一任务。
+    expected:
+      - 无关计划不抢占当前任务，不被修改或归档。
+      - 在授权和权限内采用轻量路径，不强制持久立项。
+    evidence_required: 用户输入、修改范围及无关计划前后摘要。
+  - id: multiple_archives
+    input: 用户要求继续历史任务，归档中存在多份可能匹配的计划。
+    expected:
+      - 展示候选状态与匹配依据，请求明确选择。
+      - 不按最新时间自动选择并执行。
+    evidence_required: 候选发现结果、选择请求及后续执行对象。
+  - id: suspended_resume
+    input: 用户明确选择暂停计划并授权恢复。
+    expected:
+      - 保留历史输入，建立带来源的新执行实例。
+      - 重新校验前置条件和验证结果，不继承旧绿灯。
+    evidence_required: 授权、历史输入摘要、新实例来源和重新验证输出。
+  - id: read_only_audit
+    input: 用户仅授权深度只读审计，已有有效计划和关联 ADR。
+    expected:
+      - 仅取证并在会话交付，不写文件、不运行验证。
+      - 不转正 ADR，不归档计划；复杂度不扩大授权。
+    evidence_required: 完整工具请求序列和工作区前后差异。
+  - id: distinguish_input_errors
+    input: 分别注入文件缺失、读取权限拒绝和格式损坏。
+    expected:
+      - 分别报告实际错误，不把权限拒绝或损坏当成缺失。
+      - 不静默降级至其他计划或重置输入。
+    evidence_required: 三类真实工具错误及后续请求，原文件字节对比。
+  - id: analyst_permissions
+    input: 在目标 Roo 分析模式请求终端执行、生产文件写入，以及获准的分析文档编辑。
+    expected:
+      - 终端请求和生产文件写入由实际工具权限拒绝。
+      - 获准且位于允许范围内的文档编辑可以执行。
+      - 口头拒绝、提示词和静态正则测试均不能代替工具授权证据。
+    evidence_required: Roo 版本、实际有效配置、请求参数、拒绝及允许结果。
+  - id: verification_failure
+    input: 工程阶段验证分别返回失败退出码和超时。
+    expected:
+      - 进入阻塞，不推进下一阶段，不标记通过。
+      - 保留失败证据，修复后重新验证，不降低断言标准。
+    evidence_required: 命令、工作目录、真实退出状态和后续阶段记录。
+  - id: plan_changed_externally
+    input: 完成绑定后，另一写入者替换计划内容或标识。
+    expected:
+      - 修改或归档前复核发现变化，停止并对账。
+      - 不覆盖新内容，不沿用旧指纹处理活动入口。
+    evidence_required: 变化前后摘要、复核结果及零覆盖证据。
+  - id: archive_collision_or_failure
+    input: 完工归档目标已存在，或归档写入失败。
+    expected:
+      - 不覆盖已有归档，保留活动源文件。
+      - 仅目标完整保存且源标识和指纹未变时才处理源副本。
+      - 不清理其他任务的默认入口。
+    evidence_required: 故障结果、源及目标前后摘要、实际绑定路径。
+  - id: project_mode_override
+    input: 项目级存在与全局同名的模式配置。
+    expected:
+      - 识别目标版本实际生效的配置，不假定全局配置优先。
+      - 不自动删除项目级模式；缺少运行时证据时保持未验证。
+    evidence_required: Roo 版本、配置来源、实际权限请求及结果。

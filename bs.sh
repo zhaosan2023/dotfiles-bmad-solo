@@ -24,6 +24,7 @@ VERSION="v4"
 SWITCH_TAG=""
 SWITCH_LATEST=0
 UPDATE_REMOTE=0
+MODE_TARGETS=()
 
 show_help() {
     echo -e "${YELLOW}Usage:${NC} $0 [options] [v3 | v4]"
@@ -41,134 +42,16 @@ show_help() {
     echo ""
     echo -e "${GREEN}General Options:${NC}"
     echo "  --dry-run         Show actions without making changes"
+    echo "  --mode-target <path>  显式模式配置相对路径，可重复；替代自动探测"
     echo "  --uninstall       Remove bmad-suite and global rules from Gemini config"
     echo "  --help, -h        Show this help message"
     echo ""
 }
 
 show_status() {
-    echo -e "${YELLOW}======================================================${NC}"
-    echo -e "${YELLOW} BMAD-Solo Environment & Version Status ${NC}"
-    echo -e "${YELLOW}======================================================${NC}"
-    CURRENT_SHORT_COMMIT=""
-    if git -C "$SCRIPT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-        BRANCH=$(git -C "$SCRIPT_DIR" branch --show-current 2>/dev/null || echo "")
-        COMMIT=$(git -C "$SCRIPT_DIR" log -1 --format="%h (%s)" 2>/dev/null || echo "Unknown")
-        CURRENT_SHORT_COMMIT=$(git -C "$SCRIPT_DIR" rev-parse --short HEAD 2>/dev/null || echo "")
-        EXACT_TAG=$(git -C "$SCRIPT_DIR" describe --tags --exact-match 2>/dev/null || echo "")
-        TAG_DESC=$(git -C "$SCRIPT_DIR" describe --tags 2>/dev/null || echo "No tag")
-        
-        if [ -z "$BRANCH" ]; then
-            BRANCH="[HEAD detached at ${EXACT_TAG:-$TAG_DESC}]"
-        fi
-        
-        echo -e "Git Repo Path      : ${GREEN}$SCRIPT_DIR${NC}"
-        echo -e "Git Branch / State : ${GREEN}$BRANCH${NC}"
-        echo -e "Git Commit         : $COMMIT"
-        if [ -n "$EXACT_TAG" ]; then
-            echo -e "Active Release Tag : ${GREEN}$EXACT_TAG (Exact Match)${NC}"
-        else
-            echo -e "Nearest Tag        : $TAG_DESC"
-        fi
-    else
-        echo -e "Git Repository     : ${RED}Not inside a git repository${NC}"
-    fi
-    
-    echo -e "\nInstalled Global Runtime Environment:"
-    TARGET_PLUGIN="$GEMINI_CONFIG_DIR/plugins/bmad-suite"
-    if [ -L "$TARGET_PLUGIN" ]; then
-        DEST=$(readlink "$TARGET_PLUGIN")
-        echo -e "  Plugin Mode : ${YELLOW}Legacy Symlink${NC} (⚠️ Subject to cross-workspace permission barriers)"
-        echo -e "  Plugin Path : $TARGET_PLUGIN -> $DEST"
-        echo -e "  Action      : ${YELLOW}Run './bs.sh' to upgrade to physical mirror${NC}"
-    elif [ -d "$TARGET_PLUGIN" ]; then
-        MANIFEST="$TARGET_PLUGIN/.manifest.json"
-        if [ -f "$MANIFEST" ]; then
-            INSTALLED_VER=$(python3 -c "import json; print(json.load(open('$MANIFEST')).get('installed_version', 'Unknown'))" 2>/dev/null || echo "Unknown")
-            DEPLOY_COMMIT=$(python3 -c "import json; print(json.load(open('$MANIFEST')).get('source_commit', ''))" 2>/dev/null || echo "")
-            DEPLOY_TIME=$(python3 -c "import json; print(json.load(open('$MANIFEST')).get('deploy_timestamp', 'Unknown'))" 2>/dev/null || echo "Unknown")
-            SOURCE_REPO=$(python3 -c "import json; print(json.load(open('$MANIFEST')).get('source_repository', 'Unknown'))" 2>/dev/null || echo "Unknown")
-            
-            echo -e "  Plugin Mode : ${GREEN}Physical Mirror (Active Sandbox Safe)${NC}"
-            echo -e "  Version     : $INSTALLED_VER"
-            echo -e "  Deployed At : $DEPLOY_TIME"
-            echo -e "  Source Repo : $SOURCE_REPO"
-            echo -e "  Plugin Path : $TARGET_PLUGIN"
-            
-            if [ -n "$CURRENT_SHORT_COMMIT" ] && [ -n "$DEPLOY_COMMIT" ]; then
-                if [ "$CURRENT_SHORT_COMMIT" = "$DEPLOY_COMMIT" ]; then
-                    echo -e "  Sync Status : ${GREEN}[✔] UP-TO-DATE with local HEAD ($DEPLOY_COMMIT)${NC}"
-                else
-                    echo -e "  Sync Status : ${YELLOW}[!] STALE (Deployed: $DEPLOY_COMMIT, Local HEAD: $CURRENT_SHORT_COMMIT)${NC}"
-                    echo -e "                ${YELLOW}Run './bs.sh' to synchronize local changes.${NC}"
-                fi
-            fi
-        else
-            echo -e "  Plugin Mode : ${GREEN}Physical Directory (No Manifest)${NC}"
-            echo -e "  Plugin Path : $TARGET_PLUGIN"
-            echo -e "  Sync Status : ${YELLOW}[!] Run './bs.sh' to generate deployment manifest.${NC}"
-        fi
-    else
-        echo -e "  Plugin Path : ${RED}Not installed${NC}"
-    fi
-
-    echo -e "\nGlobal Rules Status:"
-    for RULE in bmad-constitution.md bmad-core.md; do
-        RULE_PATH="$GEMINI_CONFIG_DIR/rules/$RULE"
-        if [ -L "$RULE_PATH" ]; then
-            DEST=$(readlink "$RULE_PATH")
-            echo -e "  Rule : $RULE -> ${YELLOW}$DEST (Legacy symlink)${NC}"
-        elif [ -f "$RULE_PATH" ]; then
-            echo -e "  Rule : $RULE -> ${GREEN}$RULE_PATH (Physical File)${NC}"
-        else
-            echo -e "  Rule : $RULE -> ${RED}Missing${NC}"
-        fi
-    done
-
-    echo -e "\nRoo Code Native Environment Status:"
-    if [ -d "$ROO_RULES_DIR" ]; then
-        echo -e "  Global Rules  : ${GREEN}$ROO_RULES_DIR${NC}"
-        for R in 01-bmad-constitution.md 02-bmad-core.md; do
-            if [ -f "$ROO_RULES_DIR/$R" ]; then
-                echo -e "    - $R: ${GREEN}[✔] Present${NC}"
-            else
-                echo -e "    - $R: ${RED}[✘] Missing${NC}"
-            fi
-        done
-    else
-        echo -e "  Global Rules  : ${RED}Not deployed${NC}"
-    fi
-
-    if [ -d "$ROO_ANA_DIR" ] && [ -f "$ROO_ANA_DIR/01-ana-solo-core.md" ]; then
-        echo -e "  Ana-Architect : ${GREEN}[✔] Rules active at $ROO_ANA_DIR${NC}"
-    else
-        echo -e "  Ana-Architect : ${RED}[✘] Missing rules${NC}"
-    fi
-
-    if [ -d "$ROO_ENG_DIR" ] && [ -f "$ROO_ENG_DIR/01-bmad-engineer-core.md" ]; then
-        echo -e "  Bmad-Engineer : ${GREEN}[✔] Rules active at $ROO_ENG_DIR${NC}"
-    else
-        echo -e "  Bmad-Engineer : ${RED}[✘] Missing rules${NC}"
-    fi
-
-    for ST_PATH in \
-        "$HOME/.antigravity-ide-server/data/User/globalStorage/rooveterinaryinc.roo-cline/settings" \
-        "$HOME/.vscode-server/data/User/globalStorage/rooveterinaryinc.roo-cline/settings" \
-        "$HOME/.config/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings"; do
-        if [ -f "$ST_PATH/custom_modes.yaml" ]; then
-            echo -e "  Global Modes  : ${GREEN}$ST_PATH/custom_modes.yaml${NC}"
-            python3 -c "
-import yaml
-try:
-    data = yaml.safe_load(open('$ST_PATH/custom_modes.yaml'))
-    modes = [m['slug'] for m in data.get('customModes', [])]
-    print('    - Modes:', ', '.join(modes))
-except Exception as e:
-    print('    - Error parsing YAML:', e)
-" 2>/dev/null || true
-        fi
-    done
-    echo -e "${YELLOW}======================================================${NC}"
+    # 与部署使用同一根目录；路径通过参数传递，不插值为 Python 代码。
+    # 只读核验受管摘要及事务状态，非零退出直接传递给调用者。
+    timeout 15s python3 -B "$SCRIPT_DIR/scripts/deployment-status.py" --root "${BMAD_DEPLOY_ROOT:-$HOME}" < /dev/null
 }
 
 list_tags() {
@@ -217,6 +100,14 @@ while [[ $# -gt 0 ]]; do
             SWITCH_LATEST=1
             shift
             ;;
+        --mode-target)
+            if [[ $# -lt 2 ]] || [[ -z "$2" ]] || [[ "$2" == -* ]]; then
+                printf '%s\n' '错误：--mode-target 需要部署根目录内的相对文件路径。' >&2
+                exit 1
+            fi
+            MODE_TARGETS+=("$2")
+            shift 2
+            ;;
         --dry-run)
             DRY_RUN=1
             shift
@@ -242,43 +133,87 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [ $UNINSTALL -eq 1 ]; then
-    echo -e "${YELLOW}Uninstalling BMAD-Solo Plugin...${NC}"
-    if [ $DRY_RUN -eq 1 ]; then
-        echo "[DRY-RUN] Would remove $GEMINI_CONFIG_DIR/plugins/bmad-suite"
-        echo "[DRY-RUN] Would remove rules from $GEMINI_CONFIG_DIR/rules/"
-    else
-        rm -rf "$TARGET_DIR"
-        rm -rf "$GEMINI_CONFIG_DIR/plugins/bmad-suite"
-        rm -f "$GEMINI_CONFIG_DIR/rules/bmad-constitution.md"
-        rm -f "$GEMINI_CONFIG_DIR/rules/bmad-core.md"
-        rm -rf "$ROO_RULES_DIR" "$ROO_ANA_DIR" "$ROO_ENG_DIR"
-
-        echo -e "${GREEN}Successfully uninstalled bmad-suite from $GEMINI_CONFIG_DIR${NC}"
+    if [ ${#MODE_TARGETS[@]} -gt 0 ]; then
+        printf '%s\n' '错误：卸载按所有权清单处理，不支持同时指定模式目标。' >&2
+        exit 1
     fi
+    if [ $UPDATE_REMOTE -eq 1 ] || [ $SWITCH_LATEST -eq 1 ] || [ -n "$SWITCH_TAG" ]; then
+        printf '%s\n' 'Error: uninstall cannot be combined with update or version switching.' >&2
+        exit 1
+    fi
+    UNINSTALL_ARGS=(--root "${BMAD_DEPLOY_ROOT:-$HOME}" --uninstall)
+    if [ $DRY_RUN -eq 1 ]; then
+        UNINSTALL_ARGS+=(--dry-run)
+    fi
+    # 仅卸载所有权清单确认且未被用户修改的资产；未知文件及共享目录保留。
+    # 前台限时执行，标准输入封闭；子进程失败直接传递，不输出虚假成功。
+    timeout 30s python3 "$SCRIPT_DIR/scripts/deploy-managed-cli.py" "${UNINSTALL_ARGS[@]}" < /dev/null
     exit 0
+fi
+
+# 冲突参数必须在任何版本操作之前拒绝，真实执行与模拟执行保持一致。
+if [ -n "$SWITCH_TAG" ] && { [ $UPDATE_REMOTE -eq 1 ] || [ $SWITCH_LATEST -eq 1 ]; }; then
+    printf '%s\n' '错误：标签选择不能与远程更新或主分支选择组合。' >&2
+    exit 1
+fi
+
+# 版本操作的模拟执行必须在网络访问、切分支和创建缓存之前结束。
+# 此分支仅预览版本动作；未物化的源不能声称完成资产预检。
+if [ $DRY_RUN -eq 1 ] && { [ $UPDATE_REMOTE -eq 1 ] || [ $SWITCH_LATEST -eq 1 ] || [ -n "$SWITCH_TAG" ]; }; then
+    if [ -n "$SWITCH_TAG" ] && { [ $UPDATE_REMOTE -eq 1 ] || [ $SWITCH_LATEST -eq 1 ]; }; then
+        printf '%s\n' '错误：标签选择不能与远程更新或主分支选择组合。' >&2
+        exit 1
+    fi
+    if [ -n "$SWITCH_TAG" ]; then
+        PREVIEW_COMMIT=$(timeout 15s git --no-pager -C "$SCRIPT_DIR" rev-parse --verify --end-of-options "refs/tags/$SWITCH_TAG^{commit}" < /dev/null)
+        printf '模拟版本选择：标签 %s，提交 %s；未创建或复用缓存。\n' "$SWITCH_TAG" "$PREVIEW_COMMIT"
+    elif [ $UPDATE_REMOTE -eq 1 ]; then
+        printf '%s\n' '模拟远程更新：拟获取 origin 并快进 main；未访问远端，远程提交及可快进性尚未验证。'
+    else
+        PREVIEW_COMMIT=$(timeout 15s git --no-pager -C "$SCRIPT_DIR" rev-parse --verify --end-of-options 'refs/heads/main^{commit}' < /dev/null)
+        printf '模拟主分支选择：本地 main 提交 %s；未切换工作树。\n' "$PREVIEW_COMMIT"
+    fi
+    printf '%s\n' '仅完成版本动作预览；未执行资产预检、部署或运行时验收。'
+    exit 0
+fi
+
+# 更新或切分支前保护已跟踪及未跟踪改动；禁用可选锁，避免状态检查刷新索引。
+# 模拟版本预览已在上方返回，不在此执行任何写入式检查。
+if [ $UPDATE_REMOTE -eq 1 ] || [ $SWITCH_LATEST -eq 1 ]; then
+    WORKTREE_STATUS=$(timeout 15s git --no-pager --no-optional-locks -C "$SCRIPT_DIR" status --porcelain=v1 --untracked-files=all < /dev/null)
+    if [ -n "$WORKTREE_STATUS" ]; then
+        printf '%s\n' '错误：工作树存在已跟踪或未跟踪改动；拒绝远程更新及分支切换，未执行部署。' >&2
+        exit 1
+    fi
 fi
 
 if [ $UPDATE_REMOTE -eq 1 ]; then
     echo -e "${YELLOW}======================================================${NC}"
     echo -e "${YELLOW} GitOps: Fetching & Pulling Latest from GitHub...     ${NC}"
     echo -e "${YELLOW}======================================================${NC}"
-    if ! git -C "$SCRIPT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-        echo -e "${RED}Error: $SCRIPT_DIR is not a git repository.${NC}"
+    # 本地主分支缺失时先失败关闭，避免网络访问或修改 FETCH_HEAD。
+    timeout 15s git --no-pager -C "$SCRIPT_DIR" rev-parse --verify --end-of-options 'refs/heads/main^{commit}' < /dev/null > /dev/null
+    printf '%s\n' '获取 origin/main 与标签；失败立即停止，不进入部署。'
+    timeout 30s env GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND='ssh -oBatchMode=yes -oConnectTimeout=10' git --no-pager -C "$SCRIPT_DIR" -c core.hooksPath=/dev/null fetch --no-recurse-submodules --tags origin 'refs/heads/main:refs/remotes/origin/main' < /dev/null
+    UPDATE_COMMIT=$(timeout 15s git --no-pager -C "$SCRIPT_DIR" rev-parse --verify --end-of-options 'refs/remotes/origin/main^{commit}' < /dev/null)
+    # 先检查可快进性，分歧时保留当前分支和工作树，不强制重置。
+    timeout 15s git --no-pager -C "$SCRIPT_DIR" merge-base --is-ancestor refs/heads/main "$UPDATE_COMMIT" < /dev/null
+    CURRENT_BRANCH=$(timeout 15s git --no-pager -C "$SCRIPT_DIR" branch --show-current < /dev/null)
+    if [ "$CURRENT_BRANCH" != "main" ]; then
+        timeout 15s env GIT_TERMINAL_PROMPT=0 git --no-pager -C "$SCRIPT_DIR" -c core.hooksPath=/dev/null switch --no-guess main < /dev/null
+    fi
+    CURRENT_BRANCH=$(timeout 15s git --no-pager -C "$SCRIPT_DIR" branch --show-current < /dev/null)
+    if [ "$CURRENT_BRANCH" != "main" ]; then
+        printf '%s\n' '错误：更新前未实际切换至 main，停止部署。' >&2
         exit 1
     fi
-    
-    echo -e "  [i] Fetching latest commits and tags from origin..."
-    git -C "$SCRIPT_DIR" fetch --tags origin
-    
-    CURRENT_BRANCH=$(git -C "$SCRIPT_DIR" branch --show-current 2>/dev/null || echo "")
-    if [ -n "$CURRENT_BRANCH" ] && [ "$CURRENT_BRANCH" != "main" ]; then
-        echo -e "  [i] Switching branch from $CURRENT_BRANCH to main..."
-        git -C "$SCRIPT_DIR" checkout main
+    timeout 30s env GIT_TERMINAL_PROMPT=0 GIT_MERGE_AUTOEDIT=no git --no-pager -C "$SCRIPT_DIR" -c core.hooksPath=/dev/null merge --ff-only --no-edit "$UPDATE_COMMIT" < /dev/null
+    ACTUAL_COMMIT=$(timeout 15s git --no-pager -C "$SCRIPT_DIR" rev-parse --verify HEAD < /dev/null)
+    if [ "$ACTUAL_COMMIT" != "$UPDATE_COMMIT" ]; then
+        printf '%s\n' '错误：更新后提交与本次获取的目标不一致，停止部署。' >&2
+        exit 1
     fi
-    
-    echo -e "  [i] Pulling latest changes on branch 'main'..."
-    git -C "$SCRIPT_DIR" pull --ff-only origin main
-    echo -e "${GREEN}[✔] Local repository is up to date with origin/main.${NC}\n"
+    printf '本地 main 已核验更新至提交 %s；尚未完成部署。\n' "$ACTUAL_COMMIT"
     SWITCH_LATEST=1
 fi
 
@@ -286,23 +221,9 @@ if [ -n "$SWITCH_TAG" ]; then
     echo -e "${YELLOW}======================================================${NC}"
     echo -e "${YELLOW} GitOps: Activating Release Tag: $SWITCH_TAG (Shadow Snapshot)... ${NC}"
     echo -e "${YELLOW}======================================================${NC}"
-    if ! git -C "$SCRIPT_DIR" rev-parse "refs/tags/$SWITCH_TAG" >/dev/null 2>&1; then
-        echo -e "${RED}Error: Tag '$SWITCH_TAG' does not exist in repository.${NC}"
-        echo -e "Run '$0 --tags' to see available release tags."
-        exit 1
-    fi
-
-    VERSION_CACHE="$SCRIPT_DIR/.versions/$SWITCH_TAG"
-    if [ ! -d "$VERSION_CACHE" ]; then
-        echo -e "  [i] Extracting tag $SWITCH_TAG snapshot to .versions/$SWITCH_TAG..."
-        mkdir -p "$VERSION_CACHE"
-        git -C "$SCRIPT_DIR" archive "tags/$SWITCH_TAG" | tar -x -C "$VERSION_CACHE"
-    fi
-
-    SOURCE_SUITE="$VERSION_CACHE/bmad-suite-v4"
-    if [ ! -d "$SOURCE_SUITE" ] && [ -d "$VERSION_CACHE/bmad-suite" ]; then
-        SOURCE_SUITE="$VERSION_CACHE/bmad-suite"
-    fi
+    # 缓存绑定解析后的实际提交；完整提取并核验后发布，拒绝复用旧标签缓存。
+    # 子进程失败直接停止，不回退到当前工作树或其他版本套件。
+    SOURCE_SUITE=$(timeout 30s python3 "$SCRIPT_DIR/scripts/tag-cache.py" --repo "$SCRIPT_DIR" --tag "$SWITCH_TAG" < /dev/null)
     VERSION_TITLE="BMAD-Solo Tag $SWITCH_TAG (Isolated Snapshot)"
     COMMAND_TIPS="  • /bmad-solo  : V4 Engineering Loop (Isolated Snapshot: $SWITCH_TAG)\n  • /ana-solo   : Dedicated Deep Analysis Channel"
     echo -e "${GREEN}[✔] Target suite isolated at: $SOURCE_SUITE${NC}\n"
@@ -310,11 +231,17 @@ elif [ $SWITCH_LATEST -eq 1 ]; then
     echo -e "${YELLOW}======================================================${NC}"
     echo -e "${YELLOW} GitOps: Returning to main branch (latest V4)... ${NC}"
     echo -e "${YELLOW}======================================================${NC}"
-    if git -C "$SCRIPT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-        CURRENT_BRANCH=$(git -C "$SCRIPT_DIR" branch --show-current 2>/dev/null || echo "")
-        if [ -n "$CURRENT_BRANCH" ] && [ "$CURRENT_BRANCH" != "main" ]; then
-            git -C "$SCRIPT_DIR" checkout main 2>/dev/null || true
-        fi
+    # 先确认本地主分支存在；缺失时不尝试切换，也不进入部署。
+    timeout 15s git --no-pager -C "$SCRIPT_DIR" rev-parse --verify --end-of-options 'refs/heads/main^{commit}' < /dev/null > /dev/null
+    CURRENT_BRANCH=$(timeout 15s git --no-pager -C "$SCRIPT_DIR" branch --show-current < /dev/null)
+    if [ "$CURRENT_BRANCH" != "main" ]; then
+        # 游离 HEAD 同样需要实际切换；禁止忽略失败或自动猜测远程分支。
+        timeout 15s env GIT_TERMINAL_PROMPT=0 git --no-pager -C "$SCRIPT_DIR" -c core.hooksPath=/dev/null switch --no-guess main < /dev/null
+    fi
+    CURRENT_BRANCH=$(timeout 15s git --no-pager -C "$SCRIPT_DIR" branch --show-current < /dev/null)
+    if [ "$CURRENT_BRANCH" != "main" ]; then
+        printf '%s\n' '错误：未实际切换至 main，停止部署。' >&2
+        exit 1
     fi
     SOURCE_SUITE="$SCRIPT_DIR/bmad-suite-v4"
     VERSION_TITLE="BMAD-Solo V4 (Analyst Closed-Loop + /ana-solo + 4 Convergence Locks)"
@@ -349,155 +276,52 @@ if [ $DRY_RUN -eq 1 ]; then
 fi
 
 
-deploy_roo_suite() {
-    local ROO_SOURCE="$SOURCE_SUITE/roo"
-    if [ ! -d "$ROO_SOURCE" ]; then
-        return 0
-    fi
-    echo -e "\n${YELLOW}Deploying Roo Code BMAD-Solo V4.2 Native Environment...${NC}"
+deploy_managed_suite() {
+    local DEPLOY_ROOT="${BMAD_DEPLOY_ROOT:-$HOME}"
+    local RELATIVE_SETTINGS STORAGE_PARENT
+    local DEPLOY_ARGS=(--root "$DEPLOY_ROOT" --source "$SOURCE_SUITE" --repository "$SCRIPT_DIR")
+    local SETTINGS_CANDIDATES=(
+        '.antigravity-ide-server/data/User/globalStorage/rooveterinaryinc.roo-cline/settings'
+        '.vscode-server/data/User/globalStorage/rooveterinaryinc.roo-cline/settings'
+        '.config/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings'
+    )
     if [ $DRY_RUN -eq 1 ]; then
-        echo "[DRY-RUN] Would deploy Roo rules to $ROO_GLOBAL_DIR"
-        return 0
+        DEPLOY_ARGS+=(--dry-run)
     fi
-
-    mkdir -p "$ROO_RULES_DIR" "$ROO_ANA_DIR" "$ROO_ENG_DIR"
-
-    # 1. Sync global rules
-    if [ -d "$ROO_SOURCE/rules" ]; then
-        rsync -a --delete "$ROO_SOURCE/rules/" "$ROO_RULES_DIR/"
-        echo -e "  [✔] Mirrored Roo Global Rules -> $ROO_RULES_DIR/"
-    fi
-
-    # 2. Sync mode-specific rules
-    if [ -d "$ROO_SOURCE/rules-ana-architect" ]; then
-        rsync -a --delete "$ROO_SOURCE/rules-ana-architect/" "$ROO_ANA_DIR/"
-        echo -e "  [✔] Mirrored Roo Ana-Architect Rules -> $ROO_ANA_DIR/"
-    fi
-    if [ -d "$ROO_SOURCE/rules-bmad-engineer" ]; then
-        rsync -a --delete "$ROO_SOURCE/rules-bmad-engineer/" "$ROO_ENG_DIR/"
-        echo -e "  [✔] Mirrored Roo Bmad-Engineer Rules -> $ROO_ENG_DIR/"
-    fi
-
-    # 3. Safe merge/update custom_modes.yaml
-    local ROO_SETTINGS_SRC="$ROO_SOURCE/settings/custom_modes.yaml"
-    if [ -f "$ROO_SETTINGS_SRC" ]; then
-        local DETECTED_STORAGE_DIRS=(
-            "$HOME/.antigravity-ide-server/data/User/globalStorage/rooveterinaryinc.roo-cline/settings"
-            "$HOME/.vscode-server/data/User/globalStorage/rooveterinaryinc.roo-cline/settings"
-            "$HOME/.config/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings"
-        )
-        for ST_DIR in "${DETECTED_STORAGE_DIRS[@]}"; do
-            local PARENT_DIR
-            PARENT_DIR=$(dirname "$ST_DIR")
-            if [ -d "$PARENT_DIR" ] || [ -d "$ST_DIR" ]; then
-                mkdir -p "$ST_DIR"
-                local TARGET_YAML="$ST_DIR/custom_modes.yaml"
-                python3 - <<PY
-import yaml, os
-
-src_file = "$ROO_SETTINGS_SRC"
-dst_file = "$TARGET_YAML"
-
-with open(src_file, 'r', encoding='utf-8') as f:
-    src_data = yaml.safe_load(f) or {}
-
-src_modes = {m['slug']: m for m in src_data.get('customModes', [])}
-
-if os.path.exists(dst_file):
-    try:
-        with open(dst_file, 'r', encoding='utf-8') as f:
-            dst_data = yaml.safe_load(f) or {}
-    except Exception:
-        dst_data = {}
-else:
-    dst_data = {}
-
-existing_modes = dst_data.get('customModes', [])
-merged_modes = []
-seen_slugs = set()
-
-for m in existing_modes:
-    slug = m.get('slug')
-    if slug in src_modes:
-        merged_modes.append(src_modes[slug])
-        seen_slugs.add(slug)
-    else:
-        merged_modes.append(m)
-        seen_slugs.add(slug)
-
-for slug, m in src_modes.items():
-    if slug not in seen_slugs:
-        merged_modes.append(m)
-        seen_slugs.add(slug)
-
-dst_data['customModes'] = merged_modes
-
-with open(dst_file, 'w', encoding='utf-8') as f:
-    yaml.dump(dst_data, f, allow_unicode=True, sort_keys=False)
-
-print(f"  [✔] Merged Roo custom_modes.yaml -> {dst_file}")
-PY
+    # 显式目标替代自动发现；这里只传递参数，不创建目录或读取未选中配置。
+    # 相对路径、重复目标、链接边界及 YAML 由受管入口统一预检。
+    if [ ${#MODE_TARGETS[@]} -gt 0 ]; then
+        printf '%s\n' '已指定模式目标，跳过自动候选探测。'
+        for RELATIVE_SETTINGS in "${MODE_TARGETS[@]}"; do
+            DEPLOY_ARGS+=(--mode-target "$RELATIVE_SETTINGS")
+            printf '显式模式目标待预检：%s\n' "$RELATIVE_SETTINGS"
+        done
+    else
+        for RELATIVE_SETTINGS in "${SETTINGS_CANDIDATES[@]}"; do
+            STORAGE_PARENT="$DEPLOY_ROOT/${RELATIVE_SETTINGS%/settings}"
+            if [ -e "$STORAGE_PARENT" ] || [ -L "$STORAGE_PARENT" ]; then
+                DEPLOY_ARGS+=(--mode-target "$RELATIVE_SETTINGS/custom_modes.yaml")
+                printf '模式候选待预检：%s\n' "$RELATIVE_SETTINGS"
+            else
+                printf '跳过模式候选（存储目录不存在）：%s\n' "$RELATIVE_SETTINGS"
             fi
         done
     fi
+    # 单一入口覆盖插件、共享规则及模式配置；禁止先写插件再发现 YAML 损坏。
+    timeout 30s python3 "$SCRIPT_DIR/scripts/deploy-managed-cli.py" "${DEPLOY_ARGS[@]}" < /dev/null
 }
 
-echo -e "${YELLOW}Deploying $VERSION_TITLE Physical Mirror to namespace...${NC}"
-
-if [ $DRY_RUN -eq 1 ]; then
-    echo "[DRY-RUN] Would remove any legacy symlinks at: $TARGET_DIR"
-    echo "[DRY-RUN] Would sync physical directory: $SOURCE_SUITE/ -> $TARGET_DIR/"
-    echo "[DRY-RUN] Would copy rules into $RULES_DIR/"
-    echo "[DRY-RUN] Would generate deployment manifest: $TARGET_DIR/.manifest.json"
-else
-    # Remove legacy symlinks or old target if it was a symlink
-    if [ -L "$TARGET_DIR" ] || [ -f "$TARGET_DIR" ]; then
-        rm -rf "$TARGET_DIR"
-    fi
-    rm -f "$GEMINI_CONFIG_DIR/skills/bmad-solo"
-    mkdir -p "$TARGET_DIR" "$RULES_DIR"
-
-    # Physical mirror of plugin directory
-    rsync -a --delete "$SOURCE_SUITE/" "$TARGET_DIR/"
-    echo -e "  [✔] Mirrored plugin contents ($VERSION) -> $TARGET_DIR (Physical Directory)"
-
-    # Physical copy of global rules (remove old symlinks first)
-    for RULE in bmad-constitution.md bmad-core.md; do
-        RULE_TARGET="$RULES_DIR/$RULE"
-        rm -f "$RULE_TARGET"
-        if [ -f "$SOURCE_SUITE/rules/$RULE" ]; then
-            cp -f "$SOURCE_SUITE/rules/$RULE" "$RULE_TARGET"
-            echo -e "  [✔] Copied rule: $RULE -> $RULES_DIR/ (Physical File)"
-        fi
-    done
-
-    # Write deployment manifest for GitOps auditing
-    COMMIT_HASH=$(git -C "$SCRIPT_DIR" rev-parse --short HEAD 2>/dev/null || echo "unknown")
-    COMMIT_FULL=$(git -C "$SCRIPT_DIR" rev-parse HEAD 2>/dev/null || echo "unknown")
-    COMMIT_DATE=$(git -C "$SCRIPT_DIR" log -1 --format="%cd" --date=iso 2>/dev/null || echo "unknown")
-    DEPLOY_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-
-    cat <<EOF > "$TARGET_DIR/.manifest.json"
-{
-  "installed_version": "$VERSION_TITLE",
-  "source_repository": "$SCRIPT_DIR",
-  "source_commit": "$COMMIT_HASH",
-  "source_commit_full": "$COMMIT_FULL",
-  "commit_date": "$COMMIT_DATE",
-  "deploy_timestamp": "$DEPLOY_TIME",
-  "deploy_type": "physical_mirror"
-}
-EOF
-    echo -e "  [✔] Generated deployment manifest: $TARGET_DIR/.manifest.json"
-fi
-
-deploy_roo_suite
+deploy_managed_suite
 
 
 echo -e "\n${GREEN}======================================================${NC}"
-echo -e "${GREEN} $VERSION_TITLE successfully activated! ${NC}"
+if [ $DRY_RUN -eq 1 ]; then
+    printf '%s\n' '受管部署模拟预检结束；未执行资产写入。'
+else
+    printf '%s\n' '受管资产处理完成；不代表 Roo 已加载或运行时验收通过。'
+fi
 echo -e "${GREEN}======================================================${NC}"
-echo -e "Active Commands:"
+echo -e "Commands available after runtime loading is verified:"
 echo -e "$COMMAND_TIPS"
 echo -e "\nNext steps:"
 echo -e "1. Open your Antigravity IDE."

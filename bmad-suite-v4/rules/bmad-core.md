@@ -10,7 +10,13 @@ alwaysApply: true
 
 ## 第一章：全局会话初始化与静默嗅探
 
-在开启任何新对话或处理任务前，AI Agent 必须静默执行以下检查：
+处理任务前先判断意图、授权和实际工具权限。只读任务仅取证和会话交付，不写文件、不运行验证、不转正或归档；分析角色不使用终端、不写生产文件与项目事实基线。
+
+计划采用三级路由：显式指定时只读取指定候选，跳过默认入口；无显式路径时才探测 `_bmad-output/pending_implementation_plan.md`，相关且有效才绑定，无关计划不抢占；默认入口缺失是正常状态，按意图发现归档候选、请求选择、空闲或走明确的轻量任务路径。
+
+显式文件缺失或非法时阻塞，不静默替换；分别报告缺失、权限拒绝和格式损坏。历史计划默认只读，不自动执行最新归档；恢复须明确授权、建立保留来源的新执行实例并重新验证，不继承历史绿灯。绑定路径、计划标识、内容指纹和阶段，修改前复核未被替换。
+
+在上述授权和权限边界内进行以下检查：
 
 1. **静默嗅探项目上下文 (`project-context.md`)**：
    - 检查当前项目根目录下是否存在 `_bmad-output/project-context.md`。
@@ -18,10 +24,10 @@ alwaysApply: true
      首次遇到 M/L 任务时再提示用户是否初始化。
    - 如果存在：读取并作为项目事实基线。
 2. **会话级任务隔离 (Brain Isolation)**：
-   - 读取当前会话独立的 `brain/task.md`（若存在），恢复之前的任务步骤与待办事项。
+   - 仅在平台确认存在且与当前任务匹配时读取会话任务记录；历史记录不自动授予恢复或执行权限，不编造应用目录或会话路径。
    - 不在项目根目录新建或强行读取 `task_plan.md`、`progress.md` 或 `findings.md`。
 3. **检查 Git 状态**：
-   - 静默运行 `git status --short`，若有未提交且来源不明的人类修改，不得擅自覆写。
+   - 仅实际具有终端权限且任务允许时运行 `timeout 15s git --no-pager status --short < /dev/null`；保留既有未提交改动。权限不足时披露证据缺失，不绕过限制。
 
 ---
 
@@ -42,7 +48,7 @@ AI 须根据当前**任务阶段、缺失产物和风险级别**自动切换思�
 例如"实现这个架构设计"应从 Analyst/Architect 门禁开始，然后切换到 Developer，而不是只按"架构"关键词停留在 Architect。
 
 **敏捷全生命周期完备性**：
-所有任务（无论是 Dev 业务编码还是 Ops 运维/配置/Git协同）统一遵从完整的敏捷闭环：
+获准实施的任务按场景采用下列闭环；只读咨询与审计不进入写入、验证或归档流程，轻量任务不强制持久立项：
 `Analysis (意图分析) → Architect (影响评估) → Agile Router (分发) → Dev / Ops (角色执行) → Verification (靶向验证) → Reviewer / QA (对抗审查) → Close (状态闭环)`。
 Ops 同样需要经历影响分析、前置验证与 QA 审查，但其验证环节必须严格遵守下游收敛锁，严禁将全量业务测试强加于运维协同。
 
@@ -92,7 +98,7 @@ Ops 同样需要经历影响分析、前置验证与 QA 审查，但其验证环
    - **收敛锁 1：足迹全等锁 (Footprint Congruence Lock)**：
      - 测试范围严格全等于修改 Diff（$\text{Scope}_{test} \equiv \text{Footprint}(\Delta \text{Diff})$）。
      - **严禁全量测试发现**（如 `python3 -m unittest discover` 或全目录 `pytest` 裸跑）。
-     - 只能精准执行与本次改动直接相关的单文件专属测试。
+     - 仅执行与本次改动直接相关的专属测试；允许通过明确目录及文件模式限定范围的测试发现，不强制逐文件运行。配置契约与隔离分发测试不属于业务单测。
      - 若任务无业务逻辑代码修改（如纯 XML 配置、文档或纯 Git 协同），业务单元测试集合严格为空集 $\emptyset$。
    - **收敛锁 2：环境亲和隔离锁 (Environment Affinity Lock)**：
      - 严格依据 `project-context.md` 划定执行环境：宿主机仅跑纯 Python 标准库、轻量脚本与 Git；涉及 NumPy/Pandas/ClickHouse 等科学计算依赖的代码，必须显式且安全地在容器内执行，严禁跨环境盲跑。
@@ -103,20 +109,23 @@ Ops 同样需要经历影响分析、前置验证与 QA 审查，但其验证环
 3. **终端执行五大守恒铁律 (Penta-Invariants Enforcement)**：
    - 任何阶段发起终端命令，必须严格遵从 `bmad-constitution.md` 8.5 节五大守恒铁律：
      1. **单飞排队强锁 (Single-Flight Monad Lock)**：严禁在未终结或未认领在途后台命令时发起任何新命令，彻底杜绝孤儿任务与并发死锁。
-     2. **零例外全量超时与弹性分级 (Universal Bounded Timeout with Duration Elasticity)**：所有命令无例外前缀 `timeout`。三级弹性分级：探测级 `timeout 15s`（docker inspect, git status）；验证级 `timeout 30s`（单元测试, lint）；构建级 `timeout 600s`（cargo build --release, docker compose build, npm install）并必须配合 `schedule` 看门狗每 120 秒检查进度。
-     3. **前台同步强锁 (Foreground Synchronization Lock)**：`WaitMsBeforeAsync` 一律设为 `10000ms`（10秒上限）。
-     4. **输入封闭公理 (Fail-Closed Stdin)**：一律尾缀 `< /dev/null` 并附加静默/非交互参数。
+     2. **零例外全量超时与弹性分级 (Universal Bounded Timeout with Duration Elasticity)**：命令使用进程级超时，探测 15s、验证 30s、构建 600s；工具提前返回不代表进程已经退出，不依赖未提供的调度工具。
+     3. **前台同步强锁 (Foreground Synchronization Lock)**：使用当前平台实际支持的等待机制，等待真实退出结果，不启动未托管后台进程，不照搬其他平台专用参数。
+     4. **输入封闭公理 (Fail-Closed Stdin)**：尾缀 `< /dev/null`，非交互参数按命令实际支持选择。
      5. **工具正交公理 (Tool Orthogonality Axiom)**：排查脚本必须先写入 `scratch/` 文件再单行调用，严禁终端拼接 `python3 -c`。
 4. **验证与交付纪律**：
    - **禁止凭空承诺测试通过**：未在终端实际运行并通过相关命令前，严禁将任务标记为 `[x]` 或声称已完成。
    - **Code Review 必选门禁**：M/L 级任务提交前必须显式进行一次 Reviewer 模式漏洞筛查。
    - **重复失败门禁**：同类修复连续失败两次，必须停止局部打补丁，重新审查架构假设和问题定义。
+   - **阶段背压**：按绑定计划逐阶段验证；失败、超时或缺少依赖即阻塞，不推进下一阶段。静态契约通过不证明目标 Roo 运行时权限或模型行为。
+   - **绑定式闭环**：仅全部必需门禁通过后完成任务；需要 ADR 时只转正关联提案，必需运行时证据缺失则保持提案。工程阶段仅登记已验证事实与真实溯源，不编造会话标识。
+   - **安全归档**：只归档实际绑定的活动计划，不固定清空默认入口。复核标识与内容指纹，归档目标不得覆盖；保存成功且源未被替换后才处理活动副本，失败保留源文件。历史输入与其他暂停任务保持独立。
 
 ---
 
 ## 第 4.5 章：产物路由表（Output Routing）
 
-AI 生成或更新任何持久化产物时，必须根据以下表格选择存放位置。不得默认存放到 `docs/`、项目根目录或其他未列出的位置。
+仅获准持久写入时使用以下产物路由。当前任务显式绑定路径和平台编辑权限优先；表中默认路径不授予写入权限，不迁移旧记录，不覆盖活动任务。V4.2 新 ADR 默认位于 `_bmad-output/adrs/`，执行计划默认候选为 `_bmad-output/pending_implementation_plan.md`；既有架构目录作为历史引用保留。只读任务不创建任何产物。
 
 | 产物类型 | 存放位置 | 示例 |
 |---|---|---|
@@ -125,14 +134,14 @@ AI 生成或更新任何持久化产物时，必须根据以下表格选择存�
 | 深度分析报告 / 选型矩阵 | `_bmad-output/analysis/ANALYSIS-YYYYMMDD-[topic].md` | 方案三步法解构、选型打分矩阵 |
 | 项目全局事实基线 | `_bmad-output/project-context.md` | 技术栈、启动命令、服务端口、部署方式 |
 | 架构契约 | `_bmad-output/architecture/architecture-contract.yaml` | 组件边界、不变量 |
-| 架构决策记录 (ADR) | `_bmad-output/architecture/decisions/ADR-YYYYMMDD-[topic].md` | 技术选型、重大变更理由 |
-| 重大 Findings / 复盘报告 | `_bmad-output/architecture/decisions/ADR-YYYYMMDD-[topic].md` | 容灾恢复经验、重大 Bug 根因 |
+| 架构决策记录 (ADR) | `_bmad-output/adrs/ADR-YYYYMMDD-[topic].md` | 技术选型、重大变更理由 |
+| 重大 Findings / 复盘报告 | `_bmad-output/analysis/ANALYSIS-YYYYMMDD-[topic].md` | 容灾恢复经验、重大 Bug 根因 |
 | 特性规范 / Spec | `_bmad-output/specs/` | 新功能的详细设计 |
 | 算法契约 | `_bmad-output/architecture/algorithm-contract-[name].md` | 算法选型与 NFR |
 
 **路由规则**：
 1. 如果产物是“此次会话中的过程性记录”→ `brain/task.md`。
-2. 如果产物是“跨会话需要持久化的架构经验或重大决策”→ 走 ADR 流程存入 `_bmad-output/architecture/decisions/`。
+2. 如果产物是获准持久化的重大架构决策 → 新 ADR 默认存入 `_bmad-output/adrs/`，历史引用保持原路径。
 3. 如果产物是“深度方案解构或多方案选型报告”→ 存入 `_bmad-output/analysis/`。
 4. 如果产物是“对项目全局事实基线的更新”（如新增了一个服务端口）→ 更新 `_bmad-output/project-context.md`。
 5. 任何不确定归属的产物，**必须询问用户**，不得自行创建新路径。
@@ -146,7 +155,7 @@ AI 生成或更新任何持久化产物时，必须根据以下表格选择存�
 - `bmad-constitution.md`：不可违反的安全红线、工作区边界、Git 策略和权限规则。
 - `bmad-core.md`：本文件，定义思考模式、任务路由和记忆纪律。
 - `_bmad-output/project-context.md`：已验证的技术栈、命令、服务、部署和回滚事实。
-- `_bmad-output/architecture/`：架构契约和 ADR（M/L 任务）。
+- `_bmad-output/architecture/`：架构契约和历史 ADR；新 ADR 默认使用 `_bmad-output/adrs/`，不自动迁移旧记录。
 - `brain/task.md`：M/L 级任务的会话级状态。
 - `brain/implementation_plan.md`：需要确认的实施方案。
 - Skill（`/bmad-solo`）：路由器和按需加载的 procedures、templates、references。
