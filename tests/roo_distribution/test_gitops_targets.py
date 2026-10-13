@@ -18,9 +18,11 @@ class GitOpsTargets(unittest.TestCase):
         'rooveterinaryinc.roo-cline/settings/custom_modes.yaml',
         '.config/Code/User/globalStorage/'
         'rooveterinaryinc.roo-cline/settings/custom_modes.yaml',
+        '.config/Antigravity IDE/User/globalStorage/'
+        'rooveterinaryinc.roo-cline/settings/custom_modes.yaml',
     )
 
-    def test_all_three_existing_candidates_preserve_personal_modes(self):
+    def test_all_existing_candidates_preserve_personal_modes(self):
         for relative in self.CANDIDATES:
             path = self.target / relative
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -64,6 +66,45 @@ class GitOpsTargets(unittest.TestCase):
         self.assertEqual(self.tree(), before)
         self.assertFalse((self.target / 'new-profile').exists())
         self.assertEqual(list(self.home.iterdir()), [])
+
+    def test_local_antigravity_empty_modes_discovered_read_only(self):
+        selected = self.target / self.CANDIDATES[-1]
+        selected.parent.mkdir(parents=True)
+        selected.write_bytes(b'customModes: []\n')
+        before = self.tree()
+        result = self.run_shell('--preflight')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn(self.CANDIDATES[-1], result.stdout)
+        self.assertEqual(self.tree(), before)
+        result = self.run_shell()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        data = yaml.safe_load(selected.read_bytes())
+        self.assertEqual(
+            {mode['slug'] for mode in data['customModes']},
+            {'ana-architect', 'bmad-engineer'},
+        )
+
+    def test_dynamic_local_layout_discovered_without_creating_absent_candidates(self):
+        relative = '.config/Custom IDE Profile/User/globalStorage/rooveterinaryinc.roo-cline/settings/custom_modes.yaml'
+        selected = self.target / relative
+        selected.parent.mkdir(parents=True)
+        selected.write_bytes(b'customModes: [{slug: personal, name: Personal}]\n')
+        before = self.tree()
+        result = self.run_shell('--preflight')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn(relative, result.stdout)
+        self.assertEqual(self.tree(), before)
+        self.assertFalse((self.target / '.config/Code').exists())
+
+    def test_discovery_rejects_symlink_storage_without_writes(self):
+        storage = self.target / self.CANDIDATES[-1].rsplit('/settings/', 1)[0]
+        storage.parent.mkdir(parents=True)
+        storage.symlink_to(self.mode.parent.parent, target_is_directory=True)
+        before = self.tree()
+        result = self.run_shell('--preflight')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('符号链接', result.stderr)
+        self.assertEqual(self.tree(), before)
 
     def test_one_corrupt_candidate_blocks_all_target_writes(self):
         other = self.target / self.CANDIDATES[0]

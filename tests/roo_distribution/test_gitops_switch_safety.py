@@ -65,8 +65,6 @@ class GitOpsSwitchSafety(GitOpsDryRun):
 
     def prepare_local_remote_update(self):
         remote = self.sandbox / "remote.git"
-        self.git("clone", "--bare", str(self.repo), str(remote))
-        self.git("remote", "add", "origin", str(remote))
         self.git("checkout", "-b", "fixture-upstream")
         rule = self.repo / "bmad-suite-v4/roo/rules/02-bmad-core.md"
         updated = rule.read_bytes() + b"\n<!-- local remote fixture -->\n"
@@ -74,8 +72,11 @@ class GitOpsSwitchSafety(GitOpsDryRun):
         self.git("add", "bmad-suite-v4/roo/rules/02-bmad-core.md")
         self.git("-c", "commit.gpgsign=false", "commit", "-m", "upstream fixture")
         commit = self.git("rev-parse", "HEAD").strip()
-        self.git("push", "origin", "HEAD:refs/heads/main")
+        # 从本地夹具提交创建文件远端；测试不执行 push 或访问网络。
+        self.git("clone", "--bare", "--branch", "fixture-upstream", str(self.repo), str(remote))
+        self.git("--git-dir", str(remote), "symbolic-ref", "refs/heads/main", "refs/heads/fixture-upstream")
         self.git("checkout", "main")
+        self.git("remote", "add", "origin", str(remote))
         return commit, updated
 
     def test_update_from_detached_head_deploys_fetched_commit(self):

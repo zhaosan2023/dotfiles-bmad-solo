@@ -25,6 +25,26 @@ SWITCH_TAG=""
 SWITCH_LATEST=0
 UPDATE_REMOTE=0
 MODE_TARGETS=()
+PREFLIGHT=0
+RESUME_COMMIT=""
+
+# 使用参数数组重建有效部署意图；更新/切分支参数不进入新版执行。
+# 环境变量中的部署根目录由 exec 继承，不拼接为命令字符串。
+handoff_main() {
+    if [ "${BMAD_HANDOFF_ACTIVE:-0}" = 1 ]; then
+        printf '%s\n' '错误：禁止重复执行移交，未再次更新或部署。' >&2
+        exit 1
+    fi
+    local RESUME_ARGS=(--_resume-main "$1" "$VERSION")
+    if [ $DRY_RUN -eq 1 ]; then RESUME_ARGS+=(--dry-run); fi
+    if [ $PREFLIGHT -eq 1 ]; then RESUME_ARGS+=(--preflight); fi
+    local TARGET
+    for TARGET in "${MODE_TARGETS[@]}"; do
+        RESUME_ARGS+=(--mode-target "$TARGET")
+    done
+    printf '显式移交磁盘新版部署入口，提交 %s；不重复更新。\n' "$1"
+    exec env BMAD_HANDOFF_ACTIVE=1 bash "$SCRIPT_DIR/bs.sh" "${RESUME_ARGS[@]}" < /dev/null
+}
 
 show_help() {
     echo -e "${YELLOW}Usage:${NC} $0 [options] [v3 | v4]"
@@ -42,6 +62,7 @@ show_help() {
     echo ""
     echo -e "${GREEN}General Options:${NC}"
     echo "  --dry-run         Show actions without making changes"
+    echo "  --preflight       只读列出全部迁移范围与阻塞，不授予接管权限"
     echo "  --mode-target <path>  显式模式配置相对路径，可重复；替代自动探测"
     echo "  --uninstall       Remove bmad-suite and global rules from Gemini config"
     echo "  --help, -h        Show this help message"
@@ -69,6 +90,9 @@ list_tags() {
     echo -e "${YELLOW}======================================================${NC}"
 }
 
+# 整个入口先解析为函数，再执行版本操作；避免 Bash 在脚本被替换后
+# 从旧文件偏移继续读取。成功后 exec 新版，不执行本函数的旧部署尾部。
+main() {
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -108,6 +132,18 @@ while [[ $# -gt 0 ]]; do
             MODE_TARGETS+=("$2")
             shift 2
             ;;
+        --preflight)
+            PREFLIGHT=1
+            shift
+            ;;
+        --_resume-main)
+            if [[ $# -lt 2 ]] || [[ ! "$2" =~ ^([0-9a-f]{40}|[0-9a-f]{64})$ ]]; then
+                printf '%s\n' '错误：执行移交缺少有效提交标识。' >&2
+                exit 1
+            fi
+            RESUME_COMMIT="$2"
+            shift 2
+            ;;
         --dry-run)
             DRY_RUN=1
             shift
@@ -132,6 +168,30 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# 内部续接只能部署已经核验的 main；禁止传回更新动作形成循环。
+if [ "${BMAD_HANDOFF_ACTIVE:-0}" = 1 ] && [ -z "$RESUME_COMMIT" ]; then
+    printf '%s\n' '错误：移交标记缺少续接提交，拒绝执行。' >&2
+    exit 1
+fi
+if [ -n "$RESUME_COMMIT" ]; then
+    if [ "${BMAD_HANDOFF_ACTIVE:-0}" != 1 ] || [ $UPDATE_REMOTE -eq 1 ] || [ $SWITCH_LATEST -eq 1 ] || [ -n "$SWITCH_TAG" ] || [ $UNINSTALL -eq 1 ]; then
+        printf '%s\n' '错误：执行移交参数冲突，未更新或部署。' >&2
+        exit 1
+    fi
+    RESUME_BRANCH=$(timeout 15s git --no-pager -C "$SCRIPT_DIR" branch --show-current < /dev/null)
+    RESUME_ACTUAL=$(timeout 15s git --no-pager -C "$SCRIPT_DIR" rev-parse --verify HEAD < /dev/null)
+    RESUME_STATUS=$(timeout 15s git --no-pager --no-optional-locks -C "$SCRIPT_DIR" status --porcelain=v1 --untracked-files=all < /dev/null)
+    if [ "$RESUME_BRANCH" != main ] || [ "$RESUME_ACTUAL" != "$RESUME_COMMIT" ] || [ -n "$RESUME_STATUS" ]; then
+        printf '%s\n' '错误：新版续接时分支、提交或工作树发生变化，停止部署。' >&2
+        exit 1
+    fi
+fi
+# 范围预检只针对当前已物化来源，不允许联网、切分支、缓存或卸载。
+if [ $PREFLIGHT -eq 1 ] && { [ $UPDATE_REMOTE -eq 1 ] || [ $SWITCH_LATEST -eq 1 ] || [ -n "$SWITCH_TAG" ] || [ $UNINSTALL -eq 1 ]; }; then
+    printf '%s\n' '错误：--preflight 不能与更新、版本切换或卸载组合。' >&2
+    exit 1
+fi
+
 if [ $UNINSTALL -eq 1 ]; then
     if [ ${#MODE_TARGETS[@]} -gt 0 ]; then
         printf '%s\n' '错误：卸载按所有权清单处理，不支持同时指定模式目标。' >&2
@@ -147,7 +207,7 @@ if [ $UNINSTALL -eq 1 ]; then
     fi
     # 仅卸载所有权清单确认且未被用户修改的资产；未知文件及共享目录保留。
     # 前台限时执行，标准输入封闭；子进程失败直接传递，不输出虚假成功。
-    timeout 30s python3 "$SCRIPT_DIR/scripts/deploy-managed-cli.py" "${UNINSTALL_ARGS[@]}" < /dev/null
+    timeout 30s python3 -B "$SCRIPT_DIR/scripts/deploy-managed-cli.py" "${UNINSTALL_ARGS[@]}" < /dev/null
     exit 0
 fi
 
@@ -214,7 +274,7 @@ if [ $UPDATE_REMOTE -eq 1 ]; then
         exit 1
     fi
     printf '本地 main 已核验更新至提交 %s；尚未完成部署。\n' "$ACTUAL_COMMIT"
-    SWITCH_LATEST=1
+    handoff_main "$ACTUAL_COMMIT"
 fi
 
 if [ -n "$SWITCH_TAG" ]; then
@@ -223,11 +283,11 @@ if [ -n "$SWITCH_TAG" ]; then
     echo -e "${YELLOW}======================================================${NC}"
     # 缓存绑定解析后的实际提交；完整提取并核验后发布，拒绝复用旧标签缓存。
     # 子进程失败直接停止，不回退到当前工作树或其他版本套件。
-    SOURCE_SUITE=$(timeout 30s python3 "$SCRIPT_DIR/scripts/tag-cache.py" --repo "$SCRIPT_DIR" --tag "$SWITCH_TAG" < /dev/null)
+    SOURCE_SUITE=$(timeout 30s python3 -B "$SCRIPT_DIR/scripts/tag-cache.py" --repo "$SCRIPT_DIR" --tag "$SWITCH_TAG" < /dev/null)
     VERSION_TITLE="BMAD-Solo Tag $SWITCH_TAG (Isolated Snapshot)"
     COMMAND_TIPS="  • /bmad-solo  : V4 Engineering Loop (Isolated Snapshot: $SWITCH_TAG)\n  • /ana-solo   : Dedicated Deep Analysis Channel"
     echo -e "${GREEN}[✔] Target suite isolated at: $SOURCE_SUITE${NC}\n"
-elif [ $SWITCH_LATEST -eq 1 ]; then
+elif [ $SWITCH_LATEST -eq 1 ] || [ -n "$RESUME_COMMIT" ]; then
     echo -e "${YELLOW}======================================================${NC}"
     echo -e "${YELLOW} GitOps: Returning to main branch (latest V4)... ${NC}"
     echo -e "${YELLOW}======================================================${NC}"
@@ -242,6 +302,10 @@ elif [ $SWITCH_LATEST -eq 1 ]; then
     if [ "$CURRENT_BRANCH" != "main" ]; then
         printf '%s\n' '错误：未实际切换至 main，停止部署。' >&2
         exit 1
+    fi
+    if [ -z "$RESUME_COMMIT" ]; then
+        SELECTED_COMMIT=$(timeout 15s git --no-pager -C "$SCRIPT_DIR" rev-parse --verify HEAD < /dev/null)
+        handoff_main "$SELECTED_COMMIT"
     fi
     SOURCE_SUITE="$SCRIPT_DIR/bmad-suite-v4"
     VERSION_TITLE="BMAD-Solo V4 (Analyst Closed-Loop + /ana-solo + 4 Convergence Locks)"
@@ -278,13 +342,11 @@ fi
 
 deploy_managed_suite() {
     local DEPLOY_ROOT="${BMAD_DEPLOY_ROOT:-$HOME}"
-    local RELATIVE_SETTINGS STORAGE_PARENT
+    local RELATIVE_SETTINGS
     local DEPLOY_ARGS=(--root "$DEPLOY_ROOT" --source "$SOURCE_SUITE" --repository "$SCRIPT_DIR")
-    local SETTINGS_CANDIDATES=(
-        '.antigravity-ide-server/data/User/globalStorage/rooveterinaryinc.roo-cline/settings'
-        '.vscode-server/data/User/globalStorage/rooveterinaryinc.roo-cline/settings'
-        '.config/Code/User/globalStorage/rooveterinaryinc.roo-cline/settings'
-    )
+    if [ $PREFLIGHT -eq 1 ]; then
+        DEPLOY_ARGS+=(--preflight)
+    fi
     if [ $DRY_RUN -eq 1 ]; then
         DEPLOY_ARGS+=(--dry-run)
     fi
@@ -297,21 +359,17 @@ deploy_managed_suite() {
             printf '显式模式目标待预检：%s\n' "$RELATIVE_SETTINGS"
         done
     else
-        for RELATIVE_SETTINGS in "${SETTINGS_CANDIDATES[@]}"; do
-            STORAGE_PARENT="$DEPLOY_ROOT/${RELATIVE_SETTINGS%/settings}"
-            if [ -e "$STORAGE_PARENT" ] || [ -L "$STORAGE_PARENT" ]; then
-                DEPLOY_ARGS+=(--mode-target "$RELATIVE_SETTINGS/custom_modes.yaml")
-                printf '模式候选待预检：%s\n' "$RELATIVE_SETTINGS"
-            else
-                printf '跳过模式候选（存储目录不存在）：%s\n' "$RELATIVE_SETTINGS"
-            fi
-        done
+        # Python 只读发现已存在的 Roo 扩展存储，包括含空格的本机 IDE 路径。
+        DEPLOY_ARGS+=(--discover-modes)
     fi
     # 单一入口覆盖插件、共享规则及模式配置；禁止先写插件再发现 YAML 损坏。
-    timeout 30s python3 "$SCRIPT_DIR/scripts/deploy-managed-cli.py" "${DEPLOY_ARGS[@]}" < /dev/null
+    timeout 30s python3 -B "$SCRIPT_DIR/scripts/deploy-managed-cli.py" "${DEPLOY_ARGS[@]}" < /dev/null
 }
 
 deploy_managed_suite
+if [ $PREFLIGHT -eq 1 ]; then
+    return 0
+fi
 
 
 echo -e "\n${GREEN}======================================================${NC}"
@@ -334,3 +392,6 @@ echo -e "3. Version & Rollback management:
    • Return to latest:      ./bs.sh --latest
    • Switch major version:  ./bs.sh v3 | ./bs.sh v4"
 echo -e ""
+}
+
+main "$@"

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """受管部署命令入口；路径通过参数传入，不在代码中插值执行。
 
-目标发现与版本选择由外层入口负责。本命令仅报告文件分发状态，
+版本选择由外层入口负责，模式发现须显式请求。本命令仅报告文件分发状态，
 不会把文件写入成功描述为 Roo 已加载或权限验收通过。
 """
 from __future__ import annotations
@@ -12,6 +12,8 @@ import sys
 
 from asset_safety import AssetError, checked_path
 from deploy_managed import deploy
+from deployment_preflight import inspect_migration
+from deployment_targets import discover_mode_targets
 from deployment_source import collect_source, verify_source
 from deployment_provenance import MANIFEST_TARGET, build_manifest
 from managed_files import validate_relative_path
@@ -26,6 +28,10 @@ def parser():
                         help="实际来源仓库根目录；未提供时明确记录为未版本化来源")
     result.add_argument("--mode-target", action="append", default=[],
                         help="相对于部署根目录的模式配置文件，可重复")
+    result.add_argument("--discover-modes", action="store_true",
+                        help="只读发现已存在的 Roo 存储；显式模式目标优先")
+    result.add_argument("--preflight", action="store_true",
+                        help="仅列出迁移范围及全部阻塞；不写入或授权接管")
     result.add_argument("--adopt-file", action="append", default=[],
                         help="明确授权首次接管的相对文件路径，可重复")
     result.add_argument("--adopt-mode", action="append", default=[],
@@ -38,6 +44,9 @@ def parser():
 def main(argv=None):
     arguments = parser().parse_args(argv)
     try:
+        if arguments.preflight and (
+                arguments.uninstall or arguments.adopt_file or arguments.adopt_mode):
+            raise AssetError("只读范围预检不能与卸载或接管授权组合")
         root = checked_path(arguments.root)
         if not root.is_dir():
             raise AssetError("部署根目录必须已经存在")
@@ -45,7 +54,8 @@ def main(argv=None):
         state = root / ".bmad-solo-deployment"
         if arguments.uninstall:
             if (arguments.source is not None or arguments.repository is not None
-                    or arguments.mode_target or arguments.adopt_file or arguments.adopt_mode):
+                    or arguments.mode_target or arguments.discover_modes
+                    or arguments.adopt_file or arguments.adopt_mode):
                 raise AssetError("卸载不能同时指定套件源、模式目标或接管授权")
             files, modes = {}, {}
             adopt_modes = {}
@@ -53,9 +63,10 @@ def main(argv=None):
             if arguments.source is None:
                 raise AssetError("部署必须显式指定套件源")
             source = checked_path(arguments.source)
-            files, modes, sources = collect_source(
-                source, tuple(arguments.mode_target)
-            )
+            mode_targets = tuple(arguments.mode_target)
+            if arguments.discover_modes and not mode_targets:
+                mode_targets = discover_mode_targets(root)
+            files, modes, sources = collect_source(source, mode_targets)
             adopt_modes = {}
             for specification in arguments.adopt_mode:
                 relative, separator, slug = specification.rpartition("=")
@@ -79,6 +90,25 @@ def main(argv=None):
                         or source.is_relative_to(target)):
                     raise AssetError(f"部署目标与套件源重叠：{relative}")
             verify_source(source, sources)
+
+        if not arguments.uninstall:
+            report = inspect_migration(
+                root, state, files, modes,
+                adopt_files=set(arguments.adopt_file), adopt_modes=adopt_modes,
+            )
+            if arguments.preflight or report.errors:
+                report.print()
+            if report.errors:
+                # 保留标准错误中的逐项路径诊断，兼容只采集 stderr 的调用者。
+                for error in report.errors:
+                    print(f"部署阻塞：{error}", file=sys.stderr)
+                print("部署未完成：迁移预检存在阻塞；未执行写入。", file=sys.stderr)
+                return 1
+            if arguments.preflight:
+                print("只读迁移范围预检通过；未执行写入，未授予迁移权限。")
+                if not modes:
+                    print("未选中模式配置目标，不能视为完整激活。")
+                return 0
 
         outcome = deploy(
             root, state, files, modes,
