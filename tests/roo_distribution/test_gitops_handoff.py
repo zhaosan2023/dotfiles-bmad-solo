@@ -64,7 +64,7 @@ class GitOpsHandoff(unittest.TestCase):
         ignored.parent.mkdir(parents=True)
         ignored.write_bytes(b"customModes: [")
         result = self.run_command([
-            "bash", "bs.sh", "--update", "--latest", "v3", "v4",
+            "bash", "bs.sh", "--update", "--latest", "v4",
             "--mode-target", first, "--mode-target", second,
         ])
         self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
@@ -97,7 +97,8 @@ class GitOpsHandoff(unittest.TestCase):
         old.parent.mkdir(parents=True)
         old.write_bytes(b"old unmanaged mirror")
         before = self.tree(self.target)
-        result = self.run_command(["bash", "bs.sh", "--update"])
+        # 已有未受管资产缺少可信身份时需显式选择，才能进入新版迁移预检。
+        result = self.run_command(["bash", "bs.sh", "--update", "v4"])
         self.assertNotEqual(result.returncode, 0)
         self.assertEqual(result.stdout.count("NEW_ENTRY_LOADED"), 1)
         self.assertEqual(result.stdout.count("显式移交磁盘新版部署入口"), 1)

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import contextlib
+import io
 from pathlib import Path
 import sys
 
@@ -11,9 +13,10 @@ from asset_safety import AssetError, checked_path, snapshot
 from deploy_managed import load_manifest, _unique_object
 from managed_files import plan_files, validate_relative_path
 from managed_modes import merge_modes
+from deployment_identity import manifest_suite
 
 
-def inspect(root):
+def inspect(root, *, active_suite=False):
     root = checked_path(root)
     if not root.is_dir():
         raise AssetError("部署根目录不存在或不是目录")
@@ -88,6 +91,7 @@ def inspect(root):
         print(f"状态异常：{error}", file=sys.stderr)
     if errors:
         return 1
+    spec = None
     provenance_relative = '.gemini/config/plugins/bmad-suite/.manifest.json'
     if provenance_relative in file_paths:
         # 只使用已通过所有权摘要检查和末次复核的快照，不重新读取未校验内容。
@@ -123,18 +127,43 @@ def inspect(root):
             print(f'记录的来源仓库：{repository}')
             print(f'记录的来源提交：{commit}')
             print(f'记录的套件源差异状态：{"有差异" if dirty else "无差异"}')
+        spec = manifest_suite(provenance, {
+            path.relative_to(root).as_posix(): value
+            for path, value in observed.items()
+        })
+        if spec is not None:
+            print(f'记录的套件身份：{spec.suite_id}')
+            print(f'记录的套件主版本：{spec.major_version}')
+            print(f'记录的仓库内源路径：{spec.source_path}')
+            print(f'记录的实际源目录：{provenance["source_directory"]}')
+        else:
+            print('记录的套件身份：未知；不能根据默认版本或当前 HEAD 推断。')
     else:
         print('未记录受管部署来源清单；来源提交未知。')
     print(f"受管资产检查通过：{len(file_paths)} 个文件，{len(mode_paths)} 个模式目标。")
     print("未核验来源仓库当前状态；资产匹配不等于与当前工作树同步。")
+    if active_suite:
+        if spec is None:
+            raise AssetError('激活套件身份未知；更新前须显式选择版本，不回退 V4')
+        return spec.major_version
     return 0
 
 
 def main():
     parser = argparse.ArgumentParser(description="只读检查受管部署资产及事务状态")
     parser.add_argument("--root", required=True, type=Path)
+    parser.add_argument("--active-suite", action="store_true",
+                        help="仅输出已核验激活套件版本；身份未知或资产漂移时失败")
     arguments = parser.parse_args()
     try:
+        if arguments.active_suite:
+            # 机器接口只输出版本；诊断未通过时不输出可误用的版本字符串。
+            with contextlib.redirect_stdout(io.StringIO()):
+                version = inspect(arguments.root, active_suite=True)
+            if not isinstance(version, str):
+                raise AssetError('受管资产检查未通过，拒绝解析激活套件')
+            print(version)
+            return 0
         return inspect(arguments.root)
     except (AssetError, OSError, ValueError, TypeError) as exc:
         print(f"无法确认部署状态：{exc}", file=sys.stderr)

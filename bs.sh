@@ -21,6 +21,7 @@ ROO_ENG_DIR="$ROO_GLOBAL_DIR/rules-bmad-engineer"
 DRY_RUN=0
 UNINSTALL=0
 VERSION="v4"
+VERSION_EXPLICIT=0
 SWITCH_TAG=""
 SWITCH_LATEST=0
 UPDATE_REMOTE=0
@@ -46,19 +47,31 @@ handoff_main() {
     exec env BMAD_HANDOFF_ACTIVE=1 bash "$SCRIPT_DIR/bs.sh" "${RESUME_ARGS[@]}" < /dev/null
 }
 
+select_version() {
+    if [ "$VERSION_EXPLICIT" -eq 1 ] && [ "$VERSION" != "$1" ]; then
+        printf '%s\n' '错误：不能同时选择不同套件版本；未更新或部署。' >&2
+        exit 1
+    fi
+    VERSION="$1"
+    VERSION_EXPLICIT=1
+}
+
 show_help() {
-    echo -e "${YELLOW}Usage:${NC} $0 [options] [v3 | v4]"
+    echo -e "${YELLOW}Usage:${NC} $0 [options] [v3 | v4 | v5]"
     echo ""
     echo -e "${GREEN}Major Architecture Versions:${NC}"
-    echo "  v4, 4, --v4       Install/activate BMAD-Solo V4 (Default active suite)"
-    echo "  v3, 3, --v3       Install/activate BMAD-Solo V3 (Historical baseline)"
+    echo "  v5, 5, --v5       显式选择 BMRalph V5 独立套件"
+    echo "  v4, 4, --v4       选择 V4；未指定版本的新安装兼容默认 V4"
+    echo "  v3, 3, --v3       选择 V3 历史基线（源资产仍须通过预检）"
+    echo "  --suite <version> 显式选择 v3、v4 或 v5；不同版本参数冲突即停止"
+    echo "  已有安装省略版本：保留已核验的受管版本；身份未知时要求显式选择"
     echo ""
     echo -e "${GREEN}GitOps Version Inspection & Updates:${NC}"
     echo "  --update, -u      Fetch & pull latest from origin and deploy physical mirror"
     echo "  --status, -s      Show Git status, deployed mirror status, commit, and manifest"
     echo "  --tags, -l        List all available release tags (v4.0.0, v4.1.0, etc.)"
-    echo "  --tag <tag>, -t   Checkout specific release tag and activate immediately"
-    echo "  --latest          Switch back to main branch (latest V4)"
+    echo "  --tag <tag>, -t   从标签提交核验并分发所选套件，不切换工作树"
+    echo "  --latest          切回 main；仓库分支选择不改变已确定的套件版本"
     echo ""
     echo -e "${GREEN}General Options:${NC}"
     echo "  --dry-run         Show actions without making changes"
@@ -66,6 +79,7 @@ show_help() {
     echo "  --mode-target <path>  显式模式配置相对路径，可重复；替代自动探测"
     echo "  --uninstall       Remove bmad-suite and global rules from Gemini config"
     echo "  --help, -h        Show this help message"
+    echo "  安装、更新、分发及 IDE 重载不启动 Ralph，不准备模型认证或部署业务服务"
     echo ""
 }
 
@@ -93,6 +107,7 @@ list_tags() {
 # 整个入口先解析为函数，再执行版本操作；避免 Bash 在脚本被替换后
 # 从旧文件偏移继续读取。成功后 exec 新版，不执行本函数的旧部署尾部。
 main() {
+local ORIGINAL_ARGS=("$@")
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -111,6 +126,10 @@ while [[ $# -gt 0 ]]; do
         --tag|-t)
             if [[ $# -lt 2 ]] || [[ "$2" =~ ^- ]]; then
                 echo -e "${RED}Error: --tag requires a tag argument (e.g. ./bs.sh --tag v4.0.0)${NC}"
+                exit 1
+            fi
+            if [ -n "$SWITCH_TAG" ] && [ "$SWITCH_TAG" != "$2" ]; then
+                printf '%s\n' '错误：不能同时选择不同标签；未更新或部署。' >&2
                 exit 1
             fi
             SWITCH_TAG="$2"
@@ -152,12 +171,24 @@ while [[ $# -gt 0 ]]; do
             UNINSTALL=1
             shift
             ;;
+        --suite)
+            if [[ $# -lt 2 ]] || [[ ! "$2" =~ ^v[345]$ ]]; then
+                printf '%s\n' '错误：--suite 需要 v3、v4 或 v5。' >&2
+                exit 1
+            fi
+            select_version "$2"
+            shift 2
+            ;;
         v3|3|--v3|--version-3|-3)
-            VERSION="v3"
+            select_version "v3"
             shift
             ;;
         v4|4|--v4|--version-4|-4)
-            VERSION="v4"
+            select_version "v4"
+            shift
+            ;;
+        v5|5|--v5|--version-5|-5)
+            select_version "v5"
             shift
             ;;
         *)
@@ -167,6 +198,20 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# 继承编号不是持锁证据；在新版续接及任何版本动作前核验内核排他锁。
+# 同一描述符穿过 exec 移交，最终部署仅借用，不释放外层锁。
+if [ "${BMAD_VERSION_LOCK_FD+x}" = x ]; then
+    if [[ ! "$BMAD_VERSION_LOCK_FD" =~ ^[0-9]+$ ]] || [ $DRY_RUN -eq 1 ] || [ $PREFLIGHT -eq 1 ] || [ $UNINSTALL -eq 1 ]; then
+        printf '%s\n' '错误：继承版本锁参数非法或与只读操作冲突，停止执行。' >&2
+        exit 1
+    fi
+    if [ $UPDATE_REMOTE -eq 0 ] && [ $SWITCH_LATEST -eq 0 ] && [ -z "$SWITCH_TAG" ] && [ -z "$RESUME_COMMIT" ]; then
+        printf '%s\n' '错误：继承版本锁缺少版本操作或新版续接，停止执行。' >&2
+        exit 1
+    fi
+    timeout -k 2s 15s python3 -B "$SCRIPT_DIR/scripts/deployment-version-guard.py" --root "${BMAD_DEPLOY_ROOT:-$HOME}" --check-fd "$BMAD_VERSION_LOCK_FD" < /dev/null
+fi
 
 # 内部续接只能部署已经核验的 main；禁止传回更新动作形成循环。
 if [ "${BMAD_HANDOFF_ACTIVE:-0}" = 1 ] && [ -z "$RESUME_COMMIT" ]; then
@@ -217,6 +262,21 @@ if [ -n "$SWITCH_TAG" ] && { [ $UPDATE_REMOTE -eq 1 ] || [ $SWITCH_LATEST -eq 1 
     exit 1
 fi
 
+# 在网络访问、主分支切换及新版移交前确定有效套件意图。
+# 旧资产或状态目录存在而身份记录缺失时，不按新安装默认回切 V4。
+if [ "$VERSION_EXPLICIT" -eq 0 ]; then
+    INTENT_ROOT="${BMAD_DEPLOY_ROOT:-$HOME}"
+    for MARKER in ".bmad-solo-deployment" ".gemini/config/plugins/bmad-suite" ".gemini/config/rules/bmad-core.md" ".roo/rules/02-bmad-core.md"; do
+        if [ -e "$INTENT_ROOT/$MARKER" ] || [ -L "$INTENT_ROOT/$MARKER" ]; then
+            VERSION=$(timeout 15s python3 -B "$SCRIPT_DIR/scripts/deployment-status.py" --root "$INTENT_ROOT" --active-suite < /dev/null)
+            break
+        fi
+    done
+fi
+MAPPING_ARGS=(--version "$VERSION")
+if [ -n "$SWITCH_TAG" ]; then MAPPING_ARGS+=(--tag "$SWITCH_TAG"); fi
+SOURCE_RELATIVE=$(timeout 15s python3 -B "$SCRIPT_DIR/scripts/suite_versions.py" "${MAPPING_ARGS[@]}" < /dev/null)
+
 # 版本操作的模拟执行必须在网络访问、切分支和创建缓存之前结束。
 # 此分支仅预览版本动作；未物化的源不能声称完成资产预检。
 if [ $DRY_RUN -eq 1 ] && { [ $UPDATE_REMOTE -eq 1 ] || [ $SWITCH_LATEST -eq 1 ] || [ -n "$SWITCH_TAG" ]; }; then
@@ -235,6 +295,16 @@ if [ $DRY_RUN -eq 1 ] && { [ $UPDATE_REMOTE -eq 1 ] || [ $SWITCH_LATEST -eq 1 ] 
     fi
     printf '%s\n' '仅完成版本动作预览；未执行资产预检、部署或运行时验收。'
     exit 0
+fi
+
+# 已有部署的真实版本动作须全程持有固定排他锁：先拒绝共享租约，
+# 再进行 Git 写入、缓存准备、新版移交及部署。只读预览已在上方返回。
+# 新安装没有部署状态时沿用首次部署预检，不为了版本动作创建锁。
+if [ $UPDATE_REMOTE -eq 1 ] || [ $SWITCH_LATEST -eq 1 ] || [ -n "$SWITCH_TAG" ] || [ -n "$RESUME_COMMIT" ]; then
+    VERSION_STATE="${BMAD_DEPLOY_ROOT:-$HOME}/.bmad-solo-deployment"
+    if [ "${BMAD_VERSION_LOCK_FD+x}" != x ] && { [ -e "$VERSION_STATE" ] || [ -L "$VERSION_STATE" ]; }; then
+        exec timeout -k 2s 30s python3 -B "$SCRIPT_DIR/scripts/deployment-version-guard.py" --root "${BMAD_DEPLOY_ROOT:-$HOME}" --repository "$SCRIPT_DIR" -- "${ORIGINAL_ARGS[@]}" < /dev/null
+    fi
 fi
 
 # 更新或切分支前保护已跟踪及未跟踪改动；禁用可选锁，避免状态检查刷新索引。
@@ -283,13 +353,13 @@ if [ -n "$SWITCH_TAG" ]; then
     echo -e "${YELLOW}======================================================${NC}"
     # 缓存绑定解析后的实际提交；完整提取并核验后发布，拒绝复用旧标签缓存。
     # 子进程失败直接停止，不回退到当前工作树或其他版本套件。
-    SOURCE_SUITE=$(timeout 30s python3 -B "$SCRIPT_DIR/scripts/tag-cache.py" --repo "$SCRIPT_DIR" --tag "$SWITCH_TAG" < /dev/null)
-    VERSION_TITLE="BMAD-Solo Tag $SWITCH_TAG (Isolated Snapshot)"
-    COMMAND_TIPS="  • /bmad-solo  : V4 Engineering Loop (Isolated Snapshot: $SWITCH_TAG)\n  • /ana-solo   : Dedicated Deep Analysis Channel"
+    SOURCE_SUITE=$(timeout 30s python3 -B "$SCRIPT_DIR/scripts/tag-cache.py" --repo "$SCRIPT_DIR" --tag "$SWITCH_TAG" --suite "$VERSION" < /dev/null)
+    VERSION_TITLE="BMAD-Solo $VERSION Tag $SWITCH_TAG (Isolated Snapshot)"
+    COMMAND_TIPS="  • /bmad-solo  : $VERSION 工程入口（标签快照：$SWITCH_TAG）\n  • /ana-solo   : 分析入口；以目标运行时实际加载为准"
     echo -e "${GREEN}[✔] Target suite isolated at: $SOURCE_SUITE${NC}\n"
 elif [ $SWITCH_LATEST -eq 1 ] || [ -n "$RESUME_COMMIT" ]; then
     echo -e "${YELLOW}======================================================${NC}"
-    echo -e "${YELLOW} GitOps: Returning to main branch (latest V4)... ${NC}"
+    echo -e "${YELLOW} GitOps: Returning to main branch; selected suite $VERSION... ${NC}"
     echo -e "${YELLOW}======================================================${NC}"
     # 先确认本地主分支存在；缺失时不尝试切换，也不进入部署。
     timeout 15s git --no-pager -C "$SCRIPT_DIR" rev-parse --verify --end-of-options 'refs/heads/main^{commit}' < /dev/null > /dev/null
@@ -307,23 +377,19 @@ elif [ $SWITCH_LATEST -eq 1 ] || [ -n "$RESUME_COMMIT" ]; then
         SELECTED_COMMIT=$(timeout 15s git --no-pager -C "$SCRIPT_DIR" rev-parse --verify HEAD < /dev/null)
         handoff_main "$SELECTED_COMMIT"
     fi
-    SOURCE_SUITE="$SCRIPT_DIR/bmad-suite-v4"
-    VERSION_TITLE="BMAD-Solo V4 (Analyst Closed-Loop + /ana-solo + 4 Convergence Locks)"
-    COMMAND_TIPS="  • /bmad-solo  : V4 Engineering Loop (with Analyst Gate)\n  • /ana-solo   : Dedicated Deep Analysis Channel"
-    echo -e "${GREEN}[✔] Successfully selected main branch (latest V4)${NC}\n"
-elif [ "$VERSION" = "v3" ]; then
-    SOURCE_SUITE="$SCRIPT_DIR/bmad-suite-v3"
-    VERSION_TITLE="BMAD-Solo V3 (Stable Baseline)"
-    COMMAND_TIPS="  • /bmad-solo  : V3 Standard Engineering Loop"
+    SOURCE_SUITE="$SCRIPT_DIR/$SOURCE_RELATIVE"
+    VERSION_TITLE="BMAD-Solo $VERSION（已选择 main；套件版本独立）"
+    COMMAND_TIPS="  • /bmad-solo  : $VERSION 工程入口\n  • /ana-solo   : 分析入口；以目标运行时实际加载为准"
+    echo -e "${GREEN}[✔] 已选择 main，保留套件 $VERSION${NC}\n"
 else
-    SOURCE_SUITE="$SCRIPT_DIR/bmad-suite-v4"
-    VERSION_TITLE="BMAD-Solo V4 (Analyst Closed-Loop + /ana-solo + 4 Convergence Locks)"
-    COMMAND_TIPS="  • /bmad-solo  : V4 Engineering Loop (with Analyst Gate)\n  • /ana-solo   : Dedicated Deep Analysis Channel"
+    SOURCE_SUITE="$SCRIPT_DIR/$SOURCE_RELATIVE"
+    VERSION_TITLE="BMAD-Solo $VERSION"
+    if [ "$VERSION" = "v5" ]; then VERSION_TITLE="BMRalph V5 独立套件"; fi
+    COMMAND_TIPS="  • /bmad-solo  : $VERSION 工程入口\n  • /ana-solo   : 分析入口；以目标运行时实际加载为准"
 fi
 
-if [ ! -d "$SOURCE_SUITE" ] && [ -d "$SCRIPT_DIR/bmad-suite" ]; then
-    echo -e "${YELLOW}Notice: $SOURCE_SUITE not found, falling back to $SCRIPT_DIR/bmad-suite${NC}"
-    SOURCE_SUITE="$SCRIPT_DIR/bmad-suite"
+if [ -z "$SWITCH_TAG" ]; then
+    SOURCE_SUITE=$(timeout 15s python3 -B "$SCRIPT_DIR/scripts/suite_versions.py" --version "$VERSION" --repo "$SCRIPT_DIR" < /dev/null)
 fi
 
 if [ ! -d "$SOURCE_SUITE" ]; then
@@ -344,6 +410,9 @@ deploy_managed_suite() {
     local DEPLOY_ROOT="${BMAD_DEPLOY_ROOT:-$HOME}"
     local RELATIVE_SETTINGS
     local DEPLOY_ARGS=(--root "$DEPLOY_ROOT" --source "$SOURCE_SUITE" --repository "$SCRIPT_DIR")
+    if [ "${BMAD_VERSION_LOCK_FD+x}" = x ]; then
+        DEPLOY_ARGS+=(--deployment-lock-fd "$BMAD_VERSION_LOCK_FD")
+    fi
     if [ $PREFLIGHT -eq 1 ]; then
         DEPLOY_ARGS+=(--preflight)
     fi
@@ -390,7 +459,8 @@ echo -e "3. Version & Rollback management:
    • View release tags:     ./bs.sh --tags
    • Rollback to tag:       ./bs.sh --tag <tag> (e.g. ./bs.sh --tag v4.1.0)
    • Return to latest:      ./bs.sh --latest
-   • Switch major version:  ./bs.sh v3 | ./bs.sh v4"
+   • Switch major version:  ./bs.sh v3 | ./bs.sh v4 | ./bs.sh v5"
+printf '%s\n' '安装、更新、分发和 IDE 重载不启动 Ralph；远程试跑与模型认证须另行授权。'
 echo -e ""
 }
 

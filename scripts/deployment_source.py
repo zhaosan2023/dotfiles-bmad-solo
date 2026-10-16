@@ -11,6 +11,7 @@ import stat
 
 from asset_safety import AssetError, checked_path, parse_modes, require_unchanged, snapshot
 from managed_files import validate_relative_path, validate_snapshot
+from suite_versions import SUITES, IDENTITY_FILE, validate_identity
 
 
 REQUIRED_FILES = (
@@ -66,6 +67,11 @@ def collect_source(source: Path, mode_targets: tuple[str, ...]):
         raise AssetError("套件缺少必需资产，拒绝不完整部署：" + ", ".join(sorted(missing)))
     if ".manifest.json" in sources:
         raise AssetError("套件源包含部署生成的清单，拒绝混入目标状态")
+    known = [spec for spec in SUITES.values() if spec.source_path == source.name]
+    if known:
+        validate_identity(source, known[0])
+    elif IDENTITY_FILE in sources:
+        raise AssetError("套件声明身份但物理目录不符合受支持的固定映射")
 
     mode_source = sources["roo/settings/custom_modes.yaml"].content
     mode_data = parse_modes(mode_source)

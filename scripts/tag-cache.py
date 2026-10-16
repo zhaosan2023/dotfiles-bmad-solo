@@ -20,6 +20,7 @@ import tempfile
 from asset_safety import AssetError, Snapshot, checked_path, deployment_lock, snapshot
 from deployment_source import collect_source
 from managed_files import validate_relative_path
+from suite_versions import suite_spec, validate_identity, validate_tag_hint
 
 
 def git(repo, *arguments):
@@ -35,15 +36,16 @@ def git(repo, *arguments):
     return result.stdout
 
 
-def archive_files(repo, commit):
-    content = git(repo, "archive", "--format=tar", commit, "bmad-suite-v4")
+def archive_files(repo, commit, version="v4"):
+    spec = suite_spec(version)
+    content = git(repo, "archive", "--format=tar", commit, "--", spec.source_path)
     files = {}
     directories = set()
     with tarfile.open(fileobj=io.BytesIO(content), mode="r:") as archive:
         for member in archive:
             name = member.name.rstrip("/") if member.isdir() else member.name
             validate_relative_path(name)
-            if name != "bmad-suite-v4" and not name.startswith("bmad-suite-v4/"):
+            if name != spec.source_path and not name.startswith(spec.source_path + "/"):
                 raise AssetError("归档包含套件范围外的路径")
             if name in files or name in directories:
                 raise AssetError(f"归档路径重复：{name}")
@@ -65,7 +67,8 @@ def archive_files(repo, commit):
     return files
 
 
-def verify_cache(directory, commit, expected):
+def verify_cache(directory, commit, expected, version="v4"):
+    spec = suite_spec(version)
     directory = checked_path(directory)
     if not directory.is_dir():
         raise AssetError("缓存必须为物理目录")
@@ -85,11 +88,15 @@ def verify_cache(directory, commit, expected):
                 actual[relative] = snapshot(path)
     if actual != expected:
         raise AssetError("缓存内容或权限与实际提交不符；拒绝复用不完整或被修改的缓存")
-    # 包括必需资产、模式 YAML 和源链接边界校验。
-    collect_source(directory / "bmad-suite-v4", ())
+    # 包括必需资产、模式 YAML、显式套件身份和源链接边界校验。
+    source = directory / spec.source_path
+    collect_source(source, ())
+    validate_identity(source, spec)
 
 
-def prepare_cache(repo, tag):
+def prepare_cache(repo, tag, version="v4"):
+    spec = suite_spec(version)
+    validate_tag_hint(tag, spec)
     repo = checked_path(repo)
     git(repo, "check-ref-format", "refs/tags/" + tag)
     validate_relative_path(tag)
@@ -104,15 +111,15 @@ def prepare_cache(repo, tag):
     if legacy.exists():
         raise AssetError("发现旧标签命名缓存；需显式审核迁移，拒绝自动复用或覆盖")
     # 所有归档路径及类型先在内存中检查，不直接调用通用解包写入。
-    expected = archive_files(repo, commit)
+    expected = archive_files(repo, commit, version)
     cache_root.mkdir(mode=0o700, exist_ok=True)
     if not checked_path(cache_root).is_dir():
         raise AssetError("缓存根路径不是物理目录")
     with deployment_lock(cache_root / "cache.lock"):
-        destination = checked_path(cache_root / ("commit-" + commit))
+        destination = checked_path(cache_root / spec.cache_name(commit))
         if destination.exists():
-            verify_cache(destination, commit, expected)
-            return destination / "bmad-suite-v4"
+            verify_cache(destination, commit, expected, version)
+            return destination / spec.source_path
         temporary = Path(tempfile.mkdtemp(prefix=".preparing-", dir=cache_root))
         try:
             for name, value in sorted(expected.items()):
@@ -129,11 +136,11 @@ def prepare_cache(repo, tag):
                 stream.flush()
                 os.fchmod(stream.fileno(), 0o600)
                 os.fsync(stream.fileno())
-            verify_cache(temporary, commit, expected)
+            verify_cache(temporary, commit, expected, version)
             if checked_path(destination).exists():
                 raise AssetError("缓存发布目标意外出现，拒绝覆盖")
             temporary.rename(destination)
-            return destination / "bmad-suite-v4"
+            return destination / spec.source_path
         finally:
             # 仅清理本次创建的未发布临时目录；保留旧缓存和诊断现场。
             if temporary.exists():
@@ -144,9 +151,11 @@ def main():
     parser = argparse.ArgumentParser(description="按提交核验并发布标签套件缓存")
     parser.add_argument("--repo", required=True, type=Path)
     parser.add_argument("--tag", required=True)
+    parser.add_argument("--suite", choices=("v3", "v4", "v5"), default="v4",
+                        help="显式套件版本；旧调用兼容 V4，不回退所选来源")
     arguments = parser.parse_args()
     try:
-        print(prepare_cache(arguments.repo, arguments.tag))
+        print(prepare_cache(arguments.repo, arguments.tag, arguments.suite))
         return 0
     except (AssetError, OSError, ValueError, tarfile.TarError,
             subprocess.TimeoutExpired) as exc:

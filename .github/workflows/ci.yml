@@ -52,8 +52,11 @@ jobs:
               print(f"Valid plugin JSON: {path}")
           ' < /dev/null
 
-      - name: Validate Roo Configuration and Metadata Contracts
-        run: timeout 30s python3 scripts/validate-roo-contracts.py < /dev/null
+      - name: Validate V4 and V5 Configuration and Metadata Contracts
+        run: |
+          set -euo pipefail
+          timeout 30s python3 -B scripts/validate-roo-contracts.py --suite v4 < /dev/null
+          timeout 30s python3 -B scripts/validate-roo-contracts.py --suite v5 < /dev/null
 
       - name: Test Configuration Contracts
         run: timeout 30s python3 -m unittest discover -s tests/roo_contracts -p 'test_*.py' < /dev/null
@@ -107,6 +110,20 @@ jobs:
           fi
           for group in "${groups[@]}"; do
             timeout 30s python3 -m unittest discover -s tests/roo_distribution -p "${group##*/}" < /dev/null
+          done
+
+      - name: Test Suite Selection and Compatibility in Bounded Sequential Groups
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          groups=(tests/roo_distribution/test_suite*.py)
+          if [ "${#groups[@]}" -eq 0 ]; then
+            printf '%s\n' 'Missing suite compatibility tests' >&2
+            exit 1
+          fi
+          for group in "${groups[@]}"; do
+            timeout 30s python3 -B -m unittest discover -s tests/roo_distribution -p "${group##*/}" < /dev/null
           done
 
       - name: State Verification Boundary

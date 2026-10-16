@@ -175,11 +175,79 @@ def atomic_replace(
         temporary.unlink(missing_ok=True)
 
 
-@contextmanager
-def deployment_lock(path: Path):
-    """非阻塞单写者锁；锁文件永久保留，避免删除后形成不同锁 inode。"""
+def validate_inherited_deployment_lock(path: Path, descriptor: int) -> None:
+    """只读核验继承描述符确实持有同一固定文件的 Linux 排他 flock。
+
+    描述符编号或调用方标记不是持锁证据。不尝试获取、升级或释放锁；
+    缺少内核证据时失败关闭。本接口不提供同账号恶意代码隔离。
+    """
+    if type(descriptor) is not int or descriptor < 3:
+        raise AssetError("继承部署锁描述符非法")
     path = checked_path(path)
-    fd = os.open(path, os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW | os.O_NONBLOCK, 0o600)
+    try:
+        current = path.lstat()
+        held = os.fstat(descriptor)
+        if (current.st_dev, current.st_ino) != (held.st_dev, held.st_ino):
+            raise AssetError("继承部署锁身份发生变化；停止对账")
+        for info in (current, held):
+            if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
+                raise AssetError("继承部署锁必须是单硬链接普通文件")
+        # fdinfo 的锁记录来自内核；无锁文件及共享租约不能冒充排他锁。
+        with open(f"/proc/self/fdinfo/{descriptor}", "rb") as stream:
+            content = stream.read(16385)
+        if len(content) > 16384:
+            raise AssetError("继承部署锁内核证据超出预算")
+        exclusive = False
+        for line in content.decode("ascii").splitlines():
+            if not line.startswith("lock:"):
+                continue
+            fields = line.split()[1:]
+            if (len(fields) != 8
+                    or fields[1:4] != ["FLOCK", "ADVISORY", "WRITE"]
+                    or fields[-2:] != ["0", "EOF"]):
+                continue
+            major, minor, inode = fields[5].split(":")
+            if (int(major, 16), int(minor, 16), int(inode)) == (
+                    os.major(held.st_dev), os.minor(held.st_dev), held.st_ino):
+                exclusive = True
+        if not exclusive:
+            raise AssetError("继承描述符未持有可核验的排他部署锁")
+        after = checked_path(path).lstat()
+        if (after.st_dev, after.st_ino) != (held.st_dev, held.st_ino):
+            raise AssetError("继承部署锁在核验期间被替换；停止对账")
+        if not stat.S_ISREG(after.st_mode) or after.st_nlink != 1:
+            raise AssetError("继承部署锁在核验期间发生变化")
+    except (OSError, UnicodeError, ValueError) as exc:
+        if isinstance(exc, AssetError):
+            raise
+        raise AssetError("无法核验继承部署锁；未获得写入权限") from exc
+
+
+@contextmanager
+def deployment_lock(path: Path, *, inherited_fd: int | None = None,
+                    create: bool = True):
+    """非阻塞单写者锁；可借用经内核证据核验的外层排他描述符。
+
+    外层版本操作可跨新版移交与最终部署持续持锁；借用者不得解锁或
+    关闭描述符。常规调用仍独立获取锁，锁文件永久保留。
+    """
+    path = checked_path(path)
+    if inherited_fd is not None:
+        validate_inherited_deployment_lock(path, inherited_fd)
+        try:
+            yield inherited_fd
+        except BaseException:
+            # 保留真实部署失败，不以退出检查掩盖原始异常。
+            raise
+        else:
+            validate_inherited_deployment_lock(path, inherited_fd)
+        return
+    if type(create) is not bool:
+        raise AssetError("部署锁创建策略必须是明确布尔值")
+    flags = os.O_RDWR | os.O_NOFOLLOW | os.O_NONBLOCK
+    if create:
+        flags |= os.O_CREAT
+    fd = os.open(path, flags, 0o600)
     try:
         info = os.fstat(fd)
         if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
@@ -189,7 +257,7 @@ def deployment_lock(path: Path):
         except BlockingIOError as exc:
             raise AssetError("另一部署进程持有锁；本次未获得写入权限") from exc
         try:
-            yield
+            yield fd
         finally:
             fcntl.flock(fd, fcntl.LOCK_UN)
     finally:

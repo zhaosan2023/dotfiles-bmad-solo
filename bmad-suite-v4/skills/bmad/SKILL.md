@@ -27,10 +27,12 @@ and uses real test feedback as the ultimate arbiter of truth.
 2. **活动计划探测**：无显式路径时才探测 `_bmad-output/pending_implementation_plan.md`；相关且有效才绑定，无关计划不抢占，多任务冲突时请求选择。
 3. **归档与空闲降级**：默认入口缺失是正常状态，不重复盲读。继续历史任务时检索 `_bmad-output/archive/plans/` 并展示匹配依据，不自动执行最新归档；候选不明时请求选择，无候选时按意图空闲或提出新方案。明确的小修复与运维任务可走轻量路径。
 4. **恢复边界**：文件缺失、权限拒绝、磁盘错误和格式损坏分别处理。历史计划默认只读，恢复或重放须显式授权，建立保留来源的新执行实例并重新验证，不继承旧绿灯或覆盖历史输入。
-5. **契约绑定**：校验 `plan_id`、`status`、`scenario`、`impact_tier`、`requires_adr`、`adr_file`、`verification_type`、`verification_command`、`verification_command_status`、`authorization` 和 `session_id`。绑定路径、标识、内容指纹与阶段，修改前复核未被替换；本任务合法更新计划后记录新指纹。当前用户授权与立项时授权分别记录，不编造会话标识。
+5. **契约绑定**：在接管、契约变化与阶段边界校验 `plan_id`、`status`、`scenario`、`impact_tier`、`requires_adr`、`adr_file`、`verification_type`、`verification_command`、`verification_command_status`、`authorization` 和 `session_id`。绑定路径、标识、契约版本与阶段；外部变化先停止对账，取消逐修改绑定和模型手工计算、同步指纹。当前用户授权优先于立项说明，在唯一任务记录中注明差异，不编造会话标识。
 6. **事实与平台适配**：读取 `_bmad-output/project-context.md`；仅在权限和任务允许时执行 `timeout 15s git --no-pager status --short < /dev/null`。使用当前平台实际提供的任务跟踪能力；不强制写入未知的应用目录，不编造会话路径，不绕过工作区边界。
 
 状态契约：`INTAKE → READ_ONLY / IDLE / NEEDS_SELECTION / READY`；获准实施后 `READY → EXECUTING → VERIFYING → COMPLETED → ARCHIVED`。失败进入 `BLOCKED`，明确暂停进入 `SUSPENDED`，获准恢复后重新校验再进入 `READY`。
+
+当前状态仅用一个权威入口：已可用控制器从真实结果生成的状态卡，或控制器未实现时的平台任务记录及真实工具回执；后者不具备程序防篡改保证。计划与 ADR 不保存逐轮执行流水，不镜像进度或历史通过记录。状态保存不触发业务重测或递归复验；实现、契约或环境变化后重验受影响证据。接管仅提供目标、授权、至多 80 行当前状态与相关差异和证据定位，保留全部未完成事项，不全文回灌历史。
 
 ---
 

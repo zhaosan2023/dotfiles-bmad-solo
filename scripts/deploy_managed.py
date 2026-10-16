@@ -130,7 +130,7 @@ def prepare(root, state_dir, files, modes, *, uninstall=False,
 
 
 def deploy(root, state_dir, files, modes, *, dry_run=False, uninstall=False,
-           adopt_files=frozenset(), adopt_modes=None):
+           adopt_files=frozenset(), adopt_modes=None, inherited_lock_fd=None):
     """首次部署先只读预检，再准备状态目录；模拟执行不创建目录、锁或日志。
 
     对未完成批次失败关闭，保留备份，禁止新部署覆盖恢复证据。
@@ -161,7 +161,8 @@ def deploy(root, state_dir, files, modes, *, dry_run=False, uninstall=False,
                     raise AssetError(f"状态目录创建冲突：{directory}")
     if not checked_path(state_dir).is_dir():
         raise AssetError("部署状态路径必须是物理目录")
-    with deployment_lock(state_dir / "deployment.lock"):
+    with deployment_lock(state_dir / "deployment.lock",
+                         inherited_fd=inherited_lock_fd):
         for directory in sorted(state_dir.glob("transaction-*")):
             directory = checked_path(directory)
             record = snapshot(directory / "transaction.json")

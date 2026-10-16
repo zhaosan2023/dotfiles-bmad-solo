@@ -15,6 +15,9 @@ from managed_modes import mode_digest
 from asset_safety import parse_modes
 
 
+from suite_versions import SUITES, validate_identity
+
+
 MANIFEST_TARGET = '.gemini/config/plugins/bmad-suite/.manifest.json'
 
 
@@ -38,6 +41,10 @@ def git(repo, *arguments):
 
 def committed_files(repo, commit, relative):
     """比较实际分发字节和 Git 提交，不仅依赖工作树状态提示。"""
+    # 新套件可能尚未提交；明确核验提交中不存在该路径后返回空基线。
+    # Git 错误仍抛出，不把归档失败包装成未跟踪来源。
+    if not git(repo, 'ls-tree', '--name-only', commit, '--', relative).strip():
+        return {}
     content = git(repo, 'archive', '--format=tar', commit, '--', relative)
     result = {}
     prefix = relative + '/'
@@ -66,6 +73,8 @@ def committed_files(repo, commit, relative):
 
 def build_manifest(source, sources, files, modes, *, repository=None):
     source = checked_path(source)
+    candidates = [spec for spec in SUITES.values() if spec.source_path == source.name]
+    spec = validate_identity(source, candidates[0]) if candidates else None
     metadata = {
         'schema_version': 1,
         'source_directory': str(source),
@@ -74,6 +83,10 @@ def build_manifest(source, sources, files, modes, *, repository=None):
         'source_dirty': None,
         'source_kind': 'unversioned',
         'source_dirty_scope': 'distributed_suite',
+        # schema 1 兼容扩展；旧记录可缺字段，未知来源不伪造身份。
+        'suite_id': spec.suite_id if spec else None,
+        'major_version': spec.major_version if spec else None,
+        'source_path': spec.source_path if spec else None,
     }
     if repository is not None:
         repo = checked_path(repository)
@@ -86,15 +99,18 @@ def build_manifest(source, sources, files, modes, *, repository=None):
         cache_root = repo / '.versions'
         if source.is_relative_to(cache_root):
             relative_parts = source.relative_to(cache_root).parts
-            if (len(relative_parts) != 2 or relative_parts[1] != 'bmad-suite-v4'
-                    or not re.fullmatch(r'commit-([0-9a-f]{40}|[0-9a-f]{64})',
-                                        relative_parts[0])):
+            if spec is None or len(relative_parts) != 2:
                 raise AssetError('来源缓存路径不符合提交绑定契约')
-            commit = relative_parts[0][len('commit-'):]
+            match = re.fullmatch(r'(?:v[35]-)?commit-([0-9a-f]{40}|[0-9a-f]{64})',
+                                 relative_parts[0])
+            if (match is None or relative_parts[1] != spec.source_path
+                    or relative_parts[0] != spec.cache_name(match.group(1))):
+                raise AssetError('来源缓存路径不符合提交与套件联合绑定契约')
+            commit = match.group(1)
             marker = snapshot(source.parent / 'commit.txt')
             if marker != Snapshot((commit + '\n').encode('ascii'), 0o600):
                 raise AssetError('来源缓存提交标识缺失或不匹配')
-            expected = committed_files(repo, commit, 'bmad-suite-v4')
+            expected = committed_files(repo, commit, spec.source_path)
             if expected != sources:
                 raise AssetError('来源缓存内容或权限与提交不符')
             metadata.update(source_commit=commit, source_dirty=False,

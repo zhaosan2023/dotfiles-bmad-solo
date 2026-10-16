@@ -10,6 +10,13 @@ import sys
 
 import yaml
 
+# 兼容 CLI 与按文件加载的静态测试；公共版本映射只从本脚本同目录加载。
+SCRIPT_DIRECTORY = Path(__file__).resolve().parent
+if str(SCRIPT_DIRECTORY) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIRECTORY))
+from asset_safety import AssetError
+from suite_versions import suite_spec, validate_identity
+
 
 class ContractError(ValueError):
     """输入不满足静态契约。"""
@@ -198,17 +205,86 @@ def validate_plan(data, root, template=False):
     # 仅做契约形状校验，不执行命令，也不宣称这是 Shell 安全解析器。
 
 
-def validate_repository(root, explicit_plan=None):
-    validate_modes(load_yaml(project_file(root, MODE_PATH).read_text(encoding="utf-8")))
-    validate_plan(frontmatter(project_file(root, TEMPLATE_PATH).read_text(encoding="utf-8")),
+def suite_paths(version):
+    """保留旧 V4 常量接口；显式版本仅选择对应资产，不回退。"""
+    spec = suite_spec(version)
+    require(version in {"v4", "v5"}, "静态 Roo 契约仅支持 v4 或 v5")
+    prefix = spec.source_path
+    return (
+        f"{prefix}/roo/settings/custom_modes.yaml",
+        f"{prefix}/skills/bmad/references/templates/implementation-plan.template.md",
+        tuple(f"{prefix}/{suffix}" for suffix in (
+            "roo/rules/02-bmad-core.md",
+            "roo/rules-ana-architect/01-ana-solo-core.md",
+            "roo/rules-bmad-engineer/01-bmad-engineer-core.md",
+        )),
+        tuple(f"{prefix}/skills/{name}/SKILL.md" for name in ("bmad", "ana-solo")),
+    )
+
+
+def validate_v5(root):
+    """V5 自身的静态职责与本地链接；不验证宿主加载或程序行为。"""
+    source = root / suite_spec("v5").source_path
+    validate_identity(source, suite_spec("v5"))
+    required = (
+        "rules/bmad-constitution.md", "rules/bmad-core.md",
+        "roo/rules/01-bmad-constitution.md",
+        "skills/bmad/references/capability-map.md",
+        "skills/bmad/references/procedures/build.md",
+        "skills/bmad/references/procedures/code-review.md",
+        "skills/bmad/references/procedures/three-pass-analysis.md",
+    )
+    for relative in required:
+        require(bool(project_file(root, f"{source.name}/{relative}").read_text(
+            encoding="utf-8").strip()), f"V5 必需资产为空：{relative}")
+    native_core = (source / "rules/bmad-core.md").read_text(encoding="utf-8")
+    roo_core = (source / "roo/rules/02-bmad-core.md").read_text(encoding="utf-8")
+    native_constitution = (source / "rules/bmad-constitution.md").read_text(encoding="utf-8")
+    roo_constitution = (source / "roo/rules/01-bmad-constitution.md").read_text(encoding="utf-8")
+    require(native_core.split("---", 2)[-1].strip() == roo_core.strip(),
+            "V5 双平台核心规则语义正文不一致")
+    require(native_constitution.split("---", 2)[-1].strip() == roo_constitution.strip(),
+            "V5 双平台宪章正文不一致")
+    for token in ("任务清单", "唯一", "只读视图", "平台任务记录", "不默认搜索归档",
+                  "80 行", "字节", "BLOCKED", "SUSPENDED", "PROPOSED"):
+        require(token in roo_core, f"V5 核心规则缺少静态职责：{token}")
+    analyst = (source / "roo/rules-ana-architect/01-ana-solo-core.md").read_text(
+        encoding="utf-8")
+    for token in ("三遍阅读", "第一遍", "第二遍", "第三遍", "不使用终端"):
+        require(token in analyst, f"V5 分析规则缺少要求：{token}")
+    for path in sorted(source.rglob("*")):
+        require(not path.is_symlink(), f"V5 资产不得使用软链接：{path.name}")
+        if not path.is_file() or path.suffix not in {".md", ".yaml", ".json", ".py"}:
+            continue
+        text = path.read_text(encoding="utf-8")
+        require(re.search(r"bmad-suite(?:-v[34])?/", text) is None,
+                f"V5 运行资产不得引用旧套件路径：{path.relative_to(source)}")
+        if path.suffix != ".md":
+            continue
+        for target in re.findall(r"\[[^\]\n]*\]\(([^\s)]+)\)", text):
+            if re.match(r"[a-zA-Z][a-zA-Z0-9+.-]*:", target) or target.startswith("#"):
+                continue
+            target = re.sub(r":\d+$", "", target.split("#", 1)[0])
+            linked = (path.parent / target).resolve()
+            require(linked.is_relative_to(source.resolve()),
+                    f"V5 本地导航越过套件边界：{target}")
+            require(linked.exists(), f"V5 本地导航目标不存在：{target}")
+
+
+def validate_repository(root, explicit_plan=None, suite="v4"):
+    mode_path, template_path, rule_paths, skill_paths = suite_paths(suite)
+    validate_modes(load_yaml(project_file(root, mode_path).read_text(encoding="utf-8")))
+    validate_plan(frontmatter(project_file(root, template_path).read_text(encoding="utf-8")),
                   root, template=True)
-    for path, name in zip(SKILL_PATHS, ("bmad-solo", "ana-solo")):
+    for path, name in zip(skill_paths, ("bmad-solo", "ana-solo")):
         data = frontmatter(project_file(root, path).read_text(encoding="utf-8"))
         require(data.get("name") == name, f"原生入口标识错误：{path}")
         require(isinstance(data.get("description"), str), f"入口缺少描述：{path}")
-    for path in RULE_PATHS:
+    for path in rule_paths:
         require(bool(project_file(root, path).read_text(encoding="utf-8").strip()),
                 f"规则文件为空：{path}")
+    if suite == "v5":
+        validate_v5(root)
     if explicit_plan is not None:
         plan = project_file(root, explicit_plan)
     elif (root / DEFAULT_PLAN).exists() or (root / DEFAULT_PLAN).is_symlink():
@@ -228,13 +304,15 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=ROOT)
     parser.add_argument("--plan", help="显式计划路径；缺失时失败，不降级替换")
+    parser.add_argument("--suite", choices=("v4", "v5"), default="v4",
+                        help="显式套件；省略仅兼容旧 V4 调用，不回退缺失的 V5")
     args = parser.parse_args(argv)
     try:
-        validate_repository(args.root, args.plan)
-    except (ContractError, OSError, UnicodeError, yaml.YAMLError, re.error, ValueError) as exc:
+        validate_repository(args.root, args.plan, args.suite)
+    except (AssetError, ContractError, OSError, UnicodeError, yaml.YAMLError, re.error, ValueError) as exc:
         print(f"FAIL：{exc}", file=sys.stderr)
         return 1
-    print("PASS：配置和元数据静态契约有效；未验证 Roo 运行时权限或模型行为。")
+    print(f"PASS：{args.suite} 配置和元数据静态契约有效；未验证 Roo 运行时权限或模型行为。")
     return 0
 
 

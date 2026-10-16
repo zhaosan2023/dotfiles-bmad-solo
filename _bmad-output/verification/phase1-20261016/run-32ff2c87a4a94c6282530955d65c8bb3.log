@@ -1,0 +1,6 @@
+...
+----------------------------------------------------------------------
+Ran 3 tests in 2.490s
+
+OK
+BMAD_TEST_RESULT {"directory":"bmralph-suite-v5/tests","discovered":3,"errors":0,"expected_failures":0,"failures":0,"matched_files":1,"minimum_tests":3,"missing_required_tests":[],"pattern":"test_process_tree_guards.py","reason":"\u5168\u90e8\u9009\u4e2d\u6d4b\u8bd5\u5b9e\u9645\u901a\u8fc7","required_tests":["test_process_tree_guards.ProcessTreeGuards.test_zero_exit_with_orphan_is_blocked_and_same_group_child_is_killed","test_process_tree_guards.ProcessTreeGuards.test_sigint_and_sigterm_interruptions_kill_child_tree_and_block","test_process_tree_guards.ProcessTreeGuards.test_unconfirmed_orphan_reaping_is_blocked_even_after_leader_exit_zero"],"skipped":0,"status":"PASS","tests_run":3,"unexpected_successes":0,"workspace":"/home/ecs-user/dotfiles-bmad-solo"}

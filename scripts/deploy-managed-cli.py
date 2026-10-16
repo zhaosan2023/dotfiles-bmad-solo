@@ -10,7 +10,9 @@ import argparse
 from pathlib import Path
 import sys
 
-from asset_safety import AssetError, checked_path
+from asset_safety import (
+    AssetError, checked_path, validate_inherited_deployment_lock,
+)
 from deploy_managed import deploy
 from deployment_preflight import inspect_migration
 from deployment_targets import discover_mode_targets
@@ -36,6 +38,8 @@ def parser():
                         help="明确授权首次接管的相对文件路径，可重复")
     result.add_argument("--adopt-mode", action="append", default=[],
                         help="明确授权首次接管，格式为目标相对路径=模式标识")
+    result.add_argument("--deployment-lock-fd", type=int,
+                        help=argparse.SUPPRESS)
     result.add_argument("--dry-run", action="store_true")
     result.add_argument("--uninstall", action="store_true")
     return result
@@ -52,6 +56,12 @@ def main(argv=None):
             raise AssetError("部署根目录必须已经存在")
         # 固定状态位置，避免通过切换状态目录绕过同一根目录的部署锁。
         state = root / ".bmad-solo-deployment"
+        if arguments.deployment_lock_fd is not None:
+            if arguments.preflight or arguments.dry_run:
+                raise AssetError("只读预检不借用部署写锁")
+            validate_inherited_deployment_lock(
+                state / "deployment.lock", arguments.deployment_lock_fd,
+            )
         if arguments.uninstall:
             if (arguments.source is not None or arguments.repository is not None
                     or arguments.mode_target or arguments.discover_modes
@@ -116,6 +126,7 @@ def main(argv=None):
             uninstall=arguments.uninstall,
             adopt_files=set(arguments.adopt_file),
             adopt_modes=adopt_modes,
+            inherited_lock_fd=arguments.deployment_lock_fd,
         )
         if arguments.dry_run:
             changed = [item for item in outcome if item.before != item.after]

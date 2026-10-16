@@ -1,0 +1,6 @@
+....
+----------------------------------------------------------------------
+Ran 4 tests in 0.230s
+
+OK
+BMAD_TEST_RESULT {"directory":"tests/roo_distribution","discovered":4,"errors":0,"expected_failures":0,"failures":0,"matched_files":1,"minimum_tests":4,"missing_required_tests":[],"pattern":"test_controlled_rollback.py","reason":"\u5168\u90e8\u9009\u4e2d\u6d4b\u8bd5\u5b9e\u9645\u901a\u8fc7","required_tests":["test_controlled_rollback.ControlledRollbackGuards.test_failure_restores_only_batch_bytes_modes_creation_and_deletion","test_controlled_rollback.ControlledRollbackGuards.test_concurrent_managed_user_edit_blocks_restore_without_overwrite","test_controlled_rollback.ControlledRollbackGuards.test_edit_between_restore_check_and_replace_is_preserved","test_controlled_rollback.ControlledRollbackGuards.test_preflight_concurrent_change_blocks_before_any_batch_write"],"skipped":0,"status":"PASS","tests_run":4,"unexpected_successes":0,"workspace":"/home/ecs-user/dotfiles-bmad-solo"}

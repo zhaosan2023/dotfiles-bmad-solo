@@ -2,6 +2,8 @@
 *.bak*
 *.tmp
 .versions/
+.bmad-control/
+tests/**/sandbox-*/
 docs/tmp-*
 
 # Python cache
