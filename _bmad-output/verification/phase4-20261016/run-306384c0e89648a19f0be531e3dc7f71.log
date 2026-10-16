@@ -1,0 +1,6 @@
+.........
+----------------------------------------------------------------------
+Ran 9 tests in 4.030s
+
+OK
+BMAD_TEST_RESULT {"directory":"bmralph-suite-v5/tests","discovered":9,"errors":0,"expected_failures":0,"failures":0,"matched_files":1,"minimum_tests":9,"missing_required_tests":[],"pattern":"test_run_copy.py","reason":"\u5168\u90e8\u9009\u4e2d\u6d4b\u8bd5\u5b9e\u9645\u901a\u8fc7","required_tests":["test_run_copy.RunCopyGuards.test_prepare_only_creates_candidate_and_preserves_deployment","test_run_copy.RunCopyGuards.test_candidate_source_edit_does_not_hot_replace_copy","test_run_copy.RunCopyGuards.test_running_program_must_be_from_exact_bound_copy","test_run_copy.RunCopyGuards.test_copy_edit_blocks_without_restoring_user_changes","test_run_copy.RunCopyGuards.test_extra_file_symlink_and_hardlink_fail_closed","test_run_copy.RunCopyGuards.test_missing_runtime_is_not_filled_from_other_version","test_run_copy.RunCopyGuards.test_changed_binding_receipt_and_activation_declaration_block","test_run_copy.RunCopyGuards.test_source_change_during_copy_preserves_partial_candidate_without_binding","test_run_copy.RunCopyGuards.test_copy_module_is_self_contained_in_isolated_python"],"skipped":0,"status":"PASS","tests_run":9,"unexpected_successes":0,"workspace":"/home/ecs-user/dotfiles-bmad-solo"}

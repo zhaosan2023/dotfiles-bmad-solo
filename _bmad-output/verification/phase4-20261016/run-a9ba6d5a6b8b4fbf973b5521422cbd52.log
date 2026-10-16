@@ -1,0 +1,39 @@
+...F....E
+======================================================================
+ERROR: test_source_change_during_copy_preserves_partial_candidate_without_binding (test_run_copy.RunCopyGuards.test_source_change_during_copy_preserves_partial_candidate_without_binding)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/ecs-user/dotfiles-bmad-solo/bmralph-suite-v5/tests/test_run_copy.py", line 157, in test_source_change_during_copy_preserves_partial_candidate_without_binding
+    with source.bound_suite(self.root) as binding:
+  File "/usr/lib/python3.12/contextlib.py", line 144, in __exit__
+    next(self.gen)
+  File "/home/ecs-user/dotfiles-bmad-solo/bmralph-suite-v5/scripts/bmad_suite_source.py", line 264, in bound_suite
+    binding.check()
+  File "/home/ecs-user/dotfiles-bmad-solo/bmralph-suite-v5/scripts/bmad_suite_source.py", line 253, in check
+    raise SupervisorError("已绑定套件来源发生变化；停止对账，不恢复旧文件")
+bmad_supervisor.SupervisorError: 已绑定套件来源发生变化；停止对账，不恢复旧文件
+
+======================================================================
+FAIL: test_copy_module_is_self_contained_in_isolated_python (test_run_copy.RunCopyGuards.test_copy_module_is_self_contained_in_isolated_python)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/ecs-user/dotfiles-bmad-solo/bmralph-suite-v5/tests/test_run_copy.py", line 185, in test_copy_module_is_self_contained_in_isolated_python
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+AssertionError: 1 != 0 : Traceback (most recent call last):
+  File "<string>", line 1, in <module>
+  File "/home/ecs-user/dotfiles-bmad-solo/tests/sandbox-suite-source-d2f49uzx/authorized workspace/.bmad-control/run-copies/13be9e162f314ab684bbc4cd12f37fa6/suite/scripts/bmad_run_copy.py", line 119, in load_run_copy
+    identifier, relative, _ = copy_locations(root, receipt_file)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ecs-user/dotfiles-bmad-solo/tests/sandbox-suite-source-d2f49uzx/authorized workspace/.bmad-control/run-copies/13be9e162f314ab684bbc4cd12f37fa6/suite/scripts/bmad_run_copy.py", line 47, in copy_locations
+    return match.group(1), relative, runtime_path(root, relative)
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/ecs-user/dotfiles-bmad-solo/tests/sandbox-suite-source-d2f49uzx/authorized workspace/.bmad-control/run-copies/13be9e162f314ab684bbc4cd12f37fa6/suite/scripts/bmad_supervisor.py", line 112, in runtime_path
+    raise SupervisorError("任务日志和回执不得写入套件分发源")
+bmad_supervisor.SupervisorError: 任务日志和回执不得写入套件分发源
+
+
+----------------------------------------------------------------------
+Ran 9 tests in 4.120s
+
+FAILED (failures=1, errors=1)
+BMAD_TEST_RESULT {"directory":"bmralph-suite-v5/tests","discovered":9,"errors":1,"expected_failures":0,"failures":1,"matched_files":1,"minimum_tests":9,"missing_required_tests":[],"pattern":"test_run_copy.py","reason":"\u771f\u5b9e\u6d4b\u8bd5\u5931\u8d25","required_tests":["test_run_copy.RunCopyGuards.test_prepare_only_creates_candidate_and_preserves_deployment","test_run_copy.RunCopyGuards.test_candidate_source_edit_does_not_hot_replace_copy","test_run_copy.RunCopyGuards.test_running_program_must_be_from_exact_bound_copy","test_run_copy.RunCopyGuards.test_copy_edit_blocks_without_restoring_user_changes","test_run_copy.RunCopyGuards.test_extra_file_symlink_and_hardlink_fail_closed","test_run_copy.RunCopyGuards.test_missing_runtime_is_not_filled_from_other_version","test_run_copy.RunCopyGuards.test_changed_binding_receipt_and_activation_declaration_block","test_run_copy.RunCopyGuards.test_source_change_during_copy_preserves_partial_candidate_without_binding","test_run_copy.RunCopyGuards.test_copy_module_is_self_contained_in_isolated_python"],"skipped":0,"status":"BLOCKED","tests_run":9,"unexpected_successes":0,"workspace":"/home/ecs-user/dotfiles-bmad-solo"}

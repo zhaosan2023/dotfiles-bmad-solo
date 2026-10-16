@@ -130,5 +130,80 @@ class PlanAdapterGuards(unittest.TestCase):
         self.assertEqual(list(self.root.glob(".bmad-plan-*.tmp")), [])
 
 
+    def test_refresh_completed_reuses_fresh_evidence_without_business_reexecution(self):
+        old_verdict = self.verdict()
+        self.complete(old_verdict)
+        before, _, identity = state.load_plan(self.root, "plan.md")
+        (self.root / "implementation.py").write_text("VALUE = 2\n", encoding="utf-8")
+        self.assertEqual(adapter.query(workspace=self.root, plan_file="plan.md")["status"], "BLOCKED")
+        fresh = self.verdict()
+        with patch.object(execution, "run") as business:
+            result = adapter.refresh_completed(
+                workspace=self.root, plan_file="plan.md", verdict_files={"T1": fresh},
+                expected_identity=identity)
+        business.assert_not_called()
+        saved, _, _ = state.load_plan(self.root, "plan.md")
+        self.assertEqual(saved["tasks"][0]["status"], "COMPLETED")
+        self.assertEqual(saved["tasks"][0]["verdict_file"], fresh)
+        self.assertEqual(saved["tasks"][1], before["tasks"][1])
+        self.assertEqual(result["refreshed_tasks"], ["T1"])
+        self.assertFalse(result["business_reexecuted"])
+        self.assertEqual(adapter.query(workspace=self.root, plan_file="plan.md")["ready_tasks"], ["T2"])
+        content = (self.root / "plan.md").read_text()
+        self.assertTrue(content.startswith(self.prefix))
+        self.assertTrue(content.endswith(self.suffix))
+        self.assertTrue((self.root / old_verdict).exists())
+
+    def test_refresh_cannot_complete_pending_or_suspended_task(self):
+        verdict = self.verdict()
+        for status in ("PENDING", "SUSPENDED"):
+            with self.subTest(status=status):
+                self.data["tasks"][0]["status"] = status
+                self.write_plan()
+                before = (self.root / "plan.md").read_bytes()
+                with self.assertRaisesRegex(SupervisorError, "仅接受原完成项"):
+                    adapter.refresh_completed(
+                        workspace=self.root, plan_file="plan.md", verdict_files={"T1": verdict},
+                        expected_identity=self.identity)
+                self.assertEqual((self.root / "plan.md").read_bytes(), before)
+
+    def test_refresh_all_affected_completed_dependencies_atomically(self):
+        old = self.verdict()
+        self.complete(old)
+        _, _, identity = state.load_plan(self.root, "plan.md")
+        adapter.complete(workspace=self.root, plan_file="plan.md", task_id="T2",
+                         verdict_file=old, expected_identity=identity)
+        _, _, identity = state.load_plan(self.root, "plan.md")
+        (self.root / "implementation.py").write_text("VALUE = 3\n", encoding="utf-8")
+        fresh = self.verdict()
+        before = (self.root / "plan.md").read_bytes()
+        with self.assertRaises(SupervisorError):
+            adapter.refresh_completed(workspace=self.root, plan_file="plan.md",
+                                      verdict_files={"T2": fresh}, expected_identity=identity)
+        self.assertEqual((self.root / "plan.md").read_bytes(), before)
+        adapter.refresh_completed(workspace=self.root, plan_file="plan.md",
+                                  verdict_files={"T1": fresh, "T2": fresh}, expected_identity=identity)
+        self.assertEqual(adapter.query(workspace=self.root, plan_file="plan.md")["status"], "COMPLETED")
+
+    def test_refresh_external_change_and_atomic_failure_preserve_plan(self):
+        old = self.verdict()
+        self.complete(old)
+        _, _, identity = state.load_plan(self.root, "plan.md")
+        fresh = self.verdict()
+        before = (self.root / "plan.md").read_bytes()
+        with patch.object(adapter.os, "replace", side_effect=OSError("刷新保存失败")):
+            with self.assertRaises(OSError):
+                adapter.refresh_completed(workspace=self.root, plan_file="plan.md",
+                                          verdict_files={"T1": fresh}, expected_identity=identity)
+        self.assertEqual((self.root / "plan.md").read_bytes(), before)
+        self.assertEqual(list(self.root.glob(".bmad-plan-*.tmp")), [])
+        external = before + b"\nexternal change\n"
+        (self.root / "plan.md").write_bytes(external)
+        with self.assertRaisesRegex(SupervisorError, "绑定计划变化"):
+            adapter.refresh_completed(workspace=self.root, plan_file="plan.md",
+                                      verdict_files={"T1": fresh}, expected_identity=identity)
+        self.assertEqual((self.root / "plan.md").read_bytes(), external)
+
+
 if __name__ == "__main__":
     unittest.main()

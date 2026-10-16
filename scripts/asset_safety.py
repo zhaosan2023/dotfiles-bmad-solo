@@ -9,8 +9,10 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 import fcntl
 import hashlib
+import json
 import os
 from pathlib import Path
+import re
 import stat
 import tempfile
 
@@ -175,6 +177,113 @@ def atomic_replace(
         temporary.unlink(missing_ok=True)
 
 
+def require_task_cleanup(path: Path) -> None:
+    """持排他部署锁后核验任务期清理记录；不清理、恢复或发送信号。
+
+    共享租约因进程退出而释放后，未完成记录仍阻断受管部署。
+    仅约束遵守部署入口的调用者，不提供同账号防篡改保证。
+    """
+    path = checked_path(path)
+    if path.name != "deployment.lock":
+        return
+    directory = checked_path(path.parent / "task-runs")
+    try:
+        info = directory.lstat()
+    except FileNotFoundError:
+        return
+    if not stat.S_ISDIR(info.st_mode):
+        raise AssetError("任务清理记录路径不是物理目录；停止对账")
+    entries = []
+    with os.scandir(directory) as iterator:
+        for entry in iterator:
+            entries.append(entry.name)
+            if len(entries) > 128:
+                raise AssetError("任务清理记录超过读取预算；停止对账")
+
+    def unique_record(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise AssetError("任务清理记录包含重复字段；停止对账")
+            result[key] = value
+        return result
+
+    def bounded_record(target):
+        target = checked_path(target)
+        descriptor = os.open(target, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+        with os.fdopen(descriptor, "rb") as stream:
+            before = os.fstat(stream.fileno())
+            if (not stat.S_ISREG(before.st_mode) or before.st_nlink != 1
+                    or before.st_size > 16384):
+                raise AssetError("任务清理记录类型非法或超过读取预算")
+            content = stream.read(16385)
+            after = os.fstat(stream.fileno())
+        current = checked_path(target).lstat()
+
+        def identity(info):
+            return (info.st_dev, info.st_ino, info.st_size, info.st_mtime_ns,
+                    info.st_ctime_ns, info.st_mode, info.st_nlink)
+
+        if len(content) > 16384:
+            raise AssetError("任务清理记录超过读取预算；停止对账")
+        if identity(before) != identity(after) or identity(after) != identity(current):
+            raise AssetError("任务清理记录在读取期间变化；停止对账")
+        return Snapshot(content, stat.S_IMODE(after.st_mode)), identity(after)
+
+    fields = {"schema_version", "run_id", "workspace", "run_copy_file",
+              "status", "cleanup_ok", "final_receipt"}
+    observed = {}
+    for name in sorted(entries):
+        if re.fullmatch(r"[0-9a-f]{32}\.json", name) is None:
+            raise AssetError("任务清理目录包含未知资产；保留并停止对账")
+        target = checked_path(directory / name)
+        info = target.lstat()
+        if (not stat.S_ISREG(info.st_mode) or info.st_nlink != 1
+                or info.st_size > 16384):
+            raise AssetError("任务清理记录类型非法或超过读取预算")
+        record, identity = bounded_record(target)
+        observed[target] = (record, identity)
+        try:
+            data = json.loads(record.content, object_pairs_hook=unique_record)
+        except (ValueError, UnicodeError, TypeError) as exc:
+            raise AssetError("任务清理记录损坏；保留并停止对账") from exc
+        if (not isinstance(data, dict) or set(data) != fields
+                or type(data["schema_version"]) is not int
+                or data["schema_version"] != 1
+                or data["run_id"] != name[:-5]
+                or not isinstance(data["workspace"], str)
+                or not Path(data["workspace"]).is_absolute()
+                or not isinstance(data["run_copy_file"], str)
+                or re.fullmatch(
+                    r"\.bmad-control/run-copies/[0-9a-f]{32}/binding\.json",
+                    data["run_copy_file"]) is None
+                or not isinstance(data["status"], str)
+                or data["status"] not in {"EXECUTING", "BLOCKED", "SUSPENDED", "COMPLETED"}
+                or type(data["cleanup_ok"]) is not bool):
+            raise AssetError("任务清理记录契约非法；停止对账")
+        receipt = data["final_receipt"]
+        if receipt is not None and (
+                not isinstance(receipt, str) or not receipt
+                or "\\" in receipt
+                or any(part in {"", ".", ".."} for part in receipt.split("/"))
+                or Path(receipt).is_absolute()):
+            raise AssetError("任务最终回执定位非法；停止对账")
+        if (data["status"] == "EXECUTING" or data["cleanup_ok"] is not True
+                or receipt is None):
+            raise AssetError("任务清理未知或尚未结束；禁止部署、更新或回切")
+    for target, expected in observed.items():
+        if bounded_record(target) != expected:
+            raise AssetError("任务清理记录在核验期间变化；停止对账")
+    final_entries = []
+    with os.scandir(checked_path(directory)) as iterator:
+        for entry in iterator:
+            final_entries.append(entry.name)
+            if len(final_entries) > 128:
+                raise AssetError("任务清理记录超过读取预算；停止对账")
+    if sorted(final_entries) != sorted(entries):
+        raise AssetError("核验期间任务清理记录集合变化；停止对账")
+
+
 def validate_inherited_deployment_lock(path: Path, descriptor: int) -> None:
     """只读核验继承描述符确实持有同一固定文件的 Linux 排他 flock。
 
@@ -234,6 +343,7 @@ def deployment_lock(path: Path, *, inherited_fd: int | None = None,
     path = checked_path(path)
     if inherited_fd is not None:
         validate_inherited_deployment_lock(path, inherited_fd)
+        require_task_cleanup(path)
         try:
             yield inherited_fd
         except BaseException:
@@ -257,6 +367,7 @@ def deployment_lock(path: Path, *, inherited_fd: int | None = None,
         except BlockingIOError as exc:
             raise AssetError("另一部署进程持有锁；本次未获得写入权限") from exc
         try:
+            require_task_cleanup(path)
             yield fd
         finally:
             fcntl.flock(fd, fcntl.LOCK_UN)

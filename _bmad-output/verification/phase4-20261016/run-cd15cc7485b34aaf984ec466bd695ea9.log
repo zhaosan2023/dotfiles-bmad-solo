@@ -1,0 +1,6 @@
+..................................
+----------------------------------------------------------------------
+Ran 34 tests in 3.299s
+
+OK
+BMAD_TEST_RESULT {"directory":"tests/roo_contracts","discovered":34,"errors":0,"expected_failures":0,"failures":0,"matched_files":3,"minimum_tests":10,"missing_required_tests":[],"pattern":"test*contracts.py","reason":"\u5168\u90e8\u9009\u4e2d\u6d4b\u8bd5\u5b9e\u9645\u901a\u8fc7","required_tests":["test_suite_contracts.SuiteContracts.test_each_suite_passes_separately","test_suite_contracts.SuiteContracts.test_missing_selected_v5_does_not_fall_back","test_suite_contracts.SuiteContracts.test_v5_checks_do_not_apply_to_v4","test_suite_contracts.SuiteContracts.test_corrupt_v4_does_not_affect_explicit_v5","test_suite_contracts.SuiteContracts.test_v5_cross_version_link_is_rejected","test_suite_contracts.SuiteContracts.test_missing_v5_navigation_target_is_rejected","test_suite_contracts.SuiteContracts.test_dual_platform_drift_is_rejected","test_suite_contracts.SuiteContracts.test_v5_required_capabilities_cannot_be_removed","test_suite_contracts.SuiteContracts.test_v5_dual_entries_navigate_to_local_capabilities","test_suite_contracts.SuiteContracts.test_v5_identity_cannot_claim_v4"],"skipped":0,"status":"PASS","tests_run":34,"unexpected_successes":0,"workspace":"/home/ecs-user/dotfiles-bmad-solo"}

@@ -27,6 +27,13 @@ def parser():
     start.add_argument("--runtime-directory", default=".bmad-runtime")
     start.add_argument("--save-progress", action="store_true",
                        help="明确授权程序按真实证据写回唯一计划任务清单")
+    start.add_argument("--batch-file", help="显式获准任务集合及独立输入；须同时授权进度写回")
+    start.add_argument("--maximum-calls", type=int,
+                       help="外层驱动调用预算；不宣称内部模型调用或费用计量")
+    start.add_argument("--deployment-root", type=Path,
+                       help="本阶段仅允许授权工作区内的合成部署根，不写真实宿主状态")
+    start.add_argument("--run-copy-file",
+                       help="明确的隔离运行副本绑定回执；入口必须来自该副本")
     for name in ("status", "stop"):
         command = commands.add_parser(name, allow_abbrev=False)
         command.add_argument("--workspace", required=True, type=Path)

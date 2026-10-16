@@ -8,7 +8,7 @@ adr_file: "_bmad-output/adrs/ADR-20261012-bmad-solo-anti-bureaucracy-and-program
 verification_type: config_syntax
 verification_command: "timeout 30s python3 -B scripts/validate-roo-contracts.py --suite v5 --plan _bmad-output/pending_implementation_plan.md < /dev/null"
 verification_command_status: AVAILABLE
-authorization: "2026-10-16 用户授权 Phase 3：活动计划结构化适配、单任务驱动与程序化短状态卡、Roo CLI／无头后端抽象及本地模拟断网演练；允许 V5 源码、对应反例测试和必要契约修订；保持 V4 只读；不安装或启动未经核验的真实 Agent，不执行提交、推送、生产部署、ADR 转正或归档；Phase 1／2 历史授权不自动扩展到本轮"
+authorization: "2026-10-16 用户授权继续同一计划补齐 Epic 5：V5 工程实现、对应反例测试、必要计划与提案契约修订及受控本地验证；保护已有修改，保持 V4 只读；不包含系统安装、账号权限调整、真实宿主激活、真实 Agent 启动、远程无人值守试跑、提交、推送、生产部署、ADR 转正及归档；真实运行时试验须另行一次性确认目标、写入范围、认证和预算；既有超时上限不自行提高"
 session_id: null
 ---
 
@@ -18,7 +18,7 @@ session_id: null
 
 - **计划标识**：`BMAD-ANTI-BUREAUCRACY-20261012-01`
 - **关联 ADR**：[本任务提案](adrs/ADR-20261012-bmad-solo-anti-bureaucracy-and-programmatic-guards.md)（状态：PROPOSED）。
-- **接管契约**：绑定本文件、原计划标识及关联 PROPOSED ADR；当前用户的 Phase 3 授权优先于历史阶段说明，仅实施本轮三项本地目标，不恢复其他暂停任务。未知会话标识保持 null。
+- **接管契约**：绑定本文件、原计划标识及关联 PROPOSED ADR；当前继续实施授权优先于历史阶段说明。Phase 3 三项局部任务保留，下一批仅按下方 Phase 4 本地契约推进，不恢复其他暂停任务或未知清理状态的旧进程。未知会话标识保持 null。
 - **验证命令契约**：静态入口已支持显式 `--suite v4` 与 `--suite v5`；头部选择 V5，P0 分别运行两版本检查与相关契约回归。该入口不执行计划命令，不证明运行时权限或模型行为。真实执行结果由当前平台任务记录引用工具回执，不在本计划或 ADR 镜像逐轮流水。
 - **当前授权边界**：新生产实现独立放入 [bmralph-suite-v5](../bmralph-suite-v5/)，公共部署设施仅做兼容扩展；工程分发测试仅操作临时部署根。真实宿主激活、远程试跑、提交、推送、生产部署、转正及归档不由本次实施指令隐式授权。
 - **历史语境**：文中此前“本次只结晶”“尚未创建”“未运行”描述 2026-10-15 设计基线，不再作为当前编码禁令，也不作为当前实现或验证结果；各阶段资产及命令按实际实现修订，全部验收承诺保留。
@@ -66,6 +66,20 @@ session_id: null
 - 本轮结构化清单仅覆盖 Phase 3 三项本地交付，不覆盖原 Epic 和全计划 AC；全部三项完成只表示本轮局部验收完成。后文 Phase 1 的“未迁移”描述保留为历史边界，本轮进度以此清单及当前有效回执为准。
 - 计划适配另需运行对应写回反例，监督器改动另需相关回归；下列任务验证不能替代这些阶段门禁。真实 Roo 及远程断开仍未验证，相关原承诺继续保留。
 
+## Phase 4 契约：Epic 5 最小本地工程闭环
+
+- 本批稳定目标：补齐显式获准任务集合的失败反馈、预算内修复及依赖推进；保留 Python 薄控制器和独立验证原语。原 Epic、全部 AC 和范围外承诺不删除、不整体勾选。本节不是全计划散文的无限执行授权。
+- 唯一进度仍为下面同一结构化清单。新增项初始为 PENDING，只有程序核验对应真实 PASS 回执后才写回完成；平台待办仅跟踪工程过程。控制器未覆盖的契约修订和配置检查临时引用平台真实回执，不建立第二份任务进度或声称程序防篡改。
+- 先复用仍有效的 Phase 3 回执。实现、测试目录、验证选择或环境变化后，按现有证据契约重验受影响项并由程序刷新回执；保存计划和无关文档不触发业务重测。不得删掉现有覆盖输入、降低测试下限或取消必需项来维持旧绿灯。
+- P4-BUDGET：纠正将整个驱动进程时限称为单次 API 请求时限的混淆，区分模型请求、工具执行、Agent 会话和批次预算。保留现有 30 秒验证级驱动进程上限、15/30/600 秒工具分级和 600 秒任务期上限；真实 Roo 的单请求及会话参数尚未核验，不编造参数或自行延长上限。涉及既有超时契约扩大时先停下取得明确确认。
+- P4-BATCH：批次必须显式列出获准任务标识及各任务必要输入，程序仅从该集合选依赖已由当前有效证据满足的任务。一次启动在预算内继续当前失败任务，单任务独立验证通过并保存后自动选择下一获准任务；集合之外的就绪项不得执行。无头调用零退出、完成口令或文件变化均不代替业务通过。
+- 每次修复采用新会话，只携带必要约束、未完成成果和真实失败反馈，不恢复完整聊天。当前任务失败、必需验证零命中或跳过、认证/权限失败、绑定变化、取消、超时及清理不明均禁止推进依赖；无进展及轮次/调用预算耗尽停止新调用并保留成果。没有可靠费用计量时明确报告未覆盖，不声称费用预算已强制生效。
+- P4-ISOLATION：接入现有 V5 来源绑定和共享读取租约；本地反例只使用项目内合成部署根，不激活真实宿主。运行中的监督器使用与待修改源码隔离的候选运行副本，记录实际来源绑定并在接管和阶段边界复核；运行期间修改候选源码不得热替换绑定程序。升级须先停止、确认清理、验证候选，再经获准边界启用。
+- 租约覆盖全部受管调用及清理确认。清理未知时阻断后续调用和重启，不据旧 PID 恢复；如现有原语不能覆盖所需清理生命周期，明确阻塞该集成，不把释放文件锁当作全部进程结束证据。协作锁和同账号运行副本不等于系统权限隔离。
+- 真实运行时门禁保持关闭：当前读取仅定位到 Roo 3.54.0 扩展的版本声明及无头 CLI 变更线索，未取得本机独立入口、新会话、规则/模式加载、独立认证或取消的运行能力证据；不得据此启动、安装、继承 IDE 登录态、猜测 Roo 参数、换引擎或建设 GUI 自动点击桥接。
+- 真实试跑前集中列明工作区、写入范围、认证方式、时间、轮次、模型调用/费用预算和停止方式并取得明确授权。关闭客户端后必须有新的真实模型/工具步骤及轮次证据；本地夹具通过、进程存活或文件变化不通过 AC 9 或 P5。
+- 本批相关本地反例还须覆盖：未授权任务不选、失败不推进、新会话接收失败退出结果、跨任务反馈不串线、契约变化阻断、预算停止、取消后进程清理、清理未知禁止重启、来源租约及运行副本隔离。通过后仅交付本地阶段，不转正 ADR、不归档、不提交、不推送、不部署，不宣称自主执行或效率提升已实证。
+
 ```bmad-tasks
 {
   "schema_version": 1,
@@ -93,10 +107,12 @@ session_id: null
           "bmralph-suite-v5/scripts/bmad_loop.py",
           "bmralph-suite-v5/scripts/bmad-loop.py",
           "bmralph-suite-v5/scripts/bmad_agent_backend.py",
-          "bmralph-suite-v5/scripts/bmad_supervisor.py"
+          "bmralph-suite-v5/scripts/bmad_supervisor.py",
+          "bmralph-suite-v5/scripts/bmad_run_copy.py",
+          "bmralph-suite-v5/scripts/bmad_task_run.py"
         ]
       },
-      "verdict_file": "_bmad-output/verification/phase3-20261016/run-04e2e1a4c1db42fc8af9acbc0feef733.verdict.json"
+      "verdict_file": "_bmad-output/verification/phase4-20261016/run-14fce12179244e99b29e4610e69b359d.verdict.json"
     },
     {
       "task_id": "P3-BACKEND",
@@ -110,24 +126,35 @@ session_id: null
         "environment_file": ".bmad-control/phase2-environment.json",
         "directory": "bmralph-suite-v5/tests",
         "pattern": "test_agent_backend.py",
-        "minimum_tests": 13,
+        "minimum_tests": 17,
         "required_tests": [
           "test_agent_backend.AgentBackendGuards.test_missing_credentials_blocks_before_agent_or_business_execution",
           "test_agent_backend.AgentBackendGuards.test_unauthorized_driver_is_never_started",
           "test_agent_backend.AgentBackendGuards.test_authentication_and_permission_failures_stop_without_retry",
           "test_agent_backend.AgentBackendGuards.test_nonzero_exit_cannot_be_overridden_by_valid_ok_result",
           "test_agent_backend.AgentBackendGuards.test_api_timeout_cleans_group_and_preserves_local_artifacts",
-          "test_agent_backend.AgentBackendGuards.test_real_roo_without_required_runtime_evidence_fails_closed"
+          "test_agent_backend.AgentBackendGuards.test_real_roo_without_required_runtime_evidence_fails_closed",
+          "test_agent_backend.AgentBackendGuards.test_simulated_disconnection_allows_local_step_and_durable_receipts",
+          "test_agent_backend.AgentBackendGuards.test_network_error_blocks_and_keeps_unfinished_changes",
+          "test_agent_backend.AgentBackendGuards.test_new_round_receives_actual_failure_feedback_in_new_session",
+          "test_agent_backend.AgentBackendGuards.test_timeout_dimensions_do_not_raise_existing_caps",
+          "test_agent_backend.AgentBackendGuards.test_real_backend_cannot_be_selected_as_fixture",
+          "test_agent_backend.AgentBackendGuards.test_environment_preparation_does_not_consume_unstarted_session_budget",
+          "test_agent_backend.AgentBackendGuards.test_environment_preparation_exhausting_batch_does_not_launch_agent"
         ],
         "inputs": [
           "bmralph-suite-v5/scripts/bmad_plan_adapter.py",
           "bmralph-suite-v5/scripts/bmad_loop.py",
           "bmralph-suite-v5/scripts/bmad-loop.py",
           "bmralph-suite-v5/scripts/bmad_agent_backend.py",
-          "bmralph-suite-v5/scripts/bmad_supervisor.py"
+          "bmralph-suite-v5/scripts/bmad_supervisor.py",
+          "bmralph-suite-v5/scripts/bmad_run_copy.py",
+          "bmralph-suite-v5/scripts/bmad_task_run.py",
+          "bmralph-suite-v5/scripts/bmad_suite_source.py",
+          "bmralph-suite-v5/scripts/bmad_suite_lease.py"
         ]
       },
-      "verdict_file": "_bmad-output/verification/phase3-20261016/run-e83faed6abad4d1b84f16cdf0d6fb0e1.verdict.json"
+      "verdict_file": "_bmad-output/verification/phase4-20261016/run-b3935e64965447cbbb03c38a36fe608d.verdict.json"
     },
     {
       "task_id": "P3-OFFLINE",
@@ -141,21 +168,157 @@ session_id: null
         "environment_file": ".bmad-control/phase2-environment.json",
         "directory": "bmralph-suite-v5/tests",
         "pattern": "test_agent_backend.py",
-        "minimum_tests": 13,
+        "minimum_tests": 17,
         "required_tests": [
+          "test_agent_backend.AgentBackendGuards.test_missing_credentials_blocks_before_agent_or_business_execution",
+          "test_agent_backend.AgentBackendGuards.test_unauthorized_driver_is_never_started",
+          "test_agent_backend.AgentBackendGuards.test_authentication_and_permission_failures_stop_without_retry",
+          "test_agent_backend.AgentBackendGuards.test_nonzero_exit_cannot_be_overridden_by_valid_ok_result",
+          "test_agent_backend.AgentBackendGuards.test_api_timeout_cleans_group_and_preserves_local_artifacts",
+          "test_agent_backend.AgentBackendGuards.test_real_roo_without_required_runtime_evidence_fails_closed",
           "test_agent_backend.AgentBackendGuards.test_simulated_disconnection_allows_local_step_and_durable_receipts",
           "test_agent_backend.AgentBackendGuards.test_network_error_blocks_and_keeps_unfinished_changes",
-          "test_agent_backend.AgentBackendGuards.test_new_round_receives_actual_failure_feedback_in_new_session"
+          "test_agent_backend.AgentBackendGuards.test_new_round_receives_actual_failure_feedback_in_new_session",
+          "test_agent_backend.AgentBackendGuards.test_timeout_dimensions_do_not_raise_existing_caps",
+          "test_agent_backend.AgentBackendGuards.test_real_backend_cannot_be_selected_as_fixture",
+          "test_agent_backend.AgentBackendGuards.test_environment_preparation_does_not_consume_unstarted_session_budget",
+          "test_agent_backend.AgentBackendGuards.test_environment_preparation_exhausting_batch_does_not_launch_agent"
         ],
         "inputs": [
           "bmralph-suite-v5/scripts/bmad_plan_adapter.py",
           "bmralph-suite-v5/scripts/bmad_loop.py",
           "bmralph-suite-v5/scripts/bmad-loop.py",
           "bmralph-suite-v5/scripts/bmad_agent_backend.py",
+          "bmralph-suite-v5/scripts/bmad_supervisor.py",
+          "bmralph-suite-v5/scripts/bmad_run_copy.py",
+          "bmralph-suite-v5/scripts/bmad_task_run.py",
+          "bmralph-suite-v5/scripts/bmad_suite_source.py",
+          "bmralph-suite-v5/scripts/bmad_suite_lease.py"
+        ]
+      },
+      "verdict_file": "_bmad-output/verification/phase4-20261016/run-b3935e64965447cbbb03c38a36fe608d.verdict.json"
+    },
+    {
+      "task_id": "P4-BUDGET",
+      "title": "分离超时与预算职责并保持既有上限；真实 Roo 参数及会话时限调整仍须核验和授权",
+      "depends_on": [
+        "P3-OFFLINE"
+      ],
+      "status": "COMPLETED",
+      "verification": {
+        "operation": "unit-test",
+        "environment_file": ".bmad-control/phase2-environment.json",
+        "directory": "bmralph-suite-v5/tests",
+        "pattern": "test_agent_backend.py",
+        "minimum_tests": 17,
+        "required_tests": [
+          "test_agent_backend.AgentBackendGuards.test_missing_credentials_blocks_before_agent_or_business_execution",
+          "test_agent_backend.AgentBackendGuards.test_unauthorized_driver_is_never_started",
+          "test_agent_backend.AgentBackendGuards.test_authentication_and_permission_failures_stop_without_retry",
+          "test_agent_backend.AgentBackendGuards.test_nonzero_exit_cannot_be_overridden_by_valid_ok_result",
+          "test_agent_backend.AgentBackendGuards.test_api_timeout_cleans_group_and_preserves_local_artifacts",
+          "test_agent_backend.AgentBackendGuards.test_real_roo_without_required_runtime_evidence_fails_closed",
+          "test_agent_backend.AgentBackendGuards.test_simulated_disconnection_allows_local_step_and_durable_receipts",
+          "test_agent_backend.AgentBackendGuards.test_network_error_blocks_and_keeps_unfinished_changes",
+          "test_agent_backend.AgentBackendGuards.test_new_round_receives_actual_failure_feedback_in_new_session",
+          "test_agent_backend.AgentBackendGuards.test_timeout_dimensions_do_not_raise_existing_caps",
+          "test_agent_backend.AgentBackendGuards.test_real_backend_cannot_be_selected_as_fixture",
+          "test_agent_backend.AgentBackendGuards.test_environment_preparation_does_not_consume_unstarted_session_budget",
+          "test_agent_backend.AgentBackendGuards.test_environment_preparation_exhausting_batch_does_not_launch_agent"
+        ],
+        "inputs": [
+          "bmralph-suite-v5/scripts/bmad_plan_adapter.py",
+          "bmralph-suite-v5/scripts/bmad_loop.py",
+          "bmralph-suite-v5/scripts/bmad-loop.py",
+          "bmralph-suite-v5/scripts/bmad_agent_backend.py",
+          "bmralph-suite-v5/scripts/bmad_supervisor.py",
+          "bmralph-suite-v5/scripts/bmad_run_copy.py",
+          "bmralph-suite-v5/scripts/bmad_task_run.py",
+          "bmralph-suite-v5/scripts/bmad_suite_source.py",
+          "bmralph-suite-v5/scripts/bmad_suite_lease.py"
+        ]
+      },
+      "verdict_file": "_bmad-output/verification/phase4-20261016/run-b3935e64965447cbbb03c38a36fe608d.verdict.json"
+    },
+    {
+      "task_id": "P4-BATCH",
+      "title": "显式获准任务集合、新会话失败修复与独立验证通过后的自动依赖推进；仅本地反例",
+      "depends_on": [
+        "P4-BUDGET"
+      ],
+      "status": "COMPLETED",
+      "verification": {
+        "operation": "unit-test",
+        "environment_file": ".bmad-control/phase2-environment.json",
+        "directory": "bmralph-suite-v5/tests",
+        "pattern": "test_batch_guards.py",
+        "minimum_tests": 12,
+        "required_tests": [
+          "test_batch_guards.BatchGuards.test_failed_verification_retries_same_task_in_new_session",
+          "test_batch_guards.BatchGuards.test_pass_automatically_selects_next_authorized_ready_task",
+          "test_batch_guards.BatchGuards.test_unlisted_ready_task_is_never_selected",
+          "test_batch_guards.BatchGuards.test_feedback_does_not_leak_between_tasks",
+          "test_batch_guards.BatchGuards.test_budget_exhaustion_stops_new_calls_and_preserves_changes",
+          "test_batch_guards.BatchGuards.test_contract_change_blocks_dependency_progress",
+          "test_batch_guards.BatchGuards.test_mismatched_or_duplicate_batch_request_blocks_before_call",
+          "test_batch_guards.BatchGuards.test_agent_cannot_modify_acceptance_to_manufacture_pass",
+          "test_batch_guards.BatchGuards.test_initial_ready_task_is_selected_by_program_not_request_order",
+          "test_batch_guards.BatchGuards.test_future_task_acceptance_change_blocks_before_current_verification",
+          "test_batch_guards.BatchGuards.test_skipped_required_test_blocks_without_retry_or_next_task",
+          "test_batch_guards.BatchGuards.test_missing_required_test_blocks_without_retry_or_next_task"
+        ],
+        "inputs": [
+          "bmralph-suite-v5/scripts/bmad_loop.py",
+          "bmralph-suite-v5/scripts/bmad-loop.py",
+          "bmralph-suite-v5/scripts/bmad_plan_adapter.py",
+          "bmralph-suite-v5/scripts/bmad_context_inputs.py",
+          "bmralph-suite-v5/scripts/bmad_agent_backend.py",
+          "bmralph-suite-v5/scripts/bmad_run_copy.py",
+          "bmralph-suite-v5/scripts/bmad_task_run.py",
+          "bmralph-suite-v5/scripts/bmad_suite_source.py",
+          "bmralph-suite-v5/scripts/bmad_suite_lease.py",
           "bmralph-suite-v5/scripts/bmad_supervisor.py"
         ]
       },
-      "verdict_file": "_bmad-output/verification/phase3-20261016/run-04cf418170cc437d9cb5128deed4031c.verdict.json"
+      "verdict_file": "_bmad-output/verification/phase4-20261016/run-631c3f63aeaa4c1a982830b7140525fc.verdict.json"
+    },
+    {
+      "task_id": "P4-ISOLATION",
+      "title": "来源绑定、读取租约与隔离运行副本接入，取消清理及清理未知禁止重启；不激活真实宿主",
+      "depends_on": [
+        "P4-BATCH"
+      ],
+      "status": "COMPLETED",
+      "verification": {
+        "operation": "unit-test",
+        "environment_file": ".bmad-control/phase2-environment.json",
+        "directory": "bmralph-suite-v5/tests",
+        "pattern": "test_batch_isolation.py",
+        "minimum_tests": 7,
+        "required_tests": [
+          "test_batch_isolation.BatchIsolationGuards.test_source_lease_covers_calls_and_confirmed_cleanup",
+          "test_batch_isolation.BatchIsolationGuards.test_source_change_blocks_without_restoring_assets",
+          "test_batch_isolation.BatchIsolationGuards.test_source_edit_does_not_hot_replace_running_copy",
+          "test_batch_isolation.BatchIsolationGuards.test_cancel_confirms_all_managed_processes_ended",
+          "test_batch_isolation.BatchIsolationGuards.test_unknown_cleanup_blocks_restart",
+          "test_batch_isolation.BatchIsolationGuards.test_distribution_entry_cannot_claim_isolated_copy",
+          "test_batch_isolation.BatchIsolationGuards.test_isolated_batch_repairs_failure_then_advances_under_same_lease"
+        ],
+        "inputs": [
+          "bmralph-suite-v5/scripts/bmad_loop.py",
+          "bmralph-suite-v5/scripts/bmad-loop.py",
+          "bmralph-suite-v5/scripts/bmad_agent_backend.py",
+          "bmralph-suite-v5/scripts/bmad_suite_source.py",
+          "bmralph-suite-v5/scripts/bmad_suite_lease.py",
+          "bmralph-suite-v5/scripts/bmad_supervisor.py",
+          "bmralph-suite-v5/scripts/bmad_run_copy.py",
+          "bmralph-suite-v5/scripts/bmad_task_run.py",
+          "bmralph-suite-v5/scripts/bmad_plan_adapter.py",
+          "bmralph-suite-v5/scripts/bmad_context_inputs.py",
+          "scripts/asset_safety.py"
+        ]
+      },
+      "verdict_file": "_bmad-output/verification/phase4-20261016/run-92a653bd2b854eb1a4d9989968c7112e.verdict.json"
     }
   ]
 }

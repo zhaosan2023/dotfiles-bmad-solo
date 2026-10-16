@@ -5,13 +5,16 @@ from pathlib import Path
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from unittest.mock import patch
 
 SUITE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SUITE / "scripts"))
+import bmad_agent_backend as agent_backend
 import bmad_environment as environment
 import bmad_loop as loop
+from bmad_supervisor import SupervisorError
 
 CREDENTIAL = "BMAD_ISOLATED_TEST_CREDENTIAL"
 CLI = SUITE / "scripts/bmad-loop.py"
@@ -232,6 +235,98 @@ class AgentBackendGuards(unittest.TestCase):
         self.assert_blocked(result, record)
         self.assertIn("实证", record["reason"])
         self.assertEqual(record["rounds"], 0)
+
+    def test_environment_preparation_does_not_consume_unstarted_session_budget(self):
+        self.config["api_timeout_seconds"] = 0.15
+        self.save_config()
+        self.driver("pathlib.Path('kept.txt').write_text('保留现场')\ntime.sleep(5)\n")
+        assembled = loop.plan_adapter.assemble(
+            workspace=self.root, plan_file="plan.md", request_file="request.json",
+            maximum_bytes=loop.context.DEFAULT_STARTUP_BYTES)
+        original_check = environment.check
+
+        def slow_preparation(*args, **kwargs):
+            ready = original_check(*args, **kwargs)
+            time.sleep(0.2)
+            return ready
+
+        deadline = time.monotonic() + 3
+        with patch.object(agent_backend.environment, "check", side_effect=slow_preparation):
+            record = agent_backend.invoke(
+                workspace=self.root, config=self.config, assembled=assembled,
+                runtime_directory=".bmad-runtime", deadline=deadline,
+                cancel_requested=lambda: False)
+        self.assertEqual(record["status"], "BLOCKED")
+        self.assertEqual(record["category"], "TIMEOUT")
+        self.assertTrue(record["timed_out"])
+        self.assertTrue(record["cleanup_ok"])
+        self.assertEqual((self.root / "kept.txt").read_text(), "保留现场")
+        dimensions = record["timeout_dimensions"]
+        self.assertEqual(dimensions["agent_session_timeout_seconds"], 0.15)
+        self.assertEqual(dimensions["batch_deadline"], deadline)
+        self.assertLessEqual(dimensions["agent_session_deadline"], deadline)
+
+    def test_environment_preparation_exhausting_batch_does_not_launch_agent(self):
+        assembled = loop.plan_adapter.assemble(
+            workspace=self.root, plan_file="plan.md", request_file="request.json",
+            maximum_bytes=loop.context.DEFAULT_STARTUP_BYTES)
+        original_check = environment.check
+
+        def exhaust_batch(*args, **kwargs):
+            ready = original_check(*args, **kwargs)
+            time.sleep(0.2)
+            return ready
+
+        with patch.object(agent_backend.environment, "check", side_effect=exhaust_batch):
+            with self.assertRaisesRegex(SupervisorError, "环境复核后.*批次预算耗尽"):
+                agent_backend.invoke(
+                    workspace=self.root, config=self.config, assembled=assembled,
+                    runtime_directory=".bmad-runtime", deadline=time.monotonic() + 0.1,
+                    cancel_requested=lambda: False)
+        self.assertEqual((self.root / "unfinished.py").read_text(), "KEEP\n")
+        self.assertFalse((self.root / ".bmad-runtime").exists())
+
+    def test_timeout_dimensions_do_not_raise_existing_caps(self):
+        with patch.object(agent_backend.time, "monotonic", return_value=100.0):
+            dimensions = agent_backend.timeout_dimensions(self.config, 108.0)
+            self.assertEqual(dimensions["agent_session_timeout_seconds"], 5)
+            self.assertEqual(dimensions["agent_session_deadline"], 105.0)
+            self.assertEqual(dimensions["batch_remaining_seconds"], 8.0)
+            self.assertIsNone(dimensions["model_request_timeout_seconds"])
+            self.assertEqual(dimensions["model_request_timeout_coverage"], "UNKNOWN")
+            self.assertEqual(dimensions["tool_timeout_caps_seconds"],
+                             {"probe": 15, "verify": 30, "build": 600})
+            shortened = agent_backend.timeout_dimensions(self.config, 102.0)
+            self.assertEqual(shortened["agent_session_deadline"], 102.0)
+            for invalid in (True, 0, 30.01, float("nan"), float("inf")):
+                with self.subTest(invalid=invalid):
+                    with self.assertRaises(SupervisorError):
+                        agent_backend.timeout_dimensions(
+                            dict(self.config, api_timeout_seconds=invalid), 108.0)
+            for invalid in (True, float("nan"), float("inf")):
+                with self.subTest(deadline=invalid):
+                    with self.assertRaises(SupervisorError):
+                        agent_backend.timeout_dimensions(self.config, invalid)
+        result, record = self.invoke()
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        actual = record["last_agent"]["timeout_dimensions"]
+        self.assertIsNone(actual["model_request_timeout_seconds"])
+        self.assertLessEqual(actual["agent_session_timeout_seconds"], 30)
+        self.assertLessEqual(actual["agent_session_deadline"], actual["batch_deadline"])
+
+    def test_real_backend_cannot_be_selected_as_fixture(self):
+        self.config["backend"] = "roo-cli"
+        self.save_config()
+        before = (self.root / "plan.md").read_bytes()
+        result, record = self.invoke()
+        self.assert_blocked(result, record)
+        self.assertIn("不得声明为隔离夹具", record["reason"])
+        self.assertEqual(record["rounds"], 0)
+        self.assertIsNone(record["last_verdict"])
+        self.assertNotIn("last_agent", record)
+        self.assertEqual((self.root / "plan.md").read_bytes(), before)
+        self.assertEqual((self.root / "unfinished.py").read_text(), "KEEP\n")
+        self.assertEqual(list((self.root / ".bmad-runtime").glob("agent-input-*.json")), [])
 
     def test_complete_driver_envelope_budget_blocks_before_launch(self):
         result, record = self.invoke("--startup-bytes", "256")

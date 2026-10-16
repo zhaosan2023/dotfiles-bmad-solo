@@ -18,7 +18,7 @@ import bmad_context as context
 import bmad_context_inputs as inputs
 import bmad_environment as environment
 import bmad_execution as execution
-from bmad_supervisor import RunSpec, SupervisorError, contained_path, run, runtime_path, save_receipt
+from bmad_supervisor import TIERS, RunSpec, SupervisorError, contained_path, run, runtime_path, save_receipt
 
 FIELDS = {"schema_version", "backend", "protocol", "runtime_kind", "source", "version",
           "driver_file", "credential_environment", "authorized", "authorization",
@@ -42,12 +42,14 @@ def load(root, relative, backend):
         raise SupervisorError("必须明确采用新会话与无头驱动；声明不替代真实运行时证据")
     if config["runtime_kind"] not in {"isolated-fixture", "roo-cli"}:
         raise SupervisorError("运行时种类未覆盖；不静默换引擎")
+    if config["backend"] == "roo-cli" and config["runtime_kind"] == "isolated-fixture":
+        raise SupervisorError("真实 Roo 后端不得声明为隔离夹具绕过运行时门禁")
     for field in ("source", "version"):
         if not isinstance(config[field], str) or not config[field].strip() or len(config[field].encode("utf-8")) > 2048:
             raise SupervisorError("须明确运行时来源和版本；不推断本机或远程事实")
     value = config["api_timeout_seconds"]
     if type(value) not in {int, float} or not math.isfinite(value) or not 0.05 <= value <= 30:
-        raise SupervisorError("API 调用时限须为 0.05 至 30 秒，不提高验证级上限")
+        raise SupervisorError("驱动会话进程时限须为 0.05 至 30 秒；旧字段不证明单次模型请求时限")
     credential = config["credential_environment"]
     if not isinstance(credential, str) or re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]{0,127}", credential) is None:
         raise SupervisorError("须明确凭据环境变量名称；不读取 IDE 认证文件")
@@ -58,6 +60,33 @@ def load(root, relative, backend):
     if driver.suffix != ".py" or not driver_raw.strip():
         raise SupervisorError("当前无头协议只调用明确的非空 Python 适配驱动")
     return config, {path: identity, driver: driver_identity}
+
+
+def timeout_dimensions(config, batch_deadline):
+    """兼容旧字段，但只将其解释为驱动会话进程时限。
+
+    未接通真实运行时的单次模型请求限时，不以外层进程限时冒充。
+    批次截止时间只能缩短会话及工具原有上限，不能扩展它们。
+    """
+    limit = config["api_timeout_seconds"]
+    if (type(limit) not in {int, float} or not math.isfinite(limit)
+            or not 0.05 <= limit <= TIERS["verify"]):
+        raise SupervisorError("驱动会话时限非法或超过既有 30 秒上限")
+    if (type(batch_deadline) not in {int, float}
+            or not math.isfinite(batch_deadline)):
+        raise SupervisorError("批次截止时间须为有限的单调时钟值")
+    now = time.monotonic()
+    return {
+        "model_request_timeout_seconds": None,
+        "model_request_timeout_coverage": "UNKNOWN",
+        "agent_session_timeout_seconds": limit,
+        "agent_session_deadline": min(batch_deadline, now + limit),
+        "batch_deadline": batch_deadline,
+        "batch_remaining_seconds": max(0.0, batch_deadline - now),
+        "tool_timeout_caps_seconds": dict(TIERS),
+        "legacy_field": "api_timeout_seconds",
+        "evidence_boundary": "旧字段仅限制整个驱动会话进程；未核验或强制执行运行时内部单次模型请求时限",
+    }
 
 
 def result_from_log(path, expected):
@@ -88,6 +117,9 @@ def invoke(*, workspace, config, assembled, runtime_directory, deadline, cancel_
            feedback=None, maximum_bytes=context.DEFAULT_STARTUP_BYTES):
     """启动一个新驱动进程，保存完整回执；任何非零退出严判阻断。"""
     root = environment.contained_path(workspace, ".").resolve()
+    timeouts = timeout_dimensions(config, deadline)
+    if cancel_requested() or time.monotonic() >= timeouts["agent_session_deadline"]:
+        raise SupervisorError("调用前已取消或批次预算耗尽；不创建新会话请求")
     session = uuid.uuid4().hex
     startup = json.loads(assembled["payload"])
     expected = {"session_id": session, "plan_id": startup["state_projection"]["plan_id"],
@@ -98,19 +130,23 @@ def invoke(*, workspace, config, assembled, runtime_directory, deadline, cancel_
     serialized = (json.dumps(envelope, ensure_ascii=True, sort_keys=True) + "\n").encode("utf-8")
     if len(serialized) + (startup["observed_host_bytes"] or 0) > maximum_bytes:
         raise SupervisorError("完整驱动输入与最近反馈超过启动预算；未裁掉必要约束")
+    # L0 环境复核消耗批次预算，但不提前消耗尚未启动的驱动会话预算。
+    # 显式选择现有解释器，不安装认证或依赖，不扩大任何超时上限。
+    ready = environment.check(root, startup["task"]["verification"]["environment_file"])
+    timeouts = timeout_dimensions(config, deadline)
+    if cancel_requested() or time.monotonic() >= timeouts["agent_session_deadline"]:
+        raise SupervisorError("环境复核后已取消或批次预算耗尽；不创建新会话请求")
     runtime = runtime_path(root, runtime_directory)
     runtime.mkdir(parents=True, exist_ok=True, mode=0o700)
     request = runtime / ("agent-input-" + session + ".json")
     save_receipt(request, envelope)
-    # 现有验证环境显式选择解释器，驱动自身不安装认证或依赖。
-    ready = environment.check(root, startup["task"]["verification"]["environment_file"])
     process = run(RunSpec(
         operation="agent-call", argv=(ready["environment"]["python"]["path"], "-B",
             str(contained_path(root, config["driver_file"])), "--request-file",
             request.relative_to(root).as_posix()),
         workspace=root, runtime_directory=runtime_directory,
         target="agent:" + expected["plan_id"] + ":" + expected["task_id"], tier="verify",
-        deadline=min(deadline, time.monotonic() + config["api_timeout_seconds"]),
+        deadline=timeouts["agent_session_deadline"],
         cancel_requested=cancel_requested,
     ))
     reason = process["reason"]
@@ -126,7 +162,7 @@ def invoke(*, workspace, config, assembled, runtime_directory, deadline, cancel_
     except (OSError, ValueError, KeyError, TypeError) as exc:
         reason = reason or str(exc)
     if process["timed_out"]:
-        reason, category = "API／驱动进程调用超时；安全停止并保留现场", "TIMEOUT"
+        reason, category = "驱动会话进程或批次截止时间耗尽；不推断内部模型请求超时，保留现场", "TIMEOUT"
     if process["cancelled"]:
         reason, category = "明确取消无头调用；保留成果", "CANCELLED"
     if not process["cleanup_ok"]:
@@ -138,5 +174,5 @@ def invoke(*, workspace, config, assembled, runtime_directory, deadline, cancel_
             "category": category, **expected, "process_receipt": process["receipt_path"],
             "returncode": process["returncode"], "cleanup_ok": process["cleanup_ok"],
             "cancelled": process["cancelled"], "timed_out": process["timed_out"],
-            "runtime_kind": config["runtime_kind"],
+            "runtime_kind": config["runtime_kind"], "timeout_dimensions": timeouts,
             "evidence_boundary": "驱动调用事实；隔离夹具不证明 Roo、新会话权限或远程断开；业务须独立验证"}

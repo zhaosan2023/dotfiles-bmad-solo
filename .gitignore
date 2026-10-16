@@ -3,6 +3,7 @@
 *.tmp
 .versions/
 .bmad-control/
+.bmad-runtime/
 tests/**/sandbox-*/
 docs/tmp-*
 
