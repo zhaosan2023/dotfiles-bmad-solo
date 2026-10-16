@@ -8,7 +8,7 @@ adr_file: "_bmad-output/adrs/ADR-20261012-bmad-solo-anti-bureaucracy-and-program
 verification_type: config_syntax
 verification_command: "timeout 30s python3 -B scripts/validate-roo-contracts.py --suite v5 --plan _bmad-output/pending_implementation_plan.md < /dev/null"
 verification_command_status: AVAILABLE
-authorization: "2026-10-16 用户授权 Phase 1 本地工程套件与反例封顶闭环并执行 Git 提交固化；后续 Phase 2 交接由 Roo Code 在目标环境（VPS / 独立会话）接管实施 Epic 5 任务期 Ralph 循环（bmad-loop.py、新会话调度与断开推进验证）。保持 V4 对照基线只读；提交推送至远端、生产部署、ADR 转正及计划归档仍须另获授权"
+authorization: "2026-10-16 用户授权 Phase 1 本地工程套件与 Phase 2 本地任务期循环原语（bmad-loop.py、14 项反例测试及规约）实施及 Git 提交固化；保持 V4 对照基线只读；提交推送至远端、生产部署、ADR 转正及计划归档仍须另获授权"
 session_id: null
 ---
 
@@ -208,6 +208,7 @@ timeout -k 2s 30s python3 -B -m unittest discover -s tests/roo_distribution -p '
 - V5 隔离是本轮新增范围决定；旧文档中的 V4 链接只作为事实参照，新生产实现以 V5 落点为准。独立源码目录不等于独立宿主权限或同根双活；默认激活、插件槽位及版本接口保持上述保守提案，后续不得静默更改。
 - [x] 用户授权本任务方案与 ADR 持久结晶。
 - [x] 2026-10-16 用户授权 Phase 1 本地工程套件与反例封顶闭环，定向验证及 238 项单测全部通过。
-- [x] 2026-10-16 用户授权 Phase 1 成果 Git 提交固化，并交接给 Roo Code 接管 Phase 2。
-- [ ] 目标 VPS / Roo Code 无人值守试跑授权及预算、操作范围确认。
+- [x] 2026-10-16 用户授权 Phase 1 成果 Git 提交固化 (34a5c19)。
+- [x] 2026-10-16 用户授权 Phase 2 本地任务期循环控制器 (bmad-loop.py)、14 项循环反例断言及规约文档完成与 Git 提交固化。
+- [ ] 目标 VPS / 真实 Roo 独立会话试跑授权及预算、操作范围确认。
 - [ ] 提交推送至远端、生产部署、ADR 转正或计划归档授权。

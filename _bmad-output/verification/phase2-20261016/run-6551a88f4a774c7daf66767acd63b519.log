@@ -1,0 +1,14 @@
+.F...........
+======================================================================
+FAIL: test_budget_failures_block_without_dropping_constraints (test_loop_guards.LoopGuards.test_budget_failures_block_without_dropping_constraints) (args=('--output-bytes', '256'))
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/ecs-user/dotfiles-bmad-solo/bmralph-suite-v5/tests/test_loop_guards.py", line 262, in test_budget_failures_block_without_dropping_constraints
+    self.assertIn("预算", record["reason"])
+AssertionError: '预算' not found in '持续无进展熔断；失败成果保留'
+
+----------------------------------------------------------------------
+Ran 13 tests in 15.105s
+
+FAILED (failures=1)
+BMAD_TEST_RESULT {"directory":"bmralph-suite-v5/tests","discovered":13,"errors":0,"expected_failures":0,"failures":1,"matched_files":1,"minimum_tests":13,"missing_required_tests":[],"pattern":"test_loop_guards.py","reason":"\u771f\u5b9e\u6d4b\u8bd5\u5931\u8d25","required_tests":["test_loop_guards.LoopGuards.test_no_progress_auto_stops_nonzero_and_preserves_every_pending_item","test_loop_guards.LoopGuards.test_stop_and_signal_cleanup_real_inflight_child_and_grandchild_tree","test_loop_guards.LoopGuards.test_single_writer_lease_cannot_be_bypassed_by_different_runtime_directory"],"skipped":0,"status":"BLOCKED","tests_run":13,"unexpected_successes":0,"workspace":"/home/ecs-user/dotfiles-bmad-solo"}

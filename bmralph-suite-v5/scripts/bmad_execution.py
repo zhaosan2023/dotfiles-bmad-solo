@@ -141,7 +141,8 @@ def unit_test(*, workspace: Path, environment_file: str, directory: str,
               pattern: str, minimum_tests: int = 1,
               required_tests: tuple[str, ...] = (),
               inputs: tuple[str, ...] = (),
-              runtime_directory: str = ".bmad-runtime") -> dict:
+              runtime_directory: str = ".bmad-runtime", deadline=None,
+              cancel_requested=None) -> dict:
     """单测类型化操作；返回独立验收结果，不更新计划或建立进度账本。"""
     root = workspace_path(workspace)
     target = selected_directory(root, directory)
@@ -176,6 +177,7 @@ def unit_test(*, workspace: Path, environment_file: str, directory: str,
         operation="unit-test", argv=tuple(argv), workspace=root,
         runtime_directory=runtime_directory,
         target=f"{directory}:{pattern}", tier="verify",
+        deadline=deadline, cancel_requested=cancel_requested,
     ))
     reason = process["reason"]
     result = None

@@ -12,10 +12,11 @@ import fcntl
 import json
 import os
 from pathlib import Path
+import math
 import signal
 import subprocess
 import time
-from typing import Iterator
+from typing import Callable, Iterator
 import uuid
 
 
@@ -39,8 +40,16 @@ class RunSpec:
     runtime_directory: str
     target: str
     tier: str
+    deadline: float | None = None
+    cancel_requested: Callable[[], bool] | None = None
 
     def validate(self) -> None:
+        if self.deadline is not None and (
+            type(self.deadline) not in {int, float} or not math.isfinite(self.deadline)
+        ):
+            raise SupervisorError("任务截止时间必须为有限的单调时钟值")
+        if self.cancel_requested is not None and not callable(self.cancel_requested):
+            raise SupervisorError("取消入口必须为程序提供的可调用对象")
         if self.operation not in {"unit-test", "race-test", "config-syntax", "check-env"}:
             raise SupervisorError("未实现的类型化操作")
         if self.tier not in TIERS:
@@ -239,7 +248,13 @@ def _run_locked(spec: RunSpec, root: Path, directory: Path) -> dict:
                 start_new_session=True, close_fds=True,
             )
             deadline = begin + TIERS[spec.tier]
+            if spec.deadline is not None:
+                deadline = min(deadline, spec.deadline)
             while process.poll() is None:
+                if spec.cancel_requested is not None and spec.cancel_requested():
+                    cancelled = True
+                    reason = "任务期安全停止请求"
+                    break
                 if time.monotonic() >= deadline:
                     timed_out = True
                     reason = "进程级超时"
