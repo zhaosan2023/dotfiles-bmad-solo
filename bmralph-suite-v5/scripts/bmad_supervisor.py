@@ -50,7 +50,7 @@ class RunSpec:
             raise SupervisorError("任务截止时间必须为有限的单调时钟值")
         if self.cancel_requested is not None and not callable(self.cancel_requested):
             raise SupervisorError("取消入口必须为程序提供的可调用对象")
-        if self.operation not in {"unit-test", "race-test", "config-syntax", "check-env"}:
+        if self.operation not in {"unit-test", "race-test", "config-syntax", "check-env", "agent-call"}:
             raise SupervisorError("未实现的类型化操作")
         if self.tier not in TIERS:
             raise SupervisorError("必须选择探测、验证或构建超时级别")

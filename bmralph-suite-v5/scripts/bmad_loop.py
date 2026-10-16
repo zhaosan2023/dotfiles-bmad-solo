@@ -1,8 +1,8 @@
-"""有界本地任务期循环；不是已验证的 Roo/Agent 运行时。
+"""有界任务期循环：显式计划适配、独立验证及隔离无头驱动。
 
-明确采用类型化候选计划和 local-verification 后端；复用 bmad-exec 的
-单测执行模块与上下文预算。只运行一个请求指定的任务，不写计划进度，
-不恢复聊天、不提交或回滚。真实 Agent、新会话和远程断开门禁尚未覆盖。
+一次启动只驱动请求指定任务；显式授权后依据真实证据写回唯一任务
+清单，状态卡仅为只读投影。不恢复聊天、不提交或回滚。真实 Roo
+运行时、新会话权限及远程断开门禁尚未覆盖，真实后端失败关闭。
 """
 from __future__ import annotations
 
@@ -18,6 +18,8 @@ import stat
 import time
 import uuid
 
+import bmad_agent_backend as agent_backend
+import bmad_plan_adapter as plan_adapter
 import bmad_context as context
 import bmad_context_inputs as context_inputs
 import bmad_environment as environment
@@ -32,7 +34,8 @@ CONTROL = ".bmad-control"
 CURRENT = CONTROL + "/loop-current.json"
 LOCK = CONTROL + "/loop-writer.lock"
 BOUNDARY = (
-    "仅本地类型化单测循环；不启动真实 Agent、不迁移活动计划；"
+    "本地类型化单测与隔离无头驱动；仅显式授权写回计划任务；"
+    "不启动未经实证的真实 Roo，不证明全计划或远程断开完成；"
     "协作锁非账号权限隔离；仅清理监督器的新建同组子进程，"
     "脱离会话、容器与宿主崩溃恢复未覆盖"
 )
@@ -51,10 +54,18 @@ class LoopSpec:
     startup_bytes: int = context.DEFAULT_STARTUP_BYTES
     output_bytes: int = context.MAX_CUMULATIVE_TOOL_BYTES
     runtime_directory: str = ".bmad-runtime"
+    save_progress: bool = False
+    backend_config: str | None = None
 
     def validate(self):
-        if self.backend != "local-verification":
-            raise SupervisorError("独立 Agent 接口未核验；只接受显式 local-verification")
+        if type(self.save_progress) is not bool:
+            raise SupervisorError("计划进度写回须为显式布尔授权")
+        if self.backend not in {"local-verification", "roo-cli", "headless"}:
+            raise SupervisorError("后端未覆盖；不静默更换引擎")
+        if self.backend == "local-verification" and self.backend_config is not None:
+            raise SupervisorError("本地验证后端不接受 Agent 配置")
+        if self.backend != "local-verification" and self.backend_config is None:
+            raise SupervisorError("无头后端必须提供明确驱动契约；不猜测 Roo 参数")
         for value in (self.maximum_rounds, self.no_progress_rounds):
             if type(value) is not int or not 1 <= value <= 1000:
                 raise SupervisorError("轮次与无进展阈值须为 1 至 1000 的整数")
@@ -69,7 +80,10 @@ class LoopSpec:
         root = workspace_path(self.workspace)
         runtime_path(root, self.runtime_directory)
         runtime_path(root, CONTROL)
-        for relative in (self.plan_file, self.request_file):
+        relatives = (self.plan_file, self.request_file)
+        if self.backend_config is not None:
+            relatives += (self.backend_config,)
+        for relative in relatives:
             path = contained_path(root, relative)
             if path.is_relative_to(runtime_path(root, CONTROL)) or path.is_relative_to(
                 runtime_path(root, self.runtime_directory)
@@ -124,7 +138,7 @@ def writer_active(root):
 
 
 def read_record(root, relative):
-    payload, _, _ = context_inputs.read_snapshot(root, relative, 16384)
+    payload, _, _ = context_inputs.read_snapshot(root, relative, 128 * 1024)
     data = json.loads(payload, object_pairs_hook=execution.unique_object)
     if not isinstance(data, dict):
         raise SupervisorError("循环回执不是对象")
@@ -144,8 +158,10 @@ def save_current(root, data):
             temporary.unlink()
 
 
-def status(workspace):
+def status(workspace, plan_file=None):
     root = workspace_path(workspace)
+    if plan_file is not None:
+        return plan_adapter.query(workspace=root, plan_file=plan_file)
     if not contained_path(root, CURRENT).exists():
         return {"operation": "status", "status": "IDLE", "reason": "尚无任务期回执",
                 "evidence_boundary": BOUNDARY}
@@ -253,13 +269,20 @@ def _start_locked(spec, root):
         program_root = Path(__file__).resolve().parent
         for path in program_root.glob("*.py"):
             bound[path] = environment.fingerprint(path)
+        backend_config = None
+        if spec.backend != "local-verification":
+            backend_config, backend_bound = agent_backend.load(root, spec.backend_config, spec.backend)
+            bound.update(backend_bound)
+            if backend_config["runtime_kind"] != "isolated-fixture":
+                raise SupervisorError("真实 Roo 运行时尚缺来源、版本、权限和独立认证实证；本轮仅授权隔离驱动演练")
         previous = None
+        recent_feedback = None
         while record["rounds"] < spec.maximum_rounds:
             if guard():
                 break
             if any(environment.fingerprint(path) != identity for path, identity in bound.items()):
                 raise SupervisorError("绑定契约或执行程序在阶段边界变化；停止对账")
-            assembled = context_inputs.assemble_plan_input(
+            assembled = plan_adapter.assemble(
                 workspace=root, plan_file=spec.plan_file, request_file=spec.request_file,
                 maximum_bytes=spec.startup_bytes,
             )
@@ -277,6 +300,28 @@ def _start_locked(spec, root):
                 maximum_bytes=spec.output_bytes,
                 maximum_result_bytes=min(spec.output_bytes, context.MAX_TOOL_RESULT_BYTES),
             )
+            if backend_config is not None:
+                record["cleanup_ok"] = False
+                agent = agent_backend.invoke(
+                    workspace=root, config=backend_config, assembled=assembled,
+                    runtime_directory=spec.runtime_directory, deadline=deadline,
+                    cancel_requested=cancelled, feedback=recent_feedback,
+                    maximum_bytes=spec.startup_bytes,
+                )
+                record["last_agent"] = agent
+                record["cleanup_ok"] = agent["cleanup_ok"]
+                budget.consume(agent)
+                if not agent["cleanup_ok"]:
+                    raise SupervisorError("Agent 清理未确认；禁止验证或推进")
+                if agent["cancelled"]:
+                    record.update(status="SUSPENDED", reason="明确取消 Agent；在途进程已结束，成果保留")
+                    break
+                if agent["status"] != "PASS":
+                    raise SupervisorError(agent["reason"])
+                if guard():
+                    break
+                if any(environment.fingerprint(path) != identity for path, identity in bound.items()):
+                    raise SupervisorError("Agent 结束时绑定契约或驱动变化；停止对账")
             # 执行或回执保存抛出异常时，不能凭默认值宣称进程已清理。
             record["cleanup_ok"] = False
             verdict = execution.unit_test(
@@ -303,6 +348,7 @@ def _start_locked(spec, root):
                 ),
             }
             budget.consume(feedback)
+            recent_feedback = feedback
             record["forwarded_bytes"] = budget.accepted_bytes
             if not process["cleanup_ok"]:
                 raise SupervisorError("无法确认进程组清理；禁止推进或再次启动验证")
@@ -319,7 +365,17 @@ def _start_locked(spec, root):
                 checked = execution.check_evidence(workspace=root, verdict_file=verdict["verdict_path"])
                 if checked["status"] != "PASS":
                     raise SupervisorError(checked["reason"])
-                record.update(status="COMPLETED", reason="仅请求指定任务的本地验证通过；未写计划或证明全计划完成")
+                if spec.save_progress:
+                    saved = plan_adapter.complete(
+                        workspace=root, plan_file=spec.plan_file,
+                        task_id=assembled["task_id"], verdict_file=verdict["verdict_path"],
+                        expected_identity=bound[contained_path(root, spec.plan_file)],
+                    )
+                    bound[contained_path(root, spec.plan_file)] = saved["plan_identity"]
+                    record["task_progress_saved"] = True
+                record.update(status="COMPLETED", reason=(
+                    "请求指定任务的相关验证通过；不证明 Epic 或全计划完成"
+                ))
                 break
             current = execution.collect_evidence(
                 root, verification["directory"], tuple(verification["inputs"]),
@@ -342,6 +398,15 @@ def _start_locked(spec, root):
             signal.signal(sig, handler)
     if record["status"] == "EXECUTING":
         record.update(status="BLOCKED", reason="缺少最终裁决")
+    projection = plan_adapter.query(workspace=root, plan_file=spec.plan_file)
+    if "view" in projection:
+        record.update(state_card=projection["view"], state_card_lines=projection["view_lines"],
+                      state_card_bytes=projection["view_bytes"],
+                      unfinished_count=projection["unfinished_count"])
+    else:
+        record["state_card_reason"] = str(projection.get("reason", "缺少完整状态视图"))[:512]
+        if record["status"] == "COMPLETED":
+            record.update(status="BLOCKED", reason="必要短状态卡无法完整生成；成果及回执保留")
     record["finished_at"] = utc_now()
     save_receipt(contained_path(root, final_relative), record)
     save_current(root, record)

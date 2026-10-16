@@ -1,0 +1,6 @@
+.............
+----------------------------------------------------------------------
+Ran 13 tests in 14.002s
+
+OK
+BMAD_TEST_RESULT {"directory":"bmralph-suite-v5/tests","discovered":13,"errors":0,"expected_failures":0,"failures":0,"matched_files":1,"minimum_tests":13,"missing_required_tests":[],"pattern":"test_agent_backend.py","reason":"\u5168\u90e8\u9009\u4e2d\u6d4b\u8bd5\u5b9e\u9645\u901a\u8fc7","required_tests":["test_agent_backend.AgentBackendGuards.test_simulated_disconnection_allows_local_step_and_durable_receipts","test_agent_backend.AgentBackendGuards.test_network_error_blocks_and_keeps_unfinished_changes","test_agent_backend.AgentBackendGuards.test_new_round_receives_actual_failure_feedback_in_new_session"],"skipped":0,"status":"PASS","tests_run":13,"unexpected_successes":0,"workspace":"/home/ecs-user/dotfiles-bmad-solo"}

@@ -247,6 +247,57 @@ class LoopGuards(unittest.TestCase):
         self.assertFalse(queried["writer_active"])
         self.assertEqual({p: p.read_bytes() for p in self.root.rglob("*") if p.is_file()}, before_files)
 
+    def test_explicit_progress_write_completes_one_task_and_generates_bounded_card(self):
+        self.fixture("        self.assertTrue(True)\n")
+        result, record = self.invoke("--save-progress")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertTrue(record["task_progress_saved"])
+        self.assertLessEqual(record["state_card_lines"], 80)
+        self.assertEqual(record["state_card_bytes"], len(record["state_card"].encode("utf-8")))
+        self.assertIn("T1 [COMPLETED]", record["state_card"])
+        self.assertIn("T2 [READY]", record["state_card"])
+        self.assertEqual(record["unfinished_count"], 1)
+        self.assertEqual(record["rounds"], 1)
+        self.assertEqual(loop.status(self.root, "plan.md")["ready_tasks"], ["T2"])
+
+    def test_failure_with_progress_permission_does_not_check_off_task(self):
+        before = (self.root / "plan.md").read_bytes()
+        result, record = self.invoke("--save-progress", "--maximum-rounds", "1")
+        self.assert_blocked(result, record)
+        self.assertFalse(record["task_progress_saved"])
+        self.assertEqual((self.root / "plan.md").read_bytes(), before)
+        self.assertIn("T2 [PENDING]", record["state_card"])
+
+    def test_plan_query_does_not_create_loop_or_business_receipts(self):
+        before = {p: p.read_bytes() for p in self.root.rglob("*") if p.is_file()}
+        result = subprocess.run(
+            [sys.executable, "-B", str(CLI), "status", "--workspace", str(self.root),
+             "--plan-file", "plan.md"], stdin=subprocess.DEVNULL,
+            capture_output=True, text=True, timeout=5,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(json.loads(result.stdout)["ready_tasks"], ["T1"])
+        self.assertEqual({p: p.read_bytes() for p in self.root.rglob("*") if p.is_file()}, before)
+
+    def test_cli_output_overflow_exits_nonzero_and_preserves_receipt_locator(self):
+        with loop.writer_lease(self.root):
+            loop.save_current(self.root, {
+                "status": "COMPLETED", "cleanup_ok": True,
+                "state_card": "中文" * 6000, "final_receipt": ".bmad-runtime/loop-test.json",
+            })
+        result = subprocess.run(
+            [sys.executable, "-B", str(CLI), "status", "--workspace", str(self.root)],
+            stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=5,
+        )
+        self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+        record = json.loads(result.stdout)
+        self.assertEqual(record["status"], "BLOCKED")
+        self.assertTrue(record["output_truncated"])
+        self.assertEqual(record["final_receipt"], ".bmad-runtime/loop-test.json")
+        self.assertNotIn("state_card", record)
+        self.assertLessEqual(len(result.stdout.encode("utf-8")), 16384)
+        self.assertEqual(loop.status(self.root)["state_card"], "中文" * 6000)
+
     def test_idle_status_and_stop_do_not_create_files(self):
         with tempfile.TemporaryDirectory(dir=SUITE.parent / "tests") as temporary:
             root = Path(temporary)

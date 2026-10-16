@@ -251,6 +251,28 @@ class SupervisorGuards(unittest.TestCase):
                     self.execute(runtime=runtime)
                 self.assertFalse((self.root / runtime).exists())
 
+    def test_agent_call_uses_closed_stdin_and_preserves_actual_exit_verdict(self):
+        for exit_code in (0, 7):
+            with self.subTest(exit_code=exit_code):
+                spec = supervisor.RunSpec(
+                    operation="agent-call",
+                    argv=(sys.executable, "-B", "-c",
+                          "import sys; assert sys.stdin.read() == ''; "
+                          "print('agent fixture receipt'); "
+                          "raise SystemExit(" + str(exit_code) + ")"),
+                    workspace=self.root, runtime_directory=".bmad-runtime",
+                    target="isolated agent-call supervisor fixture", tier="verify",
+                )
+                receipt = supervisor.run(spec)
+                self.assertEqual(receipt["returncode"], exit_code)
+                self.assertEqual(receipt["process_status"],
+                                 "PASS" if exit_code == 0 else "BLOCKED")
+                self.assertTrue(receipt["cleanup_ok"])
+                self.assertEqual(receipt["argv"], list(spec.argv))
+                self.assertEqual(receipt["cwd"], str(self.root.resolve()))
+                self.assertEqual(self.saved_receipt(receipt), receipt)
+                self.assertIn("agent fixture receipt", receipt["summary"]["text"])
+
     def test_unsupported_operation_rejected_before_file_creation(self):
         spec = supervisor.RunSpec(
             operation="shell", argv=(sys.executable, "-B", "-c", "print('no')"),

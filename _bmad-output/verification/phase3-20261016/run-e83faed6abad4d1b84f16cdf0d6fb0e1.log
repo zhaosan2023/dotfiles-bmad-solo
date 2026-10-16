@@ -1,0 +1,6 @@
+.............
+----------------------------------------------------------------------
+Ran 13 tests in 13.692s
+
+OK
+BMAD_TEST_RESULT {"directory":"bmralph-suite-v5/tests","discovered":13,"errors":0,"expected_failures":0,"failures":0,"matched_files":1,"minimum_tests":13,"missing_required_tests":[],"pattern":"test_agent_backend.py","reason":"\u5168\u90e8\u9009\u4e2d\u6d4b\u8bd5\u5b9e\u9645\u901a\u8fc7","required_tests":["test_agent_backend.AgentBackendGuards.test_missing_credentials_blocks_before_agent_or_business_execution","test_agent_backend.AgentBackendGuards.test_unauthorized_driver_is_never_started","test_agent_backend.AgentBackendGuards.test_authentication_and_permission_failures_stop_without_retry","test_agent_backend.AgentBackendGuards.test_nonzero_exit_cannot_be_overridden_by_valid_ok_result","test_agent_backend.AgentBackendGuards.test_api_timeout_cleans_group_and_preserves_local_artifacts","test_agent_backend.AgentBackendGuards.test_real_roo_without_required_runtime_evidence_fails_closed"],"skipped":0,"status":"PASS","tests_run":13,"unexpected_successes":0,"workspace":"/home/ecs-user/dotfiles-bmad-solo"}

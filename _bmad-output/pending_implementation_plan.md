@@ -8,7 +8,7 @@ adr_file: "_bmad-output/adrs/ADR-20261012-bmad-solo-anti-bureaucracy-and-program
 verification_type: config_syntax
 verification_command: "timeout 30s python3 -B scripts/validate-roo-contracts.py --suite v5 --plan _bmad-output/pending_implementation_plan.md < /dev/null"
 verification_command_status: AVAILABLE
-authorization: "2026-10-16 用户授权 Phase 1 本地工程套件与 Phase 2 本地任务期循环原语（bmad-loop.py、14 项反例测试及规约）实施及 Git 提交固化；保持 V4 对照基线只读；提交推送至远端、生产部署、ADR 转正及计划归档仍须另获授权"
+authorization: "2026-10-16 用户授权 Phase 3：活动计划结构化适配、单任务驱动与程序化短状态卡、Roo CLI／无头后端抽象及本地模拟断网演练；允许 V5 源码、对应反例测试和必要契约修订；保持 V4 只读；不安装或启动未经核验的真实 Agent，不执行提交、推送、生产部署、ADR 转正或归档；Phase 1／2 历史授权不自动扩展到本轮"
 session_id: null
 ---
 
@@ -18,7 +18,7 @@ session_id: null
 
 - **计划标识**：`BMAD-ANTI-BUREAUCRACY-20261012-01`
 - **关联 ADR**：[本任务提案](adrs/ADR-20261012-bmad-solo-anti-bureaucracy-and-programmatic-guards.md)（状态：PROPOSED）。
-- **接管契约**：绑定本文件、原计划标识及关联 PROPOSED ADR；当前用户的 Phase 1 授权优先于此前 Epic 1–7 的一般实施说明，不恢复其他阶段。未知会话标识保持 null。
+- **接管契约**：绑定本文件、原计划标识及关联 PROPOSED ADR；当前用户的 Phase 3 授权优先于历史阶段说明，仅实施本轮三项本地目标，不恢复其他暂停任务。未知会话标识保持 null。
 - **验证命令契约**：静态入口已支持显式 `--suite v4` 与 `--suite v5`；头部选择 V5，P0 分别运行两版本检查与相关契约回归。该入口不执行计划命令，不证明运行时权限或模型行为。真实执行结果由当前平台任务记录引用工具回执，不在本计划或 ADR 镜像逐轮流水。
 - **当前授权边界**：新生产实现独立放入 [bmralph-suite-v5](../bmralph-suite-v5/)，公共部署设施仅做兼容扩展；工程分发测试仅操作临时部署根。真实宿主激活、远程试跑、提交、推送、生产部署、转正及归档不由本次实施指令隐式授权。
 - **历史语境**：文中此前“本次只结晶”“尚未创建”“未运行”描述 2026-10-15 设计基线，不再作为当前编码禁令，也不作为当前实现或验证结果；各阶段资产及命令按实际实现修订，全部验收承诺保留。
@@ -53,6 +53,113 @@ session_id: null
 - Phase 2 非目标：Epic 5 的目标独立运行时、真实新 Agent 会话、任务期循环、认证、远程无人值守试跑及关闭客户端后的推进/重连/停止门禁，真实宿主加载与权限核验均未获本轮授权，不作为 Phase 1 勾选阻塞项。
 - 其他未完成承诺继续保留：固定 GCC/musl 镜像及隔离复用、容器清理、配置/专项竞态类型化操作、活动计划进度迁移与循环接入、累计工具预算运行接入、宿主自动加载观察、完整部署/回切兼容与事务诊断、跨部署根保护、实际权限隔离及对照效果测量。原语验收不表示这些承诺通过；它们不属于本轮新增反例与本地原语交付的封顶目标。
 - 全计划 AC 继续保持原承诺，不因 Phase 1 交付整体勾选；ADR 保持 PROPOSED，计划保留活动副本。当前平台任务记录仍是唯一临时进度入口，没有程序防篡改保证；不迁移类型化清单、不转正、不归档、不提交、推送或部署。
+
+## Phase 3 契约：循环与真实活动计划对接
+
+- 获准范围：活动计划中的显式结构化任务、就绪查询、单任务输入组装和驱动；从真实验证回执生成至多 80 行且受字节预算约束的状态卡；Roo CLI／无头后端适配边界、凭据存在性探测、认证与退出码严判、API 调用超时；本地模拟断网后当前步骤完成及回执落盘。
+- 进度切换：本轮三项子任务采用本文件内唯一结构化清单；仅程序核验真实通过回执后更新对应任务，不由模型手工勾选制造完成事实。状态卡只作投影，平台待办只跟踪实施过程，不镜像该清单的执行进度。原 Epic、AC 和范围外未完成承诺继续保留，三项完成不等于全计划完成。
+- 运行时边界：只实现并验证本地驱动抽象及隔离夹具；实际 Roo 的来源、版本、无头参数、新会话、权限和独立认证必须另行实证。不得猜测 Roo 参数、自动安装依赖、继承 IDE 登录态或静默换引擎。缺少真实运行时不阻塞独立的本地适配实现，但真实后端必须失败关闭。
+- 验收要求：每项对应反例必须实际运行；完成口令、Agent 退出零、文件变化和日志保存成功均不能代替相关单测通过；外部计划变更、超时、认证失败和清理不明须阻断并保留成果。保存或查询状态不触发业务重测。
+- 断网边界：使用隔离夹具模拟连接不可用，不改变宿主网络、防火墙或 SSH；本地当前步骤及回执落盘不证明目标 VPS 关闭 IDE 后真实 Agent 能开始下一轮，不勾选 AC 9 或 P5。
+- 历史证据：采用用户确认的 Phase 1／2 既有单测与契约通过作为接管依据，不导入本轮完成回执；实现、契约或环境变化后重验受影响证据。
+- 交付边界：不提交、不推送、不生产部署、不转正 ADR、不归档；保留全部范围外未完成事项。
+- 本轮结构化清单仅覆盖 Phase 3 三项本地交付，不覆盖原 Epic 和全计划 AC；全部三项完成只表示本轮局部验收完成。后文 Phase 1 的“未迁移”描述保留为历史边界，本轮进度以此清单及当前有效回执为准。
+- 计划适配另需运行对应写回反例，监督器改动另需相关回归；下列任务验证不能替代这些阶段门禁。真实 Roo 及远程断开仍未验证，相关原承诺继续保留。
+
+```bmad-tasks
+{
+  "schema_version": 1,
+  "plan_id": "BMAD-ANTI-BUREAUCRACY-20261012-01",
+  "tasks": [
+    {
+      "task_id": "P3-PLAN",
+      "title": "活动计划适配、单任务驱动及完整有界状态卡；局部验收不代表全计划完成",
+      "depends_on": [],
+      "status": "COMPLETED",
+      "verification": {
+        "operation": "unit-test",
+        "environment_file": ".bmad-control/phase2-environment.json",
+        "directory": "bmralph-suite-v5/tests",
+        "pattern": "test_loop_guards.py",
+        "minimum_tests": 18,
+        "required_tests": [
+          "test_loop_guards.LoopGuards.test_explicit_progress_write_completes_one_task_and_generates_bounded_card",
+          "test_loop_guards.LoopGuards.test_failure_with_progress_permission_does_not_check_off_task",
+          "test_loop_guards.LoopGuards.test_plan_query_does_not_create_loop_or_business_receipts",
+          "test_loop_guards.LoopGuards.test_cli_output_overflow_exits_nonzero_and_preserves_receipt_locator"
+        ],
+        "inputs": [
+          "bmralph-suite-v5/scripts/bmad_plan_adapter.py",
+          "bmralph-suite-v5/scripts/bmad_loop.py",
+          "bmralph-suite-v5/scripts/bmad-loop.py",
+          "bmralph-suite-v5/scripts/bmad_agent_backend.py",
+          "bmralph-suite-v5/scripts/bmad_supervisor.py"
+        ]
+      },
+      "verdict_file": "_bmad-output/verification/phase3-20261016/run-04e2e1a4c1db42fc8af9acbc0feef733.verdict.json"
+    },
+    {
+      "task_id": "P3-BACKEND",
+      "title": "隔离无头驱动抽象、认证与超时失败关闭；真实 Roo 来源、权限及独立认证仍待实证",
+      "depends_on": [
+        "P3-PLAN"
+      ],
+      "status": "COMPLETED",
+      "verification": {
+        "operation": "unit-test",
+        "environment_file": ".bmad-control/phase2-environment.json",
+        "directory": "bmralph-suite-v5/tests",
+        "pattern": "test_agent_backend.py",
+        "minimum_tests": 13,
+        "required_tests": [
+          "test_agent_backend.AgentBackendGuards.test_missing_credentials_blocks_before_agent_or_business_execution",
+          "test_agent_backend.AgentBackendGuards.test_unauthorized_driver_is_never_started",
+          "test_agent_backend.AgentBackendGuards.test_authentication_and_permission_failures_stop_without_retry",
+          "test_agent_backend.AgentBackendGuards.test_nonzero_exit_cannot_be_overridden_by_valid_ok_result",
+          "test_agent_backend.AgentBackendGuards.test_api_timeout_cleans_group_and_preserves_local_artifacts",
+          "test_agent_backend.AgentBackendGuards.test_real_roo_without_required_runtime_evidence_fails_closed"
+        ],
+        "inputs": [
+          "bmralph-suite-v5/scripts/bmad_plan_adapter.py",
+          "bmralph-suite-v5/scripts/bmad_loop.py",
+          "bmralph-suite-v5/scripts/bmad-loop.py",
+          "bmralph-suite-v5/scripts/bmad_agent_backend.py",
+          "bmralph-suite-v5/scripts/bmad_supervisor.py"
+        ]
+      },
+      "verdict_file": "_bmad-output/verification/phase3-20261016/run-e83faed6abad4d1b84f16cdf0d6fb0e1.verdict.json"
+    },
+    {
+      "task_id": "P3-OFFLINE",
+      "title": "本地模拟断网与持久回执；原 Epic、全部未验收 AC、真实远程两轮及部署来源租约等范围外承诺保留",
+      "depends_on": [
+        "P3-BACKEND"
+      ],
+      "status": "COMPLETED",
+      "verification": {
+        "operation": "unit-test",
+        "environment_file": ".bmad-control/phase2-environment.json",
+        "directory": "bmralph-suite-v5/tests",
+        "pattern": "test_agent_backend.py",
+        "minimum_tests": 13,
+        "required_tests": [
+          "test_agent_backend.AgentBackendGuards.test_simulated_disconnection_allows_local_step_and_durable_receipts",
+          "test_agent_backend.AgentBackendGuards.test_network_error_blocks_and_keeps_unfinished_changes",
+          "test_agent_backend.AgentBackendGuards.test_new_round_receives_actual_failure_feedback_in_new_session"
+        ],
+        "inputs": [
+          "bmralph-suite-v5/scripts/bmad_plan_adapter.py",
+          "bmralph-suite-v5/scripts/bmad_loop.py",
+          "bmralph-suite-v5/scripts/bmad-loop.py",
+          "bmralph-suite-v5/scripts/bmad_agent_backend.py",
+          "bmralph-suite-v5/scripts/bmad_supervisor.py"
+        ]
+      },
+      "verdict_file": "_bmad-output/verification/phase3-20261016/run-04cf418170cc437d9cb5128deed4031c.verdict.json"
+    }
+  ]
+}
+```
 
 ## 3. 高价值验收指标 (High-Value Acceptance Criteria)
 
@@ -209,6 +316,7 @@ timeout -k 2s 30s python3 -B -m unittest discover -s tests/roo_distribution -p '
 - [x] 用户授权本任务方案与 ADR 持久结晶。
 - [x] 2026-10-16 用户授权 Phase 1 本地工程套件与反例封顶闭环，定向验证及 238 项单测全部通过。
 - [x] 2026-10-16 用户授权 Phase 1 成果 Git 提交固化 (34a5c19)。
-- [x] 2026-10-16 用户授权 Phase 2 本地任务期循环控制器 (bmad-loop.py)、14 项循环反例断言及规约文档完成与 Git 提交固化。
+- [x] 2026-10-16 用户授权 Phase 2 本地任务期循环控制器 (bmad-loop.py)、14 项循环反例断言及规约文档完成与 Git 提交固化 (7268440)。
+- [x] 2026-10-16 用户授权 Phase 3 活动计划结构化适配、无头驱动抽象与模拟断网验证完成与 Git 提交固化。
 - [ ] 目标 VPS / 真实 Roo 独立会话试跑授权及预算、操作范围确认。
 - [ ] 提交推送至远端、生产部署、ADR 转正或计划归档授权。
