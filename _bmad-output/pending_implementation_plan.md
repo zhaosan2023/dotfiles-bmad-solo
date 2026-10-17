@@ -8,7 +8,7 @@ adr_file: "_bmad-output/adrs/ADR-20261012-bmad-solo-anti-bureaucracy-and-program
 verification_type: config_syntax
 verification_command: "timeout 30s python3 -B scripts/validate-roo-contracts.py --suite v5 --plan _bmad-output/pending_implementation_plan.md < /dev/null"
 verification_command_status: AVAILABLE
-authorization: "2026-10-16 用户授权继续同一计划补齐 Epic 5：V5 工程实现、对应反例测试、必要计划与提案契约修订及受控本地验证；保护已有修改，保持 V4 只读；不包含系统安装、账号权限调整、真实宿主激活、真实 Agent 启动、远程无人值守试跑、提交、推送、生产部署、ADR 转正及归档；真实运行时试验须另行一次性确认目标、写入范围、认证和预算；既有超时上限不自行提高"
+authorization: "2026-10-17 用户授权工程入口继续同一计划：持续修订本计划及同一 PROPOSED ADR 的当前阶段、实现落点与验收映射；保护已有后端与 Pi 测试，仅允许必要修复 bmad_agent_backend.py 和新增协议反例 test_pi_backend.py；创建一个受限对账草稿并追加 Phase 5 回执。六项原 COMPLETED 任务按原验证对象精确重验、一次程序刷新；P5-PI-DRIVER 在既有写租约和源版本保护下仅行政恢复 SUSPENDED→PENDING、回执仍空，匹配真实本地协议证据后程序登记完成。P5-PI-HEADLESS 保持 SUSPENDED 且回执为空。冻结循环、入口、状态、适配、执行及既有测试原语，V4 只读；不重新安装或更新 Pi，不准备认证、不读取凭据正文、不真实模型调用、不宿主激活、不远程或断开试跑、不提交、推送、部署、转正或归档，不提高预算。阶段交付不等于全计划完成"
 session_id: null
 ---
 
@@ -18,10 +18,10 @@ session_id: null
 
 - **计划标识**：`BMAD-ANTI-BUREAUCRACY-20261012-01`
 - **关联 ADR**：[本任务提案](adrs/ADR-20261012-bmad-solo-anti-bureaucracy-and-programmatic-guards.md)（状态：PROPOSED）。
-- **接管契约**：绑定本文件、原计划标识及关联 PROPOSED ADR；当前继续实施授权优先于历史阶段说明。Phase 3 三项局部任务保留，下一批仅按下方 Phase 4 本地契约推进，不恢复其他暂停任务或未知清理状态的旧进程。未知会话标识保持 null。
+- **接管契约**：绑定本文件、原计划标识及关联 PROPOSED ADR；当前本地证据接管授权优先于此前文档结晶限制。Phase 3/4 六项完成源记录、原 Epic、全部宏观 AC 和未完成承诺保留，旧证据因后端及测试集合变化不继承有效性。本轮只恢复本地交付资格与匹配证据，不恢复旧进程、不删除旧 BLOCKED 记录；未知会话标识保持 null。
 - **验证命令契约**：静态入口已支持显式 `--suite v4` 与 `--suite v5`；头部选择 V5，P0 分别运行两版本检查与相关契约回归。该入口不执行计划命令，不证明运行时权限或模型行为。真实执行结果由当前平台任务记录引用工具回执，不在本计划或 ADR 镜像逐轮流水。
-- **当前授权边界**：新生产实现独立放入 [bmralph-suite-v5](../bmralph-suite-v5/)，公共部署设施仅做兼容扩展；工程分发测试仅操作临时部署根。真实宿主激活、远程试跑、提交、推送、生产部署、转正及归档不由本次实施指令隐式授权。
-- **历史语境**：文中此前“本次只结晶”“尚未创建”“未运行”描述 2026-10-15 设计基线，不再作为当前编码禁令，也不作为当前实现或验证结果；各阶段资产及命令按实际实现修订，全部验收承诺保留。
+- **当前授权边界**：允许必要修复[现有后端](../bmralph-suite-v5/scripts/bmad_agent_backend.py:81)及补齐[新增 Pi 反例](../bmralph-suite-v5/tests/test_pi_backend.py:1)，允许一个[受限对账草稿](scratch/phase5-progress-reconcile-20261017.py)及追加[Phase 5 回执](verification/phase5-20261017/)。其他生产原语、既有测试及 V4 冻结，项目事实基线不改；不另建计划、ADR、状态账本或控制平台。Pi 已安装的历史事实不授权重装、认证准备、宿主激活或真实试跑。
+- **历史语境**：Phase 1–4 描述保留为历史局部交付及授权，不覆盖当前窄范围。接管工作树实测 HEAD 仍为 11483cf；两份绑定文档、后端与新增 Pi 测试及 Phase 5 回执存在未提交改动，冻结资产差异为空；实际依据为平台终端回执，不在计划复制流水。旧 Roo 名称和回执不重命名为 Pi 证据；纯文档变化不触发业务重测，后端与测试集合变化须承担证据失效及定向重验成本。
 
 ## 1. 目标 (Goal)
 
@@ -39,7 +39,7 @@ session_id: null
 2. 不修改模型网关、代理协议与超时常量，不承诺把 1 小时固定压缩为 20 分钟。
 3. 不取消适用于已批准范围的竞态、隔离或集成验证；不临时追加范围外验证阻断交付。
 4. 不宣称覆盖宿主原生附件、全部工具旁路或所有版本；不把静态配置视为运行时权限保证。
-5. 不修改 V4 对照源码或已接受 ADR，不覆盖用户既有改动；不执行真实宿主激活、远程启动、提交、推送、生产部署、转正及归档。本次允许计划内生产源码实施及本地相关验证；项目事实仅能按门禁登记已验证内容，不能登记提案或模拟测试为运行时事实。
+5. 不修改 V4、明确冻结的 Phase 1–4 原语、既有测试或已接受 ADR，不覆盖用户既有改动；仅按当前白名单进行本地实施与验证，不安装、不准备认证、不真实启动、提交、推送、部署、转正或归档。项目事实仅能按对应门禁登记已验证内容，不能登记提案或模拟测试为真实 Pi 编码事实。
 
 ## 本轮阶段契约：Phase 1 本地交付与后续边界
 
@@ -80,6 +80,39 @@ session_id: null
 - 真实试跑前集中列明工作区、写入范围、认证方式、时间、轮次、模型调用/费用预算和停止方式并取得明确授权。关闭客户端后必须有新的真实模型/工具步骤及轮次证据；本地夹具通过、进程存活或文件变化不通过 AC 9 或 P5。
 - 本批相关本地反例还须覆盖：未授权任务不选、失败不推进、新会话接收失败退出结果、跨任务反馈不串线、契约变化阻断、预算停止、取消后进程清理、清理未知禁止重启、来源租约及运行副本隔离。通过后仅交付本地阶段，不转正 ADR、不归档、不提交、不推送、不部署，不宣称自主执行或效率提升已实证。
 
+## Phase 5 契约：Pi 条件选型、最小适配与独立运行门禁
+
+本节替代当前 Epic 5 的 Roo 优先假设，不改写 Phase 3/4 历史验收。选型依据、证据强度矩阵、替代条款及后果见[同一 ADR 的决策 8](adrs/ADR-20261012-bmad-solo-anti-bureaucracy-and-programmatic-guards.md)。Roo 新增独立适配停止，原规则与部署资产保留；Pi 条件优先，Claude Code 仅为待核验兼容候选，不自动回退。
+
+- 当前阶段为现有 Pi 薄驱动的本地证据接管。P5-PI-DRIVER 的原源状态 SUSPENDED 及空回执先保留；六项旧完成证据全部有效刷新后，单独授权受限脚本仅恢复为 PENDING、回执仍为空，再以精确匹配证据程序登记本地完成。P5-PI-HEADLESS 始终 SUSPENDED、回执 null；计划头部 READY 或行政恢复均不授权真实运行。
+- 前序接管报告官方 Pi 1.3.0 已安装、入口为 /usr/local/bin/pi；安装及版本查询不证明模型运行，本轮不重装、不更新、不换引擎。后端固定来源、包名、版本和安装路径；真实提供方认证、规则/技能映射、权限、等待/取消/清理、内部请求及用量仍须另获授权实证，不读取凭据正文。
+- 实际落点改为[现有后端内薄驱动](../bmralph-suite-v5/scripts/bmad_agent_backend.py:81)，使用固定版本单次 JSON 输出模式和封闭文件输入，不另建生产驱动或永久 RPC 服务。[循环真实门禁](../bmralph-suite-v5/scripts/bmad_loop.py:353)及[入口后端枚举](../bmralph-suite-v5/scripts/bmad-loop.py:19)仍冻结；仅后端支持 Pi 不等于真实接通，不删除门禁、不把真实 Pi 标为夹具。
+- 新反例实际位于[现有测试目录中的 Pi 测试](../bmralph-suite-v5/tests/test_pi_backend.py:1)，替代此前独立 tests_pi 目录及独立驱动规划；不迁移既有测试。测试目录集合和实际后端输入变化使六项完成证据失效，按四组原验证对象定向重验并承担成本，不删输入、不降低下限、不修补旧回执、不默认全套重跑。
+- P5-PI-DRIVER 绑定当前实际测试标识，下限为 31（不低于原有 27），全部当前反例列为必需；八类原防线逐项映射如下，资产存在不代表已通过。P5-PI-HEADLESS 的未来测试及回执裁决资产仍未创建，不修改其验证契约。完成只由匹配当前 PASS 证据的程序写回，普通文本编辑不得设置 COMPLETED 或填写回执。
+
+### P5-PI-DRIVER 原防线与实际验收映射
+
+| 原验收类别 | 当前实际测试标识（共同前缀为 test_pi_backend） | 行为及边界 |
+|---|---|---|
+| 未授权运行不得启动 | [PiBackendGuards.test_unapproved_runtime_blocks_invoke_before_request_or_launch](../bmralph-suite-v5/tests/test_pi_backend.py:169)；[test_source_version_authorization_and_runtime_cannot_be_relaxed](../bmralph-suite-v5/tests/test_pi_backend.py:150) | 未授权在请求和进程创建前失败；不只验证配置文字 |
+| 真实 Pi 不得声明为夹具 | [PiBackendGuards.test_real_pi_category_cannot_be_loaded_as_isolated_fixture](../bmralph-suite-v5/tests/test_pi_backend.py:188)；[test_frozen_loop_still_rejects_real_pi_without_activation](../bmralph-suite-v5/tests/test_pi_backend.py:422) | 保留真实类别与冻结外层门禁 |
+| 每次独立新会话、不得恢复历史 | [PiBackendGuards.test_each_invocation_has_distinct_input_and_only_current_feedback](../bmralph-suite-v5/tests/test_pi_backend.py:326)；[test_argument_allowlist_uses_one_shot_ephemeral_json_and_closed_option_parsing](../bmralph-suite-v5/tests/test_pi_backend.py:116) | 新外层会话及请求，参数排除恢复，反馈不串线；真实 Pi 会话尚未实证 |
+| 缺独立凭据不得启动或泄漏秘密 | [PiBackendGuards.test_missing_credentials_blocks_load_before_driver_read_or_launch](../bmralph-suite-v5/tests/test_pi_backend.py:180)；[test_missing_credentials_blocks_invoke_before_request_or_process](../bmralph-suite-v5/tests/test_pi_backend.py:228)；[test_exec_interception_preserves_process_group_and_excludes_inherited_config](../bmralph-suite-v5/tests/test_pi_backend.py:382) | 仅合成凭据；不使用或读取真实认证 |
+| 协议失败或非零退出不得变成 OK | [PiBackendGuards.test_nonzero_exit_cannot_be_masked_by_valid_protocol_or_promise](../bmralph-suite-v5/tests/test_pi_backend.py:306)；[test_completion_promise_and_exit_without_protocol_are_rejected](../bmralph-suite-v5/tests/test_pi_backend.py:246)；[test_model_error_abort_missing_settled_or_late_activity_blocks](../bmralph-suite-v5/tests/test_pi_backend.py:266)及其余协议反例 | 完成口令、完整文本或退出零不能替代协议及独立业务验收 |
+| 请求、工具、会话及批次时限不混淆 | [PiBackendGuards.test_request_tool_session_and_batch_caps_are_not_conflated](../bmralph-suite-v5/tests/test_pi_backend.py:367)；[test_legacy_timeout_is_not_claimed_as_model_request_timeout](../bmralph-suite-v5/tests/test_pi_backend.py:359) | 保留 15/30/600 秒工具上限及 30 秒驱动，内部模型请求时限明确 UNKNOWN |
+| 取消必须等待受管进程清理 | [PiSupervisorDelegationGuards.test_agent_call_interrupt_cleans_same_group_and_preserves_changes](../bmralph-suite-v5/tests/test_pi_backend.py:625)；[test_agent_call_timeout_cleans_same_group_and_preserves_changes](../bmralph-suite-v5/tests/test_pi_backend.py:620) | 实际隔离 Python 同组进程终止、回收及组消失；不是 Pi 实跑，不外推脱组后代 |
+| 清理未知禁止下一次调用 | [PiSupervisorDelegationGuards.test_unknown_cleanup_prohibits_next_call_verification_and_restart](../bmralph-suite-v5/tests/test_pi_backend.py:574)；[PiBackendGuards.test_timeout_cancellation_and_unknown_cleanup_override_protocol_ok](../bmralph-suite-v5/tests/test_pi_backend.py:316) | 故障注入后仅一次调用，无验证、无下次调用、无重启；不得仅模拟一次失败代替禁调行为 |
+
+- 四项不变量保留：独立新会话（上述新会话反例）；三轮无进展熔断（[实际禁止第四次隔离调用及依赖推进](../bmralph-suite-v5/tests/test_pi_backend.py:551)，加上[冻结监督器三轮反例](../bmralph-suite-v5/tests/test_pi_backend.py:510)）；既有写租约及同组清理（[租约所有者核验](../bmralph-suite-v5/tests/test_pi_backend.py:207)及上述真实 Python 清理）；外层客观验证（[协议成功不登记业务完成](../bmralph-suite-v5/tests/test_pi_backend.py:239)，失败三轮不写回、不推进依赖）。这些是本地协议与委托原语证据，不是实际 Pi 编码证据。
+- 六项旧完成任务的环境、目录、模式、下限、必需测试及实现输入顺序完整取自原 verification 对象：P3-PLAN 18 项；P3-BACKEND/P3-OFFLINE/P4-BUDGET 17 项且仅对象完全一致时共享回执；P4-BATCH 12 项；P4-ISOLATION 7 项。候选均经[completed_evidence](../bmralph-suite-v5/scripts/bmad_state.py:172)精确核验后，持同一写租约与源版本调用[refresh_completed](../bmralph-suite-v5/scripts/bmad_plan_adapter.py:131)一次刷新全部六项。
+- 受限恢复没有现成产品接口：草稿仅复用内部[_save_plan](../bmralph-suite-v5/scripts/bmad_plan_adapter.py:167)，在既有写租约下核验计划身份、源版本、P5-PI-DRIVER 确为 SUSPENDED/空回执及其他任务不变，原子保存后核对；不改生产原语，不宣称已有通用恢复能力。恢复后查询依赖就绪，精确协议证据满足后调用[complete](../bmralph-suite-v5/scripts/bmad_plan_adapter.py:100)。任务清单仍是唯一进度；未覆盖行政入口与静态检查临时引用平台真实回执，草稿及回执不是第二份账本。
+- P5-PI-DRIVER 仅交付获准薄驱动和协议反例，不证明真实 Agent 编码。P5-PI-HEADLESS 仅交付真实运行回执判定的反例；当前[任务契约](../bmralph-suite-v5/scripts/bmad_state.py:62)只支持 Python 单测，不能把远程两轮塞进 unit-test 假装运行通过。真实两轮仍归 Epic 5、AC 8–10 和验证矩阵 P5，不能由这两项完成替代。
+- 后续获准真实接入时，每次业务失败修复创建新 Pi 进程及新会话，保留未提交成果，只携带必要约束、未完成事项和真实失败反馈。当前薄驱动采用单次 JSON 输出模式，以受预算约束的请求文件输入、stdin 封闭，读取 JSONL 生命周期；不是 RPC 会话接入，不建设永久 RPC 服务。Claude Code 与 Pi 使用不同原生协议，兼容仅指映射到同一本地契约，不宣称线协议互换或已有 Claude 适配器；本轮不启动真实 Pi。
+- 维持 30 秒驱动进程、15/30/600 秒工具分级、600 秒批次及既有停止等待上限。不把驱动调用数冒充模型请求数，不把用量/价格元数据冒充可强制执行的费用预算；内部请求、重试、工具和费用覆盖未知时明确阻塞或披露。需要扩大上限另获确认。
+- 真试跑前一次性确认主机、工作区、来源/版本、显式任务集合与依赖、写入白名单、禁止修改的验收资产、认证方式及变量名称、确切启动/查询/取消/清理命令、各级时间与轮次/调用/费用预算及计量缺口、关闭客户端后新步骤采集、清理未知禁止重启。此前不安装、不准备认证、不启动模型或宿主。
+- 客户端断开不是模型服务断网：关闭本地 IDE 后 VPS 到模型服务连接保持可用，以新模型/工具事件及轮次证明自主推进。真正模型网络故障只验证失败关闭、停止新调用、成果保全与清理，不要求无网络继续生成步骤，不改防火墙或 SSH。
+- Pi 两轮真实回执是 ADR 接受的必要条件；还须全部适用必需门禁通过且转正获准。ADR 接受不能使原 Epic、宏观 AC 或范围外承诺消失；全部计划事项完成且归档获准前保留活动计划。
+
 ```bmad-tasks
 {
   "schema_version": 1,
@@ -112,7 +145,7 @@ session_id: null
           "bmralph-suite-v5/scripts/bmad_task_run.py"
         ]
       },
-      "verdict_file": "_bmad-output/verification/phase4-20261016/run-14fce12179244e99b29e4610e69b359d.verdict.json"
+      "verdict_file": "_bmad-output/verification/phase5-20261017/run-4ff4f2a16e48448880146c0311f6739e.verdict.json"
     },
     {
       "task_id": "P3-BACKEND",
@@ -154,7 +187,7 @@ session_id: null
           "bmralph-suite-v5/scripts/bmad_suite_lease.py"
         ]
       },
-      "verdict_file": "_bmad-output/verification/phase4-20261016/run-b3935e64965447cbbb03c38a36fe608d.verdict.json"
+      "verdict_file": "_bmad-output/verification/phase5-20261017/run-60c523b4a9d545e68f522c4ae5f07027.verdict.json"
     },
     {
       "task_id": "P3-OFFLINE",
@@ -196,7 +229,7 @@ session_id: null
           "bmralph-suite-v5/scripts/bmad_suite_lease.py"
         ]
       },
-      "verdict_file": "_bmad-output/verification/phase4-20261016/run-b3935e64965447cbbb03c38a36fe608d.verdict.json"
+      "verdict_file": "_bmad-output/verification/phase5-20261017/run-60c523b4a9d545e68f522c4ae5f07027.verdict.json"
     },
     {
       "task_id": "P4-BUDGET",
@@ -238,7 +271,7 @@ session_id: null
           "bmralph-suite-v5/scripts/bmad_suite_lease.py"
         ]
       },
-      "verdict_file": "_bmad-output/verification/phase4-20261016/run-b3935e64965447cbbb03c38a36fe608d.verdict.json"
+      "verdict_file": "_bmad-output/verification/phase5-20261017/run-60c523b4a9d545e68f522c4ae5f07027.verdict.json"
     },
     {
       "task_id": "P4-BATCH",
@@ -280,7 +313,7 @@ session_id: null
           "bmralph-suite-v5/scripts/bmad_supervisor.py"
         ]
       },
-      "verdict_file": "_bmad-output/verification/phase4-20261016/run-631c3f63aeaa4c1a982830b7140525fc.verdict.json"
+      "verdict_file": "_bmad-output/verification/phase5-20261017/run-a178ab87e77d475aa59c527691356e4c.verdict.json"
     },
     {
       "task_id": "P4-ISOLATION",
@@ -318,7 +351,101 @@ session_id: null
           "scripts/asset_safety.py"
         ]
       },
-      "verdict_file": "_bmad-output/verification/phase4-20261016/run-92a653bd2b854eb1a4d9989968c7112e.verdict.json"
+      "verdict_file": "_bmad-output/verification/phase5-20261017/run-7357657907064ff597d674c7303aa5ba.verdict.json"
+    },
+    {
+      "task_id": "P5-PI-DRIVER",
+      "title": "现有后端内 Pi 薄驱动及本地协议反例；不证明真实独立运行或全计划完成",
+      "depends_on": [
+        "P4-ISOLATION"
+      ],
+      "status": "COMPLETED",
+      "verification": {
+        "operation": "unit-test",
+        "environment_file": ".bmad-control/phase2-environment.json",
+        "directory": "bmralph-suite-v5/tests",
+        "pattern": "test_pi_backend.py",
+        "minimum_tests": 31,
+        "required_tests": [
+          "test_pi_backend.PiBackendGuards.test_argument_allowlist_uses_one_shot_ephemeral_json_and_closed_option_parsing",
+          "test_pi_backend.PiBackendGuards.test_argument_injection_extensions_and_relative_request_fail_closed",
+          "test_pi_backend.PiBackendGuards.test_source_version_authorization_and_runtime_cannot_be_relaxed",
+          "test_pi_backend.PiBackendGuards.test_three_round_binding_rejects_other_thresholds_and_booleans",
+          "test_pi_backend.PiBackendGuards.test_unapproved_runtime_blocks_invoke_before_request_or_launch",
+          "test_pi_backend.PiBackendGuards.test_missing_credentials_blocks_load_before_driver_read_or_launch",
+          "test_pi_backend.PiBackendGuards.test_real_pi_category_cannot_be_loaded_as_isolated_fixture",
+          "test_pi_backend.PiBackendGuards.test_load_accepts_only_self_driver_and_preserves_pi_runtime_kind",
+          "test_pi_backend.PiBackendGuards.test_existing_writer_lease_is_required_and_owner_is_verified",
+          "test_pi_backend.PiBackendGuards.test_outer_threshold_and_execution_state_must_match",
+          "test_pi_backend.PiBackendGuards.test_missing_credentials_blocks_invoke_before_request_or_process",
+          "test_pi_backend.PiBackendGuards.test_complete_protocol_is_only_call_evidence_not_business_completion",
+          "test_pi_backend.PiBackendGuards.test_completion_promise_and_exit_without_protocol_are_rejected",
+          "test_pi_backend.PiBackendGuards.test_wrong_workspace_session_id_or_duplicate_session_blocks",
+          "test_pi_backend.PiBackendGuards.test_model_error_abort_missing_settled_or_late_activity_blocks",
+          "test_pi_backend.PiBackendGuards.test_retry_failure_and_provider_error_cannot_be_overridden",
+          "test_pi_backend.PiBackendGuards.test_jsonl_duplicate_keys_truncation_and_record_budget_fail_closed",
+          "test_pi_backend.PiBackendGuards.test_unicode_separators_inside_text_do_not_break_jsonl",
+          "test_pi_backend.PiBackendGuards.test_nonzero_exit_cannot_be_masked_by_valid_protocol_or_promise",
+          "test_pi_backend.PiBackendGuards.test_timeout_cancellation_and_unknown_cleanup_override_protocol_ok",
+          "test_pi_backend.PiBackendGuards.test_each_invocation_has_distinct_input_and_only_current_feedback",
+          "test_pi_backend.PiBackendGuards.test_state_card_and_input_budget_block_before_launch",
+          "test_pi_backend.PiBackendGuards.test_legacy_timeout_is_not_claimed_as_model_request_timeout",
+          "test_pi_backend.PiBackendGuards.test_request_tool_session_and_batch_caps_are_not_conflated",
+          "test_pi_backend.PiBackendGuards.test_exec_interception_preserves_process_group_and_excludes_inherited_config",
+          "test_pi_backend.PiBackendGuards.test_frozen_loop_still_rejects_real_pi_without_activation",
+          "test_pi_backend.PiSupervisorDelegationGuards.test_frozen_supervisor_fuses_after_exactly_three_unchanged_failures",
+          "test_pi_backend.PiSupervisorDelegationGuards.test_three_unchanged_failures_prohibit_fourth_call_and_dependency_progress",
+          "test_pi_backend.PiSupervisorDelegationGuards.test_unknown_cleanup_prohibits_next_call_verification_and_restart",
+          "test_pi_backend.PiSupervisorDelegationGuards.test_agent_call_timeout_cleans_same_group_and_preserves_changes",
+          "test_pi_backend.PiSupervisorDelegationGuards.test_agent_call_interrupt_cleans_same_group_and_preserves_changes"
+        ],
+        "inputs": [
+          "bmralph-suite-v5/scripts/bmad_agent_backend.py",
+          "bmralph-suite-v5/scripts/bmad_loop.py",
+          "bmralph-suite-v5/scripts/bmad_plan_adapter.py",
+          "bmralph-suite-v5/scripts/bmad_context_inputs.py",
+          "bmralph-suite-v5/scripts/bmad_context.py",
+          "bmralph-suite-v5/scripts/bmad_supervisor.py",
+          "bmralph-suite-v5/scripts/bmad_environment.py",
+          "bmralph-suite-v5/scripts/bmad_execution.py",
+          "bmralph-suite-v5/scripts/bmad_task_run.py",
+          "bmralph-suite-v5/scripts/bmad_run_copy.py",
+          "bmralph-suite-v5/scripts/bmad_suite_source.py",
+          "bmralph-suite-v5/scripts/bmad_suite_lease.py",
+          "bmralph-suite-v5/scripts/bmad_state.py",
+          "bmralph-suite-v5/scripts/bmad-exec.py"
+        ]
+      },
+      "verdict_file": "_bmad-output/verification/phase5-20261017/run-3569774e4b4b43e28f6dfc328fbb73d9.verdict.json"
+    },
+    {
+      "task_id": "P5-PI-HEADLESS",
+      "title": "Pi 真实运行回执裁决反例；单测通过不等于远程两轮、AC 9 或 P5 通过",
+      "depends_on": [
+        "P5-PI-DRIVER"
+      ],
+      "status": "SUSPENDED",
+      "verification": {
+        "operation": "unit-test",
+        "environment_file": ".bmad-control/phase2-environment.json",
+        "directory": "bmralph-suite-v5/tests_pi",
+        "pattern": "test_pi_headless_evidence.py",
+        "minimum_tests": 8,
+        "required_tests": [
+          "test_pi_headless_evidence.PiHeadlessEvidenceGuards.test_fixture_or_exit_zero_is_not_real_runtime_evidence",
+          "test_pi_headless_evidence.PiHeadlessEvidenceGuards.test_runtime_version_workspace_and_task_binding_are_required",
+          "test_pi_headless_evidence.PiHeadlessEvidenceGuards.test_failure_requires_actual_verification_and_new_session_feedback",
+          "test_pi_headless_evidence.PiHeadlessEvidenceGuards.test_client_disconnect_requires_new_model_or_tool_steps",
+          "test_pi_headless_evidence.PiHeadlessEvidenceGuards.test_next_task_requires_independent_pass_and_explicit_batch_membership",
+          "test_pi_headless_evidence.PiHeadlessEvidenceGuards.test_budget_stop_requires_no_new_calls_and_confirmed_cleanup",
+          "test_pi_headless_evidence.PiHeadlessEvidenceGuards.test_unknown_cleanup_or_usage_never_manufactures_pass",
+          "test_pi_headless_evidence.PiHeadlessEvidenceGuards.test_receipt_checker_unit_pass_does_not_accept_adr_or_archive_plan"
+        ],
+        "inputs": [
+          "bmralph-suite-v5/scripts/bmad_pi_evidence.py"
+        ]
+      },
+      "verdict_file": null
     }
   ]
 }
@@ -391,12 +518,12 @@ session_id: null
 
 ### Epic 5: VPS 独立运行时与任务期 Ralph 循环
 
-- **任务 5.1**：在获准工程阶段核验目标 Roo 独立运行时的来源、版本、无头调用、新会话、等待/取消、认证、规则/模式加载及工具权限。Roo CLI 仅为优先候选，不采信历史回答中的发布、归档日期或笔记接口为当前事实；无法独立运行时报告具体阻塞，不静默更换引擎或改成子任务。
-- **任务 5.2**：拟建 [V5 循环入口](../bmralph-suite-v5/scripts/bmad-loop.py)，只提供任务启动、状态和停止；复用 V5 验证执行器，不建设永久服务。人预建远程 tmux，会话承载任务期进程；编码 Agent、模型认证及工具执行均在 VPS，客户端只提交和观察。部署入口不启动循环；活动任务绑定已核验套件来源，更新或回切不得在运行中替换其规则和程序，须先停止并确认在途进程结束。
-- **任务 5.3**：每轮选一个依赖已满足的任务，调用新工程会话；会话内允许有界的思考—修改—验证—修复。根据真实结果更新任务进度和必要发现，下一轮继续同一未完成任务或选择下一项；不恢复整段旧聊天。
-- **任务 5.4**：实现任务时间、轮次、费用或调用预算、无进展阈值和重试退避。API/网络短暂失败与代码失败分别处理；权限拒绝、认证不足、预算耗尽等明确停止，不无人值守反复询问。
+- **任务 5.1**：核验条件优先候选 Pi Coding Agent 的实际来源、固定版本、独立无头/JSON/RPC 入口、新进程及新会话、等待/取消/清理、独立认证、规则/技能加载、工具权限和用量接口。先定位公开安装资产与一手版本契约，不读凭据；VPS 安装、认证准备和项目外写入另获授权。Roo 独立适配不再新增，Claude Code 仅为待核验兼容候选；不从旧包名或社区文章猜命令，不静默换引擎。选型依据见[同一 ADR 的替代条款](adrs/ADR-20261012-bmad-solo-anti-bureaucracy-and-programmatic-guards.md)。
+- **任务 5.2**：复用已交付且冻结的 [V5 循环入口](../bmralph-suite-v5/scripts/bmad-loop.py:12)及独立验证器，不重建循环或永久服务。薄驱动实际已落入[现有后端](../bmralph-suite-v5/scripts/bmad_agent_backend.py:81)，本轮仅其本地交付及定向证据接管；真实运行仍需[循环门禁](../bmralph-suite-v5/scripts/bmad_loop.py:353)等最小解冻的独立授权，不承诺仅改后端即可接通。远程任务期进程及独立认证均在 VPS，客户端只提交和观察；安装、部署或 IDE 重载不启动任务。活动运行绑定已核验来源和隔离运行副本，升级先停止、确认清理、验证候选并获准启用，禁止热改后继续运行。
+- **任务 5.3**：每次调用创建新 Pi 进程和新工程会话；失败后只转发必要约束、未提交成果和实际独立验证反馈，不恢复完整聊天。真实失败不推进，预算内修复后独立验证通过并保存唯一任务进度，由原程序从显式获准集合选择下一依赖就绪任务。原生 Pi/Claude Code 协议分别映射本地驱动契约，不将兼容方向写成已实现能力。
+- **任务 5.4**：复用时间、轮次、外层调用预算、无进展阈值和退避；核验 Pi 内部模型请求、工具、重试、用量和费用边界，未知项明确披露，不冒充已强制预算。保留既有 30 秒驱动、15/30/600 秒工具分级和 600 秒批次上限；无法完成时停下请求明确调整。API/网络失败与业务失败分开；认证/权限失败、取消或预算耗尽后停止新调用，保留成果，清理未知禁止重启。
 - **任务 5.5**：每个工作区一个活动写入者；同机生产服务与编码任务使用独立工作区、受限账号和验证环境。保留失败轮次的未提交修改，获准才提交本任务改动；推送和部署分别授权。
-- **任务 5.6**：验证关闭本地 IDE 后完成当前步骤并开始下一轮，重连可查询结果，取消等待进程真实结束。仅 tmux 存活或文件变化不算成功；机器重启、宿主崩溃后自动恢复不在首轮范围。
+- **任务 5.6**：另获真实试跑授权后验证 Pi 独立至少两轮及完整失败修复、依赖推进链路；关闭本地 IDE 后必须出现新的真实模型/工具步骤及轮次证据，重连可查结果，取消或预算停止等待受管进程真实结束。客户端断开不等于 VPS 模型网络断开；模型网络故障另验失败关闭，不改宿主网络。进程存活、文件变化、两个退出零或回执判定单测不算通过；机器重启、宿主崩溃自动恢复不在首轮范围。Pi 两轮及其余适用必需门禁通过且转正获准后才可接受 ADR；全计划完成并获准前不归档。
 
 ### Epic 6: 范围内交付与效果测量
 
@@ -418,7 +545,7 @@ session_id: null
 
 ## 5. 验证矩阵 (Validation Matrix)
 
-下列命令定义工程阶段验收契约，执行与结果只引用真实回执。AVAILABLE 仅指资产存在，不表示依赖就绪或已通过。目标运行时接口和预算须在获准试跑前确定；不编造可执行的 Roo/Antigravity 参数。
+下列命令保留工程阶段验收契约，执行与结果只引用真实回执。AVAILABLE 仅指资产存在，不表示依赖就绪或已通过。当前仅执行六项受影响完成任务的四组原契约验证、P5 本地协议验证及既定 V5 静态检查；静态配置入口尚未类型化，按获准命令执行。Pi 安装与版本报告不替代确切启动/查询/取消/清理接口和真实试跑授权；不猜参数。纯文档及测试目录外草稿变化不默认重跑业务，实现、测试集合或环境再次变化才重验实际受影响项。
 
 | 阶段 | 验证目标 | 拟执行命令或检查 | 资产状态 | 通过判定 |
 |---|---|---|---|---|
@@ -427,12 +554,12 @@ session_id: null
 | P2 | 原控制器反例 | 下方监督器、子运行器、单测裁决与保存后证据查询测试，以及本轮受控回滚、进程树补充反例 | 本机相关资产及本轮补充反例 AVAILABLE；容器和脱离会话清理不在本轮覆盖范围 | 真实失败、不命中、取消及相关证据失效正确处理；孤儿主进程退出零或无法确认清理均阻断；局部测试不代替范围外门禁 |
 | P3 | 有界状态视图 | 下方状态模块与实际 CLI 反例；参数见 V5 验证契约 | 候选只读投影资产 AVAILABLE；活动计划进度迁移及完整控制器接入未完成 | 行数、字节及 JSON 输出预算有效，未完成事项不丢失；模型勾选不制造完成事实 |
 | P4 | 上下文与循环 | 下方上下文预算、计划与定向源码组装、实际 CLI 反例；任务期循环测试待实现 | 本地预算与只读组装资产 AVAILABLE；独立新会话、累计工具结果运行接入及循环资产仍待实现 | 必要输入完整保留，启动与累计输出预算分别有效；本地组装不替代新会话、反馈有效性、宿主自动加载及循环停止门禁 |
-| P5 | 真实远程两轮 | 目标版本及确切启动/停止命令由任务 5.1 补全；人工关闭客户端后观察 | 尚未核验；需要远程试跑授权 | 断开后开始下一轮、实际失败不推进、停止可确认 |
+| P5 | Pi 真实独立两轮、失败修复及依赖推进 | 任务 5.1 核验固定版本和确切生命周期命令；另获授权后采集客户端关闭后的新步骤 | 前序报告官方 Pi 1.3.0 已安装；现有后端薄驱动与本地反例已存在，当前接管其证据；真实接入冻结，未来回执裁决资产待创建，单测不替代试跑 | 实际独立验证失败→新会话真实反馈修复→业务通过→程序选集合内下一就绪任务；客户端关闭后有新模型/工具步骤；取消/预算停止无新调用并确认清理；全部绑定、范围与预算证据完整 |
 | P6 | V5 分发与 V4 兼容 | 任务 7.7 的临时根版本、缓存、回切与保护测试；下方列出套件选择、部署租约、来源绑定、继承锁及版本操作守卫反例命令 | 本地版本选择、运行资产分发、协作租约、V5 来源绑定及同一部署根的版本操作守卫反例资产 AVAILABLE；活动任务与任务期循环接入仍待实现 | 显式版本全链路一致、错误不写入、V4 兼容与用户资产保护；已有部署的版本操作须在共享租约期间失败关闭，并在操作、新版移交及最终部署期间持续持有排他锁。来源绑定须核验 V5 身份、受管物理资产与分发映射，边界变化停止对账，不恢复旧文件。原语验证不替代活动任务接入、事务完成诊断、宿主模式语义、跨部署根保护、在途进程清理或真实宿主加载 |
 
-本地验证接口与证据边界见[类型化验证契约](../bmralph-suite-v5/skills/bmad/references/procedures/verification.md)。当前接口覆盖本机 Python 单测、明确采用类型化任务清单的候选只读投影及当前就绪任务的只读输入组装；输入组装不启动 Agent、不执行测试、不保存进度，也不证明授权、反馈或宿主自动加载已核验。配置语法、专项竞态、固定镜像及容器操作仍须实现，不虚构子命令。当前活动计划未迁移到类型化任务清单，平台任务记录继续作为唯一临时进度入口，不在本计划镜像进度或导入历史通过记录。
+本地验证接口与历史说明见[类型化验证契约](../bmralph-suite-v5/skills/bmad/references/procedures/verification.md)，实际能力以当前源码为准；其中历史“没有完成写回”等陈述不覆盖现有适配接口。同一活动计划具有唯一结构化清单，六项历史完成源记录保留；状态卡只投影，不在平台记录、ADR 或散文维护第二份任务进度。P5-PI-DRIVER 仅按本轮窄恢复及精确协议证据登记本地完成，P5-PI-HEADLESS 保持 SUSPENDED/空回执，真实门禁未通过。配置语法、专项竞态、固定镜像、容器及真实运行承诺保留，不虚构子命令。静态校验器不检查完整任务块；结构、依赖和完成证据须由状态及适配原语另行核验，其 PASS 也不是全阶段验收。
 
-以下命令分别串行执行，仅列已有本地验证资产；AVAILABLE 不表示已通过。实际单测使用类型化入口时必须明确工作区、已有环境登记及验证选择；只读输入组装必须明确采用类型化任务清单的计划与输入请求，不隐式登记环境或迁移活动计划，不执行缺少必需参数的示例。P4 本地预算与输入组装测试已有资产，任务期循环测试尚未创建；P5 真实启动与停止须先核验运行时并取得授权，再补全确切命令。全部验收承诺保留，不以本地测试替代运行时门禁。
+以下为保留的历史工程命令契约，不默认全部执行。本轮五组类型化单测完整取自对应任务验证对象，四组用于六项完成证据刷新、一组用于 P5 本地交付；各次前台验证分别限时 30 秒，探测 15 秒、stdin 封闭，不隐式安装。只有精确匹配当前证据才能复用，旧回执保留不改；不得以同文件曾全部通过替代契约匹配。全部宏观验收和真实运行授权门禁保留。
 
 拟执行技术命令：
 
@@ -462,7 +589,7 @@ timeout -k 2s 30s python3 -B -m unittest discover -s tests/roo_distribution -p '
 
 ## 6. 受控回滚方案 (Controlled Rollback Plan)
 
-若控制器在目标 Roo 环境出现工具适配异常：
+若后续获准 Pi 接入出现工具适配异常，先停止并保留成果；以下是历史受控恢复范围，不扩大当前冻结与授权：
 1. 仅恢复 [V5 套件](../bmralph-suite-v5/)、[公共部署脚本](../scripts/)、[部署入口](../bs.sh)和[安装入口](../install.sh)中本任务获准且经差异核对允许恢复的修改；V4 源目录不在本任务修改范围内。已部署 V5 回切 V4 须另按显式版本选择和受管事务执行，不把源码恢复当作宿主回切完成；
 2. 保持用户既有未提交改动与[项目事实基线](project-context.md)不变；
 3. 回滚前检查工作树并发修改，确保第三方非受管资产零破坏。
@@ -473,7 +600,7 @@ timeout -k 2s 30s python3 -B -m unittest discover -s tests/roo_distribution -p '
 - 当前关联[提案 ADR](adrs/ADR-20261012-bmad-solo-anti-bureaucracy-and-programmatic-guards.md)持续修订，不另建重复方案。提案未生效，旧任务与原待办保持独立。
 - [已接受生命周期 ADR](adrs/ADR-20261008-roocode-bmad-v42-lifecycle-and-governance.md:37)的显式任务优先、历史恢复授权、分析权限与受管资产保护继续保留。拟调整的是新任务不默认归档发现、验证与任务状态的存储职责、后台运行的工程适配，不修改其历史接受范围。
 - 原“无常驻调度器”细化为不建设永久平台，允许单任务期的持久执行进程；原状态卡权威入口拟改为计划任务清单的程序投影，须同步入口、模板和校验器。
-- 首轮运行时阻塞：目标 Roo 独立运行时兼容性、独立认证和远程断开行为均未验证；具体 Antigravity Ralph 插件未识别，不作为已可用依赖。
+- 真实运行剩余门禁：前序报告官方 Pi 1.3.0 已安装，但本地薄驱动和反例不证明实际模型调用、独立认证、规则加载、工具权限、内部请求/费用预算或 Pi 清理。循环仍拒绝真实非夹具运行时；本轮不解冻、不试跑。Roo 不再新增适配，Claude Code 未自动启用；Antigravity IDE 方法论入口不等于独立运行依赖已就绪。
 - 基线首行含字面换行转义，历史记录仅作相关事实线索；本次不修复基线格式、不写入新提案为项目事实。
 - V5 隔离是本轮新增范围决定；旧文档中的 V4 链接只作为事实参照，新生产实现以 V5 落点为准。独立源码目录不等于独立宿主权限或同根双活；默认激活、插件槽位及版本接口保持上述保守提案，后续不得静默更改。
 - [x] 用户授权本任务方案与 ADR 持久结晶。
@@ -481,5 +608,8 @@ timeout -k 2s 30s python3 -B -m unittest discover -s tests/roo_distribution -p '
 - [x] 2026-10-16 用户授权 Phase 1 成果 Git 提交固化 (34a5c19)。
 - [x] 2026-10-16 用户授权 Phase 2 本地任务期循环控制器 (bmad-loop.py)、14 项循环反例断言及规约文档完成与 Git 提交固化 (7268440)。
 - [x] 2026-10-16 用户授权 Phase 3 活动计划结构化适配、无头驱动抽象与模拟断网验证完成与 Git 提交固化。
-- [ ] 目标 VPS / 真实 Roo 独立会话试跑授权及预算、操作范围确认。
+- [x] 2026-10-17 用户授权同一计划及提案的 Pi 条件选型与文档结晶；不等于工程解冻、安装或试跑。
+- 本轮授权已明确：现有后端与新增 Pi 反例的最小白名单、同一文档修订、一个受限草稿、四组旧任务证据及 P5 本地证据核验、程序刷新/窄恢复/登记；授权不是验收通过，不镜像结构化清单进度。
+- 前序接管报告官方 Pi 1.3.0 已安装；本轮不重复安装。独立认证准备、真实接入所需冻结文件解冻及宿主激活仍分别待授权。
+- [ ] 目标 VPS / 真实 Pi 独立会话试跑授权及预算、操作范围确认。
 - [ ] 提交推送至远端、生产部署、ADR 转正或计划归档授权。

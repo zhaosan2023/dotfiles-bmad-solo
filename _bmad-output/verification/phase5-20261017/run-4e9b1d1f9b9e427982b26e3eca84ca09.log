@@ -1,0 +1,6 @@
+.................
+----------------------------------------------------------------------
+Ran 17 tests in 17.363s
+
+OK
+BMAD_TEST_RESULT {"directory":"bmralph-suite-v5/tests","discovered":17,"errors":0,"expected_failures":0,"failures":0,"matched_files":1,"minimum_tests":17,"missing_required_tests":[],"pattern":"test_agent_backend.py","reason":"\u5168\u90e8\u9009\u4e2d\u6d4b\u8bd5\u5b9e\u9645\u901a\u8fc7","required_tests":["test_agent_backend.AgentBackendGuards.test_driver_success_requires_independent_verification_then_saves_one_task","test_agent_backend.AgentBackendGuards.test_nonzero_exit_cannot_be_overridden_by_valid_ok_result","test_agent_backend.AgentBackendGuards.test_agent_ok_and_file_change_do_not_mask_business_failure","test_agent_backend.AgentBackendGuards.test_real_backend_cannot_be_selected_as_fixture"],"skipped":0,"status":"PASS","tests_run":17,"unexpected_successes":0,"workspace":"/home/ecs-user/dotfiles-bmad-solo"}

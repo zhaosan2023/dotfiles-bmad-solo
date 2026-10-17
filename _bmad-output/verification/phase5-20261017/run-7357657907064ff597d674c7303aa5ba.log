@@ -1,0 +1,6 @@
+.......
+----------------------------------------------------------------------
+Ran 7 tests in 24.139s
+
+OK
+BMAD_TEST_RESULT {"directory":"bmralph-suite-v5/tests","discovered":7,"errors":0,"expected_failures":0,"failures":0,"matched_files":1,"minimum_tests":7,"missing_required_tests":[],"pattern":"test_batch_isolation.py","reason":"\u5168\u90e8\u9009\u4e2d\u6d4b\u8bd5\u5b9e\u9645\u901a\u8fc7","required_tests":["test_batch_isolation.BatchIsolationGuards.test_source_lease_covers_calls_and_confirmed_cleanup","test_batch_isolation.BatchIsolationGuards.test_source_change_blocks_without_restoring_assets","test_batch_isolation.BatchIsolationGuards.test_source_edit_does_not_hot_replace_running_copy","test_batch_isolation.BatchIsolationGuards.test_cancel_confirms_all_managed_processes_ended","test_batch_isolation.BatchIsolationGuards.test_unknown_cleanup_blocks_restart","test_batch_isolation.BatchIsolationGuards.test_distribution_entry_cannot_claim_isolated_copy","test_batch_isolation.BatchIsolationGuards.test_isolated_batch_repairs_failure_then_advances_under_same_lease"],"skipped":0,"status":"PASS","tests_run":7,"unexpected_successes":0,"workspace":"/home/ecs-user/dotfiles-bmad-solo"}
