@@ -3,6 +3,15 @@
 set -u
 set -o pipefail
 umask 077
+# 在关闭终端描述符前忽略 HUP，避免后台包装被终端挂断终止。
+# 不忽略 TERM/INT；任务预算、取消入口及清理门禁保持不变。
+trap '' HUP
+# 保留一个终端描述符，避免全部标准流重定向后伪终端提前 EOF。
+# 不从此描述符读取输入；标准输入仍封闭，修复须经隔离验证。
+if ! exec 9<> /dev/tty; then
+    printf 'BLOCKED: cannot retain task pseudo-terminal\n' >&2
+    exit 1
+fi
 exec < /dev/null
 
 if [ "$(pwd -P)" != "/home/ecs-user/dotfiles-bmad-solo" ]; then
@@ -16,8 +25,8 @@ if ! tmux set-option -p remain-on-exit on; then
     exit 1
 fi
 
-LOG=".bmad-runtime/phase5-pi-detached-20261018.log"
-EXIT_RECEIPT=".bmad-runtime/phase5-pi-detached-20261018.exit.json"
+LOG=".bmad-runtime/phase5-pi-detached-20261018-attempt2.log"
+EXIT_RECEIPT=".bmad-runtime/phase5-pi-detached-20261018-attempt2.exit.json"
 if [ ! -d .bmad-runtime ] || [ -e "$LOG" ] || [ -e "$EXIT_RECEIPT" ]; then
     printf 'BLOCKED: runtime directory missing or receipt already exists\n' >&2
     exit 1
