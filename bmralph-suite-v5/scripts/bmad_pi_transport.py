@@ -56,12 +56,15 @@ class PiTransport:
         self._client = None
         self._upstream = None
         self._error = ""
+        self._failure = None
         self.cleanup_ok = False
 
-    def _fail(self, reason):
+    def _fail(self, reason, diagnostic=None):
         with self._lock:
             if not self._error:
                 self._error = reason
+                # 仅保存调用点构造的固定类别、布尔量及计数；不保存异常正文。
+                self._failure = dict(diagnostic) if diagnostic is not None else None
 
     def _remaining(self):
         if self._stop.is_set():
@@ -120,39 +123,59 @@ class PiTransport:
                 status = None
                 outcome = "NETWORK_ERROR"
                 headers_sent = False
+                diagnostic = {
+                    "schema_version": 1, "stage": "CLIENT_REQUEST",
+                    "code": "CONTROL_OR_PROTOCOL_GATE", "exception_category": None,
+                    "request_number": None, "http_status": None,
+                    "content_type_is_sse": None, "headers_sent": False,
+                    "eof_seen": False, "done_seen": False,
+                    "response_bytes_read": 0, "response_bytes_forwarded": 0,
+                }
                 self.close_connection = True
                 with owner._lock:
                     owner._client = self.connection
                 try:
                     self.connection.settimeout(owner._remaining())
                     if self.path != REQUEST_PATH or self.headers.get("Transfer-Encoding") is not None:
+                        diagnostic["code"] = "REQUEST_PATH_OR_FRAMING_REJECTED"
                         raise SupervisorError("Pi 转发仅接受固定模型路径及定长正文")
                     authorizations = self.headers.get_all("Authorization", [])
                     if (len(authorizations) != 1
                             or not hmac.compare_digest(
                                 authorizations[0], "Bearer " + owner.token)):
+                        diagnostic["code"] = "INTERNAL_AUTH_REJECTED"
                         raise SupervisorError("Pi 转发内部认证失败")
                     lengths = self.headers.get_all("Content-Length", [])
                     if (len(lengths) != 1
                             or re.fullmatch(r"[1-9][0-9]{0,7}", lengths[0]) is None):
+                        diagnostic["code"] = "REQUEST_LENGTH_REJECTED"
                         raise SupervisorError("Pi 转发必须提供唯一有界正文长度")
                     size = int(lengths[0])
                     if size > owner.budget.response_allowance():
                         outcome = "BUDGET_STOP"
+                        diagnostic["code"] = "REQUEST_DATA_BUDGET_STOP"
                         raise SupervisorError("Pi 请求正文将超过任务数据预算")
+                    diagnostic.update(stage="CLIENT_BODY_READ", code="CLIENT_READ_ERROR")
                     raw = self.rfile.read(size)
                     if len(raw) != size:
+                        diagnostic["code"] = "REQUEST_BODY_INCOMPLETE"
                         raise SupervisorError("Pi 请求正文不完整")
+                    diagnostic.update(stage="REQUEST_VALIDATION", code="REQUEST_JSON_INVALID")
                     request = json.loads(raw)
                     if (not isinstance(request, dict)
                             or request.get("model") != owner.model
                             or request.get("stream") is not True):
+                        diagnostic["code"] = "REQUEST_MODEL_OR_STREAM_REJECTED"
                         raise SupervisorError("Pi 请求必须使用绑定模型及流式模式")
                     with owner._lock:
                         if owner._error:
+                            diagnostic["code"] = "PREVIOUS_FAILURE"
                             raise SupervisorError("Pi 转发此前已失败；不再发送请求")
                     # 每次真实发送前收费；失败不返还，内部重试也走此路径。
+                    diagnostic.update(stage="BUDGET_RESERVATION", code="CONTROL_OR_BUDGET_GATE")
                     number = owner.budget.reserve_request(len(raw))
+                    diagnostic.update(request_number=number, stage="UPSTREAM_SEND",
+                                      code="UPSTREAM_SEND_ERROR")
                     upstream = http.client.HTTPConnection(
                         GATEWAY_HOST, GATEWAY_PORT, timeout=owner._remaining())
                     with owner._lock:
@@ -163,45 +186,62 @@ class PiTransport:
                         "Accept": "text/event-stream",
                         "Connection": "close",
                     })
+                    diagnostic.update(stage="UPSTREAM_HEADERS", code="UPSTREAM_HEADERS_ERROR")
                     response = upstream.getresponse()
                     status = response.status
+                    diagnostic["http_status"] = status
                     if status != 200:
                         outcome = "HTTP_ERROR"
-                        owner._fail("Pi 网关返回非成功状态；不重试")
+                        diagnostic["code"] = "UPSTREAM_HTTP_STATUS"
+                        owner._fail("Pi 网关返回非成功状态；不重试", diagnostic)
                         self._reply(status if 400 <= status <= 599 else 502)
                         return
                     content_type = response.getheader("Content-Type", "").split(";", 1)[0].strip().lower()
+                    diagnostic["content_type_is_sse"] = content_type == "text/event-stream"
                     if content_type != "text/event-stream":
+                        diagnostic["code"] = "UPSTREAM_NOT_SSE"
                         raise SupervisorError("Pi 网关未返回流式响应")
+                    diagnostic.update(stage="DOWNSTREAM_HEADERS", code="DOWNSTREAM_WRITE_ERROR")
                     self.send_response(200)
                     self.send_header("Content-Type", "text/event-stream")
                     self.send_header("Cache-Control", "no-cache")
                     self.send_header("Connection", "close")
                     self.end_headers()
                     headers_sent = True
+                    diagnostic["headers_sent"] = True
                     tail = b""
                     while True:
+                        diagnostic.update(stage="STREAM_CONTROL", code="CONTROL_OR_BUDGET_GATE")
                         timeout = owner._remaining()
                         allowance = owner.budget.response_allowance()
                         if allowance == 0:
                             outcome = "BUDGET_STOP"
+                            diagnostic["code"] = "RESPONSE_DATA_BUDGET_STOP"
                             raise SupervisorError("Pi 响应正文预算耗尽；停止读取")
                         if upstream.sock is not None:
                             upstream.sock.settimeout(timeout)
                         # 不先无界读取再计量；每块不超过剩余授权预算。
+                        diagnostic.update(stage="UPSTREAM_READ", code="UPSTREAM_READ_ERROR")
                         chunk = response.read1(min(CHUNK_BYTES, allowance))
                         if not chunk:
+                            diagnostic.update(code="EOF_BEFORE_DONE", eof_seen=True)
                             raise SupervisorError("Pi 网关流式响应提前结束，缺少 DONE")
+                        diagnostic["response_bytes_read"] += len(chunk)
+                        diagnostic.update(stage="RESPONSE_ACCOUNTING", code="CONTROL_OR_BUDGET_GATE")
                         owner.budget.accept_response(number, len(chunk))
+                        diagnostic.update(stage="DOWNSTREAM_WRITE", code="DOWNSTREAM_WRITE_ERROR")
                         self.wfile.write(chunk)
                         self.wfile.flush()
+                        diagnostic["response_bytes_forwarded"] += len(chunk)
                         scan = tail + chunk
                         if DONE.search(scan) is not None:
+                            diagnostic["done_seen"] = True
                             outcome = "COMPLETE"
                             break
                         tail = scan[-256:]
                 except SupervisorError:
-                    owner._fail("Pi 转发前提、协议、取消或预算门禁失败")
+                    diagnostic["exception_category"] = "GUARD_REJECTION"
+                    owner._fail("Pi 转发前提、协议、取消或预算门禁失败", diagnostic)
                     if outcome != "BUDGET_STOP":
                         outcome = "BUDGET_STOP" if owner._stop.is_set() else "NETWORK_ERROR"
                     if not headers_sent:
@@ -209,8 +249,23 @@ class PiTransport:
                             self._reply(502)
                         except OSError:
                             pass
-                except (OSError, http.client.HTTPException, ValueError, TypeError):
-                    owner._fail("Pi 实际 HTTP 转发失败；不输出请求或响应正文")
+                except (OSError, http.client.HTTPException, ValueError, TypeError) as exc:
+                    # 固定异常分类；不记录 str/repr(exc)、任意类名、响应头或正文。
+                    if isinstance(exc, TimeoutError):
+                        category = "TIMEOUT"
+                    elif isinstance(exc, http.client.IncompleteRead):
+                        category = "HTTP_INCOMPLETE_READ"
+                    elif isinstance(exc, (BrokenPipeError, ConnectionResetError,
+                                          ConnectionAbortedError)):
+                        category = "CONNECTION_CLOSED"
+                    elif isinstance(exc, http.client.HTTPException):
+                        category = "HTTP_PROTOCOL_ERROR"
+                    elif isinstance(exc, OSError):
+                        category = "OS_ERROR"
+                    else:
+                        category = "DECODE_OR_TYPE_ERROR"
+                    diagnostic["exception_category"] = category
+                    owner._fail("Pi 实际 HTTP 转发失败；不输出请求或响应正文", diagnostic)
                     if not headers_sent:
                         try:
                             self._reply(502)
@@ -224,7 +279,10 @@ class PiTransport:
                             owner.budget.finish_request(
                                 number, http_status=status, outcome=outcome)
                         except SupervisorError:
-                            owner._fail("Pi HTTP 请求结束证据登记失败")
+                            diagnostic.update(stage="REQUEST_FINALIZATION",
+                                              code="REQUEST_FINALIZATION_REJECTED",
+                                              exception_category="GUARD_REJECTION")
+                            owner._fail("Pi HTTP 请求结束证据登记失败", diagnostic)
                     with owner._lock:
                         owner._client = None
                         owner._upstream = None
@@ -252,9 +310,12 @@ class PiTransport:
     def snapshot(self):
         with self._lock:
             error = self._error
+            failure = dict(self._failure) if self._failure is not None else None
         return {
             "status": "BLOCKED" if error else "READY",
             "reason": error,
+            "failure": failure,
+            "failure_evidence_boundary": "仅本次调用点的阶段、固定类别与计数；不保存正文、头值或异常消息，不反推历史运行根因",
             "network_budget": self.budget.snapshot(),
             "cleanup_ok": self.cleanup_ok,
             "thread_active": self._thread is not None and self._thread.is_alive(),

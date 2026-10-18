@@ -8,7 +8,7 @@ adr_file: "_bmad-output/adrs/ADR-20261012-bmad-solo-anti-bureaucracy-and-program
 verification_type: config_syntax
 verification_command: "timeout 30s python3 -B scripts/validate-roo-contracts.py --suite v5 --plan _bmad-output/pending_implementation_plan.md < /dev/null"
 verification_command_status: AVAILABLE
-authorization: "2026-10-17 用户授权工程入口继续同一计划：持续修订本计划及同一 PROPOSED ADR 的当前阶段、实现落点与验收映射；保护已有后端与 Pi 测试，仅允许必要修复 bmad_agent_backend.py 和新增协议反例 test_pi_backend.py；创建一个受限对账草稿并追加 Phase 5 回执。六项原 COMPLETED 任务按原验证对象精确重验、一次程序刷新；P5-PI-DRIVER 在既有写租约和源版本保护下仅行政恢复 SUSPENDED→PENDING、回执仍空，匹配真实本地协议证据后程序登记完成。P5-PI-HEADLESS 保持 SUSPENDED 且回执为空。冻结循环、入口、状态、适配、执行及既有测试原语，V4 只读；不重新安装或更新 Pi，不准备认证、不读取凭据正文、不真实模型调用、不宿主激活、不远程或断开试跑、不提交、推送、部署、转正或归档，不提高预算。阶段交付不等于全计划完成"
+authorization: "2026-10-18 当前用户授权：审查并提交剩余阶段相关改动及必要回执；调整执行顺序，不由当前助手提前实现或完成 P5-PI-HEADLESS，而由固定 Pi 1.3.0 在当前 VPS 工作区的独立后台任务期循环实现唯一目标 bmralph-suite-v5/scripts/bmad_pi_evidence.py。依赖证据及启动门禁满足后，绑定 .bmad-private/credentials.env 启动；600秒任务期、30次实际 Pi 到网关 HTTP 请求、15000000字节正文、360秒单会话、6轮无进展熔断、131072字节累计转发预算。Agent 不改测试、控制器、计划、ADR、凭据或其他用户成果；外层控制器运行八项必需单测、保存真实回执并程序写回。核验后台进程及写租约后通知客户端断开；启动不等于断开推进通过。不重复冒烟、不恢复旧进程、不读取或回显凭据正文、不安装、不推送、不生产部署、不转正、不归档。全部历史未完成承诺保留，阶段交付不等于全计划完成。"
 session_id: null
 ---
 
@@ -113,6 +113,26 @@ session_id: null
 - 客户端断开不是模型服务断网：关闭本地 IDE 后 VPS 到模型服务连接保持可用，以新模型/工具事件及轮次证明自主推进。真正模型网络故障只验证失败关闭、停止新调用、成果保全与清理，不要求无网络继续生成步骤，不改防火墙或 SSH。
 - Pi 两轮真实回执是 ADR 接受的必要条件；还须全部适用必需门禁通过且转正获准。ADR 接受不能使原 Epic、宏观 AC 或范围外承诺消失；全部计划事项完成且归档获准前保留活动计划。
 
+### 2026-10-18 接管与当前配置加载阶段
+
+本节及头部授权优先于上述 2026-10-17 的冻结描述；此前授权、完成源记录、全部未完成事项及历史证据仍保留，不继承为真实 Pi 运行通过。
+
+- 当前实施范围：任务启动入口显式接收工作区私有凭据文件路径；运行程序受限加载，不通过工具读取、回显或摄入凭据正文。非秘密后端配置与凭据分离，私有目录排除版本控制；文件拒绝越界、符号链接、权限过宽、重复键、未知键和可执行 Shell 语法。不得加载系统全局配置或 IDE 登录态。
+- 安装与部署入口本阶段只读，不自动加载凭据、生成认证或启动模型。只读查询、停止及帮助入口不加载私有凭据；缺失或非法配置失败关闭。加载器只向实际任务调用进程提供指定变量，退出或异常后恢复原环境，不把值写入启动参数、模型输入或回执。
+- 后续后端网关配置及私有模型目录须依据固定 Pi 版本真实接口实现；真实调用门禁不得无条件删除。新增加载接口与反例验证不证明认证、模型连通、工具权限、独立循环或客户端断开能力。
+- 用户指定的非秘密网关为 http://127.0.0.1:8080/v1，模型为 gpt-6.1-sol，协议为 openai-completions，指定凭据变量为 BMAD_PI_API_KEY。冒烟与循环合计最多 5 次真实模型请求、总时限 60 秒；请求级计量或强制截止尚未覆盖时阻塞真实调用，不使用外层调用预算替代。
+- 当前结构化清单不增加人工完成记录；私有配置加载及未覆盖的行政操作暂由平台任务记录引用真实回执，不另建进度账本。实现或测试集合变化后，原完成回执须按原契约核验或定向刷新，不删除旧回执、不降低验收。P5-PI-HEADLESS 保留原暂停记录及空回执，真实运行裁决资产和实测门禁仍待补齐。
+
+### 2026-10-18 独立循环接管授权
+
+本节以当前用户明确确认覆盖前述本轮禁止提交、真实启动及旧预算的限制；历史描述、全部未完成事项和原始回执保留，不继承为本次运行通过。
+
+- 授权审查、定向验证并提交私有配置加载、流式适配及本次启动必需的最小入口与门禁改动；真实凭据不得进入提交。不授权推送、生产部署、ADR 转正或计划归档。
+- 授权补齐并恢复 P5-PI-HEADLESS 真实运行回执裁决任务；恢复仅改变暂停状态，不手工登记完成。当前用户进一步明确执行顺序：保留该任务未完成，由后台 Pi 实现唯一裁决器目标，外层控制器执行八项必需单测并保存、写回；当前助手不提前实现完成。必需验收资产、当前依赖证据及启动门禁满足后，使用固定 Pi 1.3.0 的 pi-agent 后端启动 VPS 独立任务期循环，不重复临时网关冒烟。
+- 本次预算为任务期总时限 600 秒、最多 30 次真实模型请求、每个 Pi 会话最多 360 秒、15MB 数据预算及 6 轮无进展熔断。15MB 按十进制 15,000,000 字节实施；真实请求及数据量必须在实际调用路径强制限制，外层驱动调用数不得替代真实请求计数。探测、验证、构建工具仍保持 15/30/600 秒上限。
+- 唯一任务进度继续使用本计划结构化清单；未覆盖的行政恢复及启动操作临时引用平台真实回执，不另建进度账本。源码、日志和运行回执位于当前授权工作区；不读取或回显真实凭据正文，不改系统全局配置、不替换活动运行资产。
+- 仅后台会话、活动写租约及真实运行启动回执核验通过后通知客户端断开。启动成功不证明断开后自主推进；断开试验另以断开后的新模型或工具事件及后续轮次裁决。失败、超时、预算耗尽或清理未知阻塞并保留成果。
+
 ```bmad-tasks
 {
   "schema_version": 1,
@@ -145,7 +165,7 @@ session_id: null
           "bmralph-suite-v5/scripts/bmad_task_run.py"
         ]
       },
-      "verdict_file": "_bmad-output/verification/phase5-20261017/run-4ff4f2a16e48448880146c0311f6739e.verdict.json"
+      "verdict_file": "_bmad-output/verification/phase5-20261018/run-048e6842d8754eeab595bdd4f39f235f.verdict.json"
     },
     {
       "task_id": "P3-BACKEND",
@@ -187,7 +207,7 @@ session_id: null
           "bmralph-suite-v5/scripts/bmad_suite_lease.py"
         ]
       },
-      "verdict_file": "_bmad-output/verification/phase5-20261017/run-60c523b4a9d545e68f522c4ae5f07027.verdict.json"
+      "verdict_file": "_bmad-output/verification/phase5-20261018/run-5a0c124569d04316a56d0df7c0b64a76.verdict.json"
     },
     {
       "task_id": "P3-OFFLINE",
@@ -229,7 +249,7 @@ session_id: null
           "bmralph-suite-v5/scripts/bmad_suite_lease.py"
         ]
       },
-      "verdict_file": "_bmad-output/verification/phase5-20261017/run-60c523b4a9d545e68f522c4ae5f07027.verdict.json"
+      "verdict_file": "_bmad-output/verification/phase5-20261018/run-5a0c124569d04316a56d0df7c0b64a76.verdict.json"
     },
     {
       "task_id": "P4-BUDGET",
@@ -271,7 +291,7 @@ session_id: null
           "bmralph-suite-v5/scripts/bmad_suite_lease.py"
         ]
       },
-      "verdict_file": "_bmad-output/verification/phase5-20261017/run-60c523b4a9d545e68f522c4ae5f07027.verdict.json"
+      "verdict_file": "_bmad-output/verification/phase5-20261018/run-5a0c124569d04316a56d0df7c0b64a76.verdict.json"
     },
     {
       "task_id": "P4-BATCH",
@@ -313,7 +333,7 @@ session_id: null
           "bmralph-suite-v5/scripts/bmad_supervisor.py"
         ]
       },
-      "verdict_file": "_bmad-output/verification/phase5-20261017/run-a178ab87e77d475aa59c527691356e4c.verdict.json"
+      "verdict_file": "_bmad-output/verification/phase5-20261018/run-ee579b4875a24729837ea127f7658bdd.verdict.json"
     },
     {
       "task_id": "P4-ISOLATION",
@@ -351,7 +371,7 @@ session_id: null
           "scripts/asset_safety.py"
         ]
       },
-      "verdict_file": "_bmad-output/verification/phase5-20261017/run-7357657907064ff597d674c7303aa5ba.verdict.json"
+      "verdict_file": "_bmad-output/verification/phase5-20261018/run-01760bb94bae4f289a05e6229d42b1c8.verdict.json"
     },
     {
       "task_id": "P5-PI-DRIVER",
@@ -416,7 +436,7 @@ session_id: null
           "bmralph-suite-v5/scripts/bmad-exec.py"
         ]
       },
-      "verdict_file": "_bmad-output/verification/phase5-20261017/run-3569774e4b4b43e28f6dfc328fbb73d9.verdict.json"
+      "verdict_file": "_bmad-output/verification/phase5-20261018/run-36c3845788d846d18bdfdcbc0fe7dde0.verdict.json"
     },
     {
       "task_id": "P5-PI-HEADLESS",
@@ -424,7 +444,7 @@ session_id: null
       "depends_on": [
         "P5-PI-DRIVER"
       ],
-      "status": "SUSPENDED",
+      "status": "PENDING",
       "verification": {
         "operation": "unit-test",
         "environment_file": ".bmad-control/phase2-environment.json",

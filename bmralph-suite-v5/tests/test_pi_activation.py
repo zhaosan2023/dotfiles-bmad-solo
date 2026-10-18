@@ -83,7 +83,7 @@ class PiActivationGuards(unittest.TestCase):
                 agent.validate_pi_config(config)
 
     def intercepted_invoke(self, guards, budget, *, complete=True, transport_status="READY",
-                           process_cancelled=False):
+                            process_cancelled=False, transport_failure=None):
         owner = self
         token = "a" * 64
 
@@ -108,7 +108,8 @@ class PiActivationGuards(unittest.TestCase):
 
             def snapshot(self):
                 return {"status": transport_status, "reason": "", "cleanup_ok": self.cleanup_ok,
-                        "network_budget": budget.snapshot(), "thread_active": False}
+                        "network_budget": budget.snapshot(), "thread_active": False,
+                        "failure": copy.deepcopy(transport_failure)}
 
         def process_receipt(spec):
             self.captured_spec = spec
@@ -170,6 +171,36 @@ class PiActivationGuards(unittest.TestCase):
         self.assertEqual(result["status"], "BLOCKED")
         self.assertEqual(result["category"], "NETWORK_ERROR")
         self.assertTrue(result["cleanup_ok"])
+
+    def test_transport_diagnostic_is_preserved_in_blocked_agent_receipt_without_new_request(self):
+        guards = self.pi_guards()
+        budget = PiNetworkBudget(maximum_requests=30, maximum_bytes=15_000_000,
+                                 deadline=time.monotonic() + 15)
+        diagnostic = {
+            "schema_version": 1, "stage": "UPSTREAM_READ",
+            "code": "EOF_BEFORE_DONE", "exception_category": "GUARD_REJECTION",
+            "request_number": 1, "http_status": 200,
+            "content_type_is_sse": True, "headers_sent": True,
+            "eof_seen": True, "done_seen": False,
+            "response_bytes_read": 4, "response_bytes_forwarded": 4,
+        }
+        number = budget.reserve_request(3)
+        budget.accept_response(number, 4)
+        budget.finish_request(number, http_status=200, outcome="NETWORK_ERROR")
+        result = self.intercepted_invoke(
+            guards, budget, complete=False, transport_status="BLOCKED",
+            process_cancelled=True, transport_failure=diagnostic)
+        self.assertEqual(result["status"], "BLOCKED")
+        self.assertEqual(result["category"], "NETWORK_ERROR")
+        self.assertEqual(result["transport"]["failure"], diagnostic)
+        self.assertTrue(result["cleanup_ok"])
+        self.assertFalse(result["transport"]["thread_active"])
+        self.assertEqual(budget.requests, 1)
+        self.assertEqual(budget.snapshot()["events"][0]["outcome"], "NETWORK_ERROR")
+        public = json.dumps(result)
+        self.assertNotIn(pi_fixtures.TEST_VALUE, public)
+        self.assertNotIn(self.binding_data["token"], public)
+        self.assertFalse(self.binding_path.exists())
 
     def test_exec_uses_internal_token_and_isolated_streaming_provider_configuration(self):
         guards = self.pi_guards()
