@@ -22,6 +22,7 @@ import uuid
 
 SUITE_ROOT = Path(__file__).resolve().parents[1]
 TIERS = {"probe": 15, "verify": 30, "build": 600}
+PI_AGENT_TIMEOUT_SECONDS = 360
 SUMMARY_BYTES = 8192
 MAX_LOG_BYTES = 64 * 1024 * 1024
 
@@ -42,8 +43,18 @@ class RunSpec:
     tier: str
     deadline: float | None = None
     cancel_requested: Callable[[], bool] | None = None
+    agent_runtime_kind: str | None = None
+
+    @property
+    def timeout_seconds(self) -> int:
+        return PI_AGENT_TIMEOUT_SECONDS if self.agent_runtime_kind == "pi-agent" else TIERS[self.tier]
 
     def validate(self) -> None:
+        if self.agent_runtime_kind is not None and (
+            self.agent_runtime_kind != "pi-agent" or self.operation != "agent-call"
+            or self.tier != "verify" or "--pi-exec" not in self.argv
+        ):
+            raise SupervisorError("360 秒例外仅用于显式 Pi 驱动；不得扩大探测、测试或其他后端时限")
         if self.deadline is not None and (
             type(self.deadline) not in {int, float} or not math.isfinite(self.deadline)
         ):
@@ -247,7 +258,7 @@ def _run_locked(spec: RunSpec, root: Path, directory: Path) -> dict:
                 stdout=log, stderr=subprocess.STDOUT, env=environment,
                 start_new_session=True, close_fds=True,
             )
-            deadline = begin + TIERS[spec.tier]
+            deadline = begin + spec.timeout_seconds
             if spec.deadline is not None:
                 deadline = min(deadline, spec.deadline)
             while process.poll() is None:
@@ -304,7 +315,8 @@ def _run_locked(spec: RunSpec, root: Path, directory: Path) -> dict:
         "argv": list(spec.argv), "cwd": str(root),
         "started_at": started, "finished_at": utc_now(),
         "elapsed_seconds": round(time.monotonic() - begin, 6),
-        "timeout_seconds": TIERS[spec.tier],
+        "timeout_seconds": spec.timeout_seconds,
+        "agent_runtime_kind": spec.agent_runtime_kind,
         "returncode": returncode, "timed_out": timed_out,
         "cancelled": cancelled, "cleanup_ok": cleanup_ok,
         "process_status": "PASS" if returncode == 0 and not reason else "BLOCKED",

@@ -1,5 +1,6 @@
 """监督器真实子进程反例；只使用项目内临时工作区，不证明宿主权限。"""
 from contextlib import contextmanager
+from dataclasses import replace
 import importlib.util
 import json
 from pathlib import Path
@@ -272,6 +273,49 @@ class SupervisorGuards(unittest.TestCase):
                 self.assertEqual(receipt["cwd"], str(self.root.resolve()))
                 self.assertEqual(self.saved_receipt(receipt), receipt)
                 self.assertIn("agent fixture receipt", receipt["summary"]["text"])
+
+    def test_pi_session_exception_does_not_expand_other_operation_caps(self):
+        ordinary = self.spec()
+        self.assertEqual(ordinary.timeout_seconds, 30)
+        variants = (
+            replace(ordinary, agent_runtime_kind="pi-agent"),
+            replace(ordinary, operation="agent-call", agent_runtime_kind="pi-agent"),
+            replace(ordinary, operation="agent-call", agent_runtime_kind="roo-cli"),
+            replace(ordinary, operation="check-env", tier="probe",
+                    argv=(sys.executable, "--pi-exec"), agent_runtime_kind="pi-agent"),
+        )
+        for spec in variants:
+            with self.subTest(operation=spec.operation, runtime=spec.agent_runtime_kind):
+                with self.assertRaises(supervisor.SupervisorError):
+                    supervisor.run(spec)
+        self.assertFalse((self.root / ".bmad-runtime").exists())
+        self.assertEqual(supervisor.TIERS, {"probe": 15, "verify": 30, "build": 600})
+
+    def test_explicit_pi_session_escapes_verify_cap_but_obeys_batch_deadline(self):
+        import time
+
+        # Python 隔离夹具只验证监督器分支；不启动 Pi、不联网。
+        spec = replace(
+            self.spec("import time; time.sleep(0.08); print('session fixture')"),
+            operation="agent-call", agent_runtime_kind="pi-agent",
+        )
+        spec = replace(spec, argv=spec.argv + ("--pi-exec",),
+                       deadline=time.monotonic() + 2)
+        with patch.dict(supervisor.TIERS, {"verify": 0.01}):
+            receipt = supervisor.run(spec)
+        self.assertEqual(receipt["process_status"], "PASS", receipt)
+        self.assertEqual(receipt["timeout_seconds"], 360)
+        self.assertEqual(receipt["agent_runtime_kind"], "pi-agent")
+        self.assertTrue(receipt["cleanup_ok"])
+        short = replace(spec, argv=(sys.executable, "-B", "-c",
+                                   "import time; time.sleep(5)", "--pi-exec"),
+                        deadline=time.monotonic() + 0.1)
+        receipt = supervisor.run(short)
+        self.assertEqual(receipt["process_status"], "BLOCKED")
+        self.assertTrue(receipt["timed_out"])
+        self.assertTrue(receipt["cleanup_ok"])
+        self.assertIsNotNone(receipt["returncode"])
+        self.assertLess(receipt["elapsed_seconds"], 3)
 
     def test_unsupported_operation_rejected_before_file_creation(self):
         spec = supervisor.RunSpec(

@@ -20,7 +20,7 @@ import bmad_context as context
 import bmad_context_inputs as inputs
 import bmad_environment as environment
 import bmad_execution as execution
-from bmad_supervisor import TIERS, RunSpec, SupervisorError, contained_path, run, runtime_path, save_receipt
+from bmad_supervisor import PI_AGENT_TIMEOUT_SECONDS, TIERS, RunSpec, SupervisorError, contained_path, run, runtime_path, save_receipt
 
 FIELDS = {"schema_version", "backend", "protocol", "runtime_kind", "source", "version",
           "driver_file", "credential_environment", "authorized", "authorization",
@@ -62,8 +62,9 @@ def load(root, relative, backend):
         if not isinstance(config[field], str) or not config[field].strip() or len(config[field].encode("utf-8")) > 2048:
             raise SupervisorError("须明确运行时来源和版本；不推断本机或远程事实")
     value = config["api_timeout_seconds"]
-    if type(value) not in {int, float} or not math.isfinite(value) or not 0.05 <= value <= 30:
-        raise SupervisorError("驱动会话进程时限须为 0.05 至 30 秒；旧字段不证明单次模型请求时限")
+    cap = PI_AGENT_TIMEOUT_SECONDS if config["runtime_kind"] == "pi-agent" else TIERS["verify"]
+    if type(value) not in {int, float} or not math.isfinite(value) or not 0.05 <= value <= cap:
+        raise SupervisorError("驱动会话进程时限超出对应后端上限；旧字段不证明单次模型请求时限")
     credential = config["credential_environment"]
     if not isinstance(credential, str) or re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]{0,127}", credential) is None:
         raise SupervisorError("须明确凭据环境变量名称；不读取 IDE 认证文件")
@@ -92,10 +93,19 @@ def validate_pi_config(config):
         raise SupervisorError("Pi 来源、固定版本、新会话或授权契约不匹配")
     options = config["pi"]
     if (not isinstance(options, dict)
-            or set(options) != {"executable", "provider", "model", "tools", "no_progress_rounds"}
+            or set(options) not in (
+                {"executable", "provider", "model", "tools", "no_progress_rounds"},
+                {"executable", "provider", "model", "tools", "no_progress_rounds", "gateway"})
             or options["executable"] != "/usr/local/bin/pi"
-            or type(options["no_progress_rounds"]) is not int or options["no_progress_rounds"] != 3):
-        raise SupervisorError("Pi 参数组不完整；必须绑定既有 3 轮无进展熔断")
+            or type(options["no_progress_rounds"]) is not int
+            or options["no_progress_rounds"] not in {3, 6}):
+        raise SupervisorError("Pi 参数组不完整；仅接受既有 3 轮或本次获准 6 轮无进展熔断")
+    if "gateway" in options:
+        gateway = options["gateway"]
+        if (not isinstance(gateway, dict)
+                or gateway != {"base_url": "http://127.0.0.1:8080/v1",
+                               "api": "openai-completions"}):
+            raise SupervisorError("Pi 网关必须绑定已获准的回环地址及流式协议")
     for field in ("provider", "model"):
         value = options[field]
         if (not isinstance(value, str) or not value or len(value.encode("utf-8")) > 256
@@ -127,8 +137,10 @@ def pi_arguments(config, request_file):
             "--tools", ",".join(options["tools"]), "--", "@" + str(request))
 
 
-def require_pi_writer(root, owner_pid):
-    """复核现有写租约的内核持有者，不创建第二把锁或第二份进度。"""
+def require_pi_writer(root, owner_pid, expected_threshold=3):
+    """复核写租约及配置绑定阈值；默认保留历史三轮调用契约。"""
+    if type(expected_threshold) is not int or expected_threshold not in {3, 6}:
+        raise SupervisorError("Pi 阈值仅接受既有 3 轮或本次获准 6 轮")
     lock = contained_path(root, ".bmad-control/loop-writer.lock")
     info = lock.lstat()
     if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
@@ -153,8 +165,8 @@ def require_pi_writer(root, owner_pid):
     current = json.loads(raw, object_pairs_hook=execution.unique_object)
     if (not isinstance(current, dict) or current.get("status") != "EXECUTING"
             or type(current.get("no_progress_rounds")) is not int
-            or current["no_progress_rounds"] != 3):
-        raise SupervisorError("Pi 须由现有监督器绑定 3 轮无进展阈值；不自建重试循环")
+            or current["no_progress_rounds"] != expected_threshold):
+        raise SupervisorError(f"Pi 须由现有监督器绑定 {expected_threshold} 轮无进展阈值；不自建重试循环")
 
 
 def pi_result_from_log(path, expected, workspace):
@@ -211,13 +223,13 @@ def pi_result_from_log(path, expected, workspace):
     return {"schema_version": 1, **expected, "status": "OK", "pi_session_id": session}
 
 
-def _pi_exec(config, request_relative, owner_pid):
+def _pi_exec(config, request_relative, owner_pid, transport_relative=None):
     """监督器子进程内 exec 原版 Pi；保留同组清理，不另开进程组。"""
     root = Path.cwd().resolve()
     validate_pi_config(config)
     if owner_pid != os.getppid():
         raise SupervisorError("Pi 启动父进程不匹配")
-    require_pi_writer(root, owner_pid)
+    require_pi_writer(root, owner_pid, config["pi"]["no_progress_rounds"])
     credential = config["credential_environment"]
     if not os.environ.get(credential, "").strip():
         raise SupervisorError("独立运行时凭据缺失；不读取认证文件")
@@ -235,10 +247,45 @@ def _pi_exec(config, request_relative, owner_pid):
         raise SupervisorError("Pi 安装身份或固定版本变化；不切换运行时")
     private = request.parent / ("pi-config-" + uuid.uuid4().hex)
     private.mkdir(mode=0o700)
+    child_key = os.environ[credential]
+    if "gateway" in config["pi"]:
+        if not isinstance(transport_relative, str):
+            raise SupervisorError("Pi 网关运行必须接入任务期计量转发，不允许直连绕过预算")
+        transport_raw, transport_path, transport_identity = inputs.read_snapshot(
+            root, transport_relative, 4096)
+        binding = json.loads(transport_raw, object_pairs_hook=execution.unique_object)
+        if (not transport_path.is_relative_to(request.parent)
+                or transport_identity["mode"] != 0o600
+                or not isinstance(binding, dict)
+                or set(binding) != {"schema_version", "base_url", "token", "model", "provider"}
+                or type(binding["schema_version"]) is not int or binding["schema_version"] != 1
+                or binding["model"] != config["pi"]["model"]
+                or binding["provider"] != config["pi"]["provider"]
+                or not isinstance(binding["base_url"], str)
+                or re.fullmatch(r"http://127\.0\.0\.1:[1-9][0-9]{0,4}/v1", binding["base_url"]) is None
+                or not 1 <= int(binding["base_url"].split(":")[2].split("/")[0]) <= 65535
+                or not isinstance(binding["token"], str)
+                or re.fullmatch(r"[0-9a-f]{64}", binding["token"]) is None):
+            raise SupervisorError("Pi 内部转发绑定非法；不回显配置或令牌")
+        child_key = binding["token"]
+        save_receipt(private / "models.json", {"providers": {
+            config["pi"]["provider"]: {
+                "baseUrl": binding["base_url"], "api": "openai-completions",
+                "apiKey": "${" + credential + "}",
+                "models": [{"id": config["pi"]["model"]}],
+            }
+        }})
+        save_receipt(private / "settings.json", {
+            "retry": {"enabled": False, "maxRetries": 0,
+                      "provider": {"maxRetries": 0}},
+            "cacheWarming": "off",
+        })
+    elif transport_relative is not None:
+        raise SupervisorError("未配置网关的 Pi 不接受转发绑定")
     child_environment = {"PATH": "/usr/local/bin:/usr/bin:/bin",
                          "PI_CODING_AGENT_DIR": str(private), "PI_OFFLINE": "1",
                          "PI_SKIP_VERSION_CHECK": "1", "PI_TELEMETRY": "0",
-                         credential: os.environ[credential]}
+                         credential: child_key}
     # stderr 不混入 JSONL，更不回显提供方可能包含敏感信息的诊断。
     descriptor = os.open(os.devnull, os.O_WRONLY)
     try:
@@ -252,12 +299,14 @@ def timeout_dimensions(config, batch_deadline):
     """兼容旧字段，但只将其解释为驱动会话进程时限。
 
     未接通真实运行时的单次模型请求限时，不以外层进程限时冒充。
-    批次截止时间只能缩短会话及工具原有上限，不能扩展它们。
+    显式 Pi 驱动获准使用至多 360 秒会话；其他驱动仍为 30 秒。
+    批次截止时间只能缩短会话，探测及验证工具上限保持不变。
     """
     limit = config["api_timeout_seconds"]
+    cap = PI_AGENT_TIMEOUT_SECONDS if config.get("runtime_kind") == "pi-agent" else TIERS["verify"]
     if (type(limit) not in {int, float} or not math.isfinite(limit)
-            or not 0.05 <= limit <= TIERS["verify"]):
-        raise SupervisorError("驱动会话时限非法或超过既有 30 秒上限")
+            or not 0.05 <= limit <= cap):
+        raise SupervisorError("驱动会话时限非法或超过对应后端上限")
     if (type(batch_deadline) not in {int, float}
             or not math.isfinite(batch_deadline)):
         raise SupervisorError("批次截止时间须为有限的单调时钟值")
@@ -300,17 +349,24 @@ def result_from_log(path, expected):
 
 
 def invoke(*, workspace, config, assembled, runtime_directory, deadline, cancel_requested,
-           feedback=None, maximum_bytes=context.DEFAULT_STARTUP_BYTES):
+           feedback=None, maximum_bytes=context.DEFAULT_STARTUP_BYTES, network_budget=None):
     """启动一个新驱动进程，保存完整回执；任何非零退出严判阻断。"""
     root = environment.contained_path(workspace, ".").resolve()
     is_pi = config.get("runtime_kind") == "pi-agent"
     if is_pi:
         validate_pi_config(config)
-        require_pi_writer(root, os.getpid())
+        require_pi_writer(root, os.getpid(), config["pi"]["no_progress_rounds"])
         if not os.environ.get(config["credential_environment"], "").strip():
             raise SupervisorError("独立运行时凭据缺失；不启动 Pi 或读取认证文件")
         if contained_path(root, config["driver_file"]).resolve() != Path(__file__).resolve():
             raise SupervisorError("Pi 薄驱动绑定变化；不启动其他驱动")
+    use_transport = is_pi and "gateway" in config["pi"]
+    if use_transport:
+        from bmad_pi_budget import PiNetworkBudget
+        if not isinstance(network_budget, PiNetworkBudget):
+            raise SupervisorError("Pi 网关调用缺少任务期共享真实请求与数据预算")
+    elif network_budget is not None:
+        raise SupervisorError("网络预算只能接入明确配置的 Pi 网关路径")
     timeouts = timeout_dimensions(config, deadline)
     if cancel_requested() or time.monotonic() >= timeouts["agent_session_deadline"]:
         raise SupervisorError("调用前已取消或批次预算耗尽；不创建新会话请求")
@@ -344,13 +400,40 @@ def invoke(*, workspace, config, assembled, runtime_directory, deadline, cancel_
     if is_pi:
         argv += ("--pi-exec", "--owner-pid", str(os.getpid()), "--pi-config",
                  json.dumps(config, ensure_ascii=True, sort_keys=True))
-    process = run(RunSpec(
-        operation="agent-call", argv=argv,
-        workspace=root, runtime_directory=runtime_directory,
-        target="agent:" + expected["plan_id"] + ":" + expected["task_id"], tier="verify",
-        deadline=timeouts["agent_session_deadline"],
-        cancel_requested=cancel_requested,
-    ))
+    transport_record = None
+    previous_request_count = network_budget.requests if use_transport else 0
+
+    def execute(arguments, cancellation):
+        return run(RunSpec(
+            operation="agent-call", argv=arguments,
+            workspace=root, runtime_directory=runtime_directory,
+            target="agent:" + expected["plan_id"] + ":" + expected["task_id"], tier="verify",
+            deadline=timeouts["agent_session_deadline"],
+            cancel_requested=cancellation,
+            agent_runtime_kind="pi-agent" if is_pi else None,
+        ))
+
+    if use_transport:
+        from bmad_pi_transport import PiTransport
+        binding_path = runtime / ("pi-transport-input-" + session + ".json")
+        transport = PiTransport(
+            budget=network_budget, credential=os.environ[config["credential_environment"]],
+            model=config["pi"]["model"], session_deadline=timeouts["agent_session_deadline"])
+        try:
+            with transport:
+                save_receipt(binding_path, {
+                    "schema_version": 1, "base_url": transport.base_url, "token": transport.token,
+                    "model": config["pi"]["model"], "provider": config["pi"]["provider"],
+                })
+                argv += ("--pi-transport-file", binding_path.relative_to(root).as_posix())
+                process = execute(argv, lambda: cancel_requested()
+                                  or transport.snapshot()["status"] == "BLOCKED")
+        finally:
+            if binding_path.exists():
+                binding_path.unlink()
+        transport_record = transport.snapshot()
+    else:
+        process = execute(argv, cancel_requested)
     reason = process["reason"]
     category = "PROCESS_ERROR"
     data = None
@@ -372,10 +455,23 @@ def invoke(*, workspace, config, assembled, runtime_directory, deadline, cancel_
         reason, category = "无法确认 Agent 进程组清理；禁止后续验证", "CLEANUP_UNKNOWN"
     if process["returncode"] != 0:
         reason = reason or "Agent 真实退出码非零；不推进任务"
+    if transport_record is not None:
+        if not transport_record["cleanup_ok"]:
+            reason, category = "Pi 转发清理未知；禁止后续调用", "CLEANUP_UNKNOWN"
+        elif (transport_record["status"] != "READY"
+              or transport_record["network_budget"]["status"] != "READY"):
+            reason, category = "Pi 实际 HTTP 路径失败或预算耗尽；保留成果", "NETWORK_ERROR"
+        elif not any(event["outcome"] == "COMPLETE"
+                     and event["request_number"] > previous_request_count
+                     for event in transport_record["network_budget"]["events"]):
+            reason, category = "Pi 缺少实际完整流式请求证据", "NETWORK_ERROR"
     status = "PASS" if process["process_status"] == "PASS" and not reason and data and category == "OK" else "BLOCKED"
     return {"operation": "agent-call", "status": status, "reason": reason,
             "category": category, **expected, "process_receipt": process["receipt_path"],
-            "returncode": process["returncode"], "cleanup_ok": process["cleanup_ok"],
+            "returncode": process["returncode"],
+            "cleanup_ok": process["cleanup_ok"] and (
+                transport_record is None or transport_record["cleanup_ok"]),
+            "transport": transport_record,
             "cancelled": process["cancelled"], "timed_out": process["timed_out"],
             "runtime_kind": config["runtime_kind"], "timeout_dimensions": timeouts,
             "pi_session_id": data.get("pi_session_id") if is_pi and data else None,
@@ -390,10 +486,11 @@ if __name__ == "__main__":
     parser.add_argument("--request-file", required=True)
     parser.add_argument("--owner-pid", type=int, required=True)
     parser.add_argument("--pi-config", required=True)
+    parser.add_argument("--pi-transport-file")
     arguments = parser.parse_args()
     try:
         _pi_exec(json.loads(arguments.pi_config, object_pairs_hook=execution.unique_object),
-                 arguments.request_file, arguments.owner_pid)
+                 arguments.request_file, arguments.owner_pid, arguments.pi_transport_file)
     except (OSError, ValueError, KeyError, TypeError):
         # 不输出配置、提供方诊断、环境值或协议原文。
         print("Pi 薄驱动启动前提不满足；失败关闭", file=sys.stderr, flush=True)

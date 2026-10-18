@@ -62,13 +62,26 @@ class LoopSpec:
     deployment_root: Path | None = None
     run_copy_file: str | None = None
 
+    maximum_model_requests: int | None = None
+    maximum_data_bytes: int | None = None
+
     def validate(self):
         if (self.deployment_root is None) != (self.run_copy_file is None):
             raise SupervisorError("来源隔离须同时指定合成部署根与运行副本绑定回执")
         if type(self.save_progress) is not bool:
             raise SupervisorError("计划进度写回须为显式布尔授权")
-        if self.backend not in {"local-verification", "roo-cli", "headless"}:
+        if self.backend not in {"local-verification", "roo-cli", "headless", "pi-agent"}:
             raise SupervisorError("后端未覆盖；不静默更换引擎")
+        if self.backend == "pi-agent":
+            if (type(self.maximum_model_requests) is not int
+                    or not 1 <= self.maximum_model_requests <= 30
+                    or type(self.maximum_data_bytes) is not int
+                    or not 256 <= self.maximum_data_bytes <= 15_000_000
+                    or type(self.no_progress_rounds) is not int
+                    or self.no_progress_rounds != 6):
+                raise SupervisorError("后端未覆盖获准预算；Pi 必须明确真实请求、数据上限及 6 轮熔断")
+        elif self.maximum_model_requests is not None or self.maximum_data_bytes is not None:
+            raise SupervisorError("真实网络预算仅支持明确选择的 pi-agent 后端")
         if self.backend == "local-verification" and self.backend_config is not None:
             raise SupervisorError("本地验证后端不接受 Agent 配置")
         if self.backend != "local-verification" and self.backend_config is None:
@@ -300,6 +313,7 @@ def _start_locked(spec, root, session=None):
                   maximum_calls=spec.maximum_calls or spec.maximum_rounds,
                   completed_tasks=[], model_call_count=None, model_cost=None,
                   model_usage_coverage="UNKNOWN")
+    network_budget = None
     budget = context.ToolOutputBudget(
         maximum_bytes=spec.output_bytes,
         maximum_result_bytes=min(spec.output_bytes, context.MAX_TOOL_RESULT_BYTES),
@@ -345,12 +359,30 @@ def _start_locked(spec, root, session=None):
             bound[path] = identity
         program_root = Path(__file__).resolve().parent
         for path in program_root.glob("*.py"):
+            # 回执裁决器是本轮明确授权的离线实现目标，不由活动控制器导入。
+            # 其版本由任务 verification.inputs 核验；不热替换任何运行资产。
+            if path.name == "bmad_pi_evidence.py":
+                continue
             bound[path] = environment.fingerprint(path)
         backend_config = None
         if spec.backend != "local-verification":
             backend_config, backend_bound = agent_backend.load(root, spec.backend_config, spec.backend)
             bound.update(backend_bound)
-            if backend_config["runtime_kind"] != "isolated-fixture":
+            if spec.backend == "pi-agent":
+                if (backend_config["runtime_kind"] != "pi-agent"
+                        or "gateway" not in backend_config["pi"]
+                        or backend_config["pi"]["no_progress_rounds"] != spec.no_progress_rounds):
+                    raise SupervisorError("Pi 独立入口必须绑定真实类别、获准网关和同一熔断阈值")
+                from bmad_pi_budget import PiNetworkBudget
+                network_budget = PiNetworkBudget(
+                    maximum_requests=spec.maximum_model_requests,
+                    maximum_bytes=spec.maximum_data_bytes,
+                    deadline=deadline, cancel_requested=cancelled)
+                record.update(network_budget=network_budget.snapshot(),
+                              model_usage_coverage="PI_TO_GATEWAY_HTTP_BODY_ONLY",
+                              model_cost=None)
+                save_current(root, record)
+            elif backend_config["runtime_kind"] != "isolated-fixture":
                 raise SupervisorError("真实 Roo 运行时尚缺来源、版本、权限和独立认证实证；本轮仅授权隔离驱动演练")
         requests = None
         if spec.batch_file is not None:
@@ -412,18 +444,23 @@ def _start_locked(spec, root, session=None):
                     raise SupervisorError("驱动调用预算耗尽；停止新会话，保留未完成成果")
                 record["cleanup_ok"] = False
                 record["agent_calls"] += 1
+                save_current(root, record)
+                invoke_options = {"network_budget": network_budget} if network_budget is not None else {}
                 agent = agent_backend.invoke(
                     workspace=root, config=backend_config, assembled=assembled,
                     runtime_directory=spec.runtime_directory, deadline=deadline,
                     cancel_requested=cancelled, feedback=recent_feedback,
-                    maximum_bytes=spec.startup_bytes,
+                    maximum_bytes=spec.startup_bytes, **invoke_options,
                 )
                 record["last_agent"] = agent
+                if network_budget is not None:
+                    record["network_budget"] = network_budget.snapshot()
+                    record["model_call_count"] = record["network_budget"]["model_request_attempts"]
                 record["cleanup_ok"] = agent["cleanup_ok"]
                 budget.consume(agent)
                 if not agent["cleanup_ok"]:
                     raise SupervisorError("Agent 清理未确认；禁止验证或推进")
-                if agent["cancelled"]:
+                if agent["cancelled"] and agent.get("category") != "NETWORK_ERROR":
                     record.update(status="SUSPENDED", reason="明确取消 Agent；在途进程已结束，成果保留")
                     break
                 if agent["status"] != "PASS":
@@ -543,6 +580,9 @@ def _start_locked(spec, root, session=None):
         record["state_card_reason"] = str(projection.get("reason", "缺少完整状态视图"))[:512]
         if record["status"] == "COMPLETED":
             record.update(status="BLOCKED", reason="必要短状态卡无法完整生成；成果及回执保留")
+    if network_budget is not None:
+        record["network_budget"] = network_budget.snapshot()
+        record["model_call_count"] = record["network_budget"]["model_request_attempts"]
     record["finished_at"] = utc_now()
     save_receipt(contained_path(root, final_relative), record)
     save_current(root, record)

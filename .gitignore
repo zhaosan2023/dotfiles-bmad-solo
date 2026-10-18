@@ -4,6 +4,10 @@
 .versions/
 .bmad-control/
 .bmad-runtime/
+
+# Task-local private configuration; never distribute credentials
+/.bmad-private/
+/.vscode/settings.json
 tests/**/sandbox-*/
 docs/tmp-*
 

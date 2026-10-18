@@ -374,10 +374,41 @@ class PiBackendGuards(unittest.TestCase):
         self.assertEqual(dimensions["batch_deadline"], 100.5)
         self.assertEqual(dimensions["tool_timeout_caps_seconds"],
                          {"probe": 15, "verify": 30, "build": 600})
-        for limit in (True, 0, 30.01, float("nan"), float("inf")):
+        for limit in (True, 0, 360.01, float("nan"), float("inf")):
             with self.subTest(limit=limit):
                 with self.assertRaises(supervisor.SupervisorError):
                     agent.timeout_dimensions(dict(self.config, api_timeout_seconds=limit), 101)
+
+    def test_authorized_six_round_threshold_must_match_current_writer(self):
+        self.config["pi"]["no_progress_rounds"] = 6
+        agent.validate_pi_config(self.config)
+        self.active(threshold=6)
+        agent.require_pi_writer(self.root, os.getpid(), expected_threshold=6)
+        with self.assertRaisesRegex(supervisor.SupervisorError, "3 轮"):
+            agent.require_pi_writer(self.root, os.getpid())
+        record, _ = self.invoke()
+        self.assertEqual(record["status"], "PASS")
+        path = self.root / ".bmad-control/loop-current.json"
+        path.write_text(json.dumps({"status": "EXECUTING", "no_progress_rounds": 3}))
+        with self.assertRaisesRegex(supervisor.SupervisorError, "6 轮"):
+            agent.require_pi_writer(self.root, os.getpid(), expected_threshold=6)
+
+    def test_pi_360_second_session_preserves_batch_and_tool_caps(self):
+        self.active()
+        self.config["api_timeout_seconds"] = 360
+        record, spec = self.invoke()
+        self.assertEqual(record["status"], "PASS")
+        self.assertEqual(spec.agent_runtime_kind, "pi-agent")
+        self.assertEqual(spec.timeout_seconds, 360)
+        dimensions = record["timeout_dimensions"]
+        self.assertEqual(dimensions["agent_session_timeout_seconds"], 360)
+        self.assertEqual(dimensions["agent_session_deadline"], dimensions["batch_deadline"])
+        self.assertEqual(dimensions["tool_timeout_caps_seconds"],
+                         {"probe": 15, "verify": 30, "build": 600})
+        self.assertEqual(dimensions["model_request_timeout_coverage"], "UNKNOWN")
+        fixture = dict(self.config, runtime_kind="isolated-fixture")
+        with self.assertRaises(supervisor.SupervisorError):
+            agent.timeout_dimensions(fixture, time.monotonic() + 600)
 
     def test_exec_interception_preserves_process_group_and_excludes_inherited_config(self):
         self.active()

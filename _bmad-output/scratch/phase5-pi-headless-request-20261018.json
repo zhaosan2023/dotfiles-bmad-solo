@@ -1,0 +1,37 @@
+{
+  "goal": "仅实施当前唯一计划中 P5-PI-HEADLESS：完成 bmad_pi_evidence.py 的只读回执快照裁决逻辑，使已绑定的八项必需单测通过。单测通过只证明快照校验，不证明真实运行、客户端断开、全计划完成或快照真实性。不要重新进行完整分析，直接实现。",
+  "authorization": "用户已明确授权在当前 VPS 工作区启动固定 Pi 1.3.0 独立任务期循环。本次唯一生产写入目标为 bmralph-suite-v5/scripts/bmad_pi_evidence.py；验收测试、控制器、运行资产、计划、ADR、私有配置及其他用户改动均不得由 Agent 修改。任务进度仅由外层控制器在独立验证通过后程序写回。",
+  "task_id": "P5-PI-HEADLESS",
+  "constraints": [
+    "当前工作区为 /home/ecs-user/dotfiles-bmad-solo；所有项目文件路径相对于此根，禁止项目外写入。",
+    "只修改 bmralph-suite-v5/scripts/bmad_pi_evidence.py；不得修改、删除或弱化 bmralph-suite-v5/tests_pi/test_pi_headless_evidence.py，必须保留全部八项必需验收。",
+    "裁决器不得联网、启动进程、读取凭据、写进度、接受ADR或归档计划。不得导入活动控制器来实施副作用。返回结果不得泄露秘密或修改输入快照。",
+    "输入缺失、损坏、绑定不符、失败或清理未知时返回 BLOCKED，不以退出零、完成口令、进程存活或合成夹具声明制造实际运行通过。输入快照不具备签名或同账号防篡改保证，必须明确证据边界。",
+    "正常快照的PASS仅表示按契约校验通过；adr_accepted和plan_archived始终为false。校验固定来源和版本、工作区及计划、获准任务和依赖、完整新会话、真实验证字段、同任务失败反馈及断开后新模型或工具事件。",
+    "预算字段严格区分整数与布尔；核验30次请求、15000000字节、600秒任务、360秒会话及6轮无进展契约，停止后不得新增请求，必须确认清理且无活动写入者或在途请求。计量仅覆盖Pi到网关HTTP正文，不覆盖网关内部重试、费用或宿主工具旁路。",
+    "真实运行和独立验证由外层控制器实施；Agent只使用read、edit、write工具，不自行执行测试或请求模型，不安装依赖、不运行冒烟、不恢复历史会话、不提交、不推送、不部署。",
+    "不得读取 .bmad-private、IDE或系统认证文件，不读取或输出环境变量凭据值。不得修改活动控制器、网关、规则、绑定请求或非秘密后端契约。",
+    "保护全部既有修改及未完成承诺。下一轮只依据外层传入的最近真实验证反馈修复当前任务；不能以模型声明标记完成。",
+    "规则文件随定向源码显式注入；禁用隐式上下文文件不代表已有宿主级权限隔离。遵循本次明确授权优先于规则中的历史冻结叙述。"
+  ],
+  "capabilities": [
+    "可读取当前任务定向源码和绑定测试，使用原生read、edit、write工具实现唯一获准目标。",
+    "外层控制器在每轮Agent结束且清理确认后，执行既有类型化独立单测，并把失败退出码、计数和有界日志传入下一新会话。",
+    "固定Pi通过任务期回环流式转发使用已验证网关；真实请求与HTTP正文共用跨会话预算。"
+  ],
+  "code_files": [
+    "bmralph-suite-v5/scripts/bmad_pi_evidence.py",
+    "bmralph-suite-v5/tests_pi/test_pi_headless_evidence.py",
+    "bmralph-suite-v5/roo/rules/01-bmad-constitution.md",
+    "bmralph-suite-v5/roo/rules/02-bmad-core.md",
+    "bmralph-suite-v5/roo/rules-bmad-engineer/01-bmad-engineer-core.md"
+  ],
+  "unfinished_files": [
+    "bmralph-suite-v5/scripts/bmad_pi_evidence.py"
+  ],
+  "feedback": [
+    "依赖证据已按当前实现定向刷新；行政接管回执为 _bmad-output/verification/phase5-20261018/handoff-adopt-87222332c01e4ffa9893bab1f2715513.json。P5-PI-HEADLESS已程序恢复为PENDING，回执仍为null，尚未完成。",
+    "当前裁决器是明确失败关闭的待实现入口；不要保留全量BLOCKED占位返回，应完成实际严格校验。验收资产为合成输入，不能从测试夹具导出所谓真实生产回执。"
+  ],
+  "observed_host_bytes": null
+}
