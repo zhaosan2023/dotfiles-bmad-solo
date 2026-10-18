@@ -165,7 +165,7 @@ session_id: null
           "bmralph-suite-v5/scripts/bmad_task_run.py"
         ]
       },
-      "verdict_file": "_bmad-output/verification/phase5-20261018/run-048e6842d8754eeab595bdd4f39f235f.verdict.json"
+      "verdict_file": "_bmad-output/verification/phase5-handoff-20261018-attempt3/run-c1e5f7edb6f44d0cb63b067971b4d2b7.verdict.json"
     },
     {
       "task_id": "P3-BACKEND",
@@ -207,7 +207,7 @@ session_id: null
           "bmralph-suite-v5/scripts/bmad_suite_lease.py"
         ]
       },
-      "verdict_file": "_bmad-output/verification/phase5-20261018/run-5a0c124569d04316a56d0df7c0b64a76.verdict.json"
+      "verdict_file": "_bmad-output/verification/phase5-handoff-20261018-attempt3/run-8a5b5c1eec9e42bbbfc80159650e13e6.verdict.json"
     },
     {
       "task_id": "P3-OFFLINE",
@@ -249,7 +249,7 @@ session_id: null
           "bmralph-suite-v5/scripts/bmad_suite_lease.py"
         ]
       },
-      "verdict_file": "_bmad-output/verification/phase5-20261018/run-5a0c124569d04316a56d0df7c0b64a76.verdict.json"
+      "verdict_file": "_bmad-output/verification/phase5-handoff-20261018-attempt3/run-8a5b5c1eec9e42bbbfc80159650e13e6.verdict.json"
     },
     {
       "task_id": "P4-BUDGET",
@@ -291,7 +291,7 @@ session_id: null
           "bmralph-suite-v5/scripts/bmad_suite_lease.py"
         ]
       },
-      "verdict_file": "_bmad-output/verification/phase5-20261018/run-5a0c124569d04316a56d0df7c0b64a76.verdict.json"
+      "verdict_file": "_bmad-output/verification/phase5-handoff-20261018-attempt3/run-8a5b5c1eec9e42bbbfc80159650e13e6.verdict.json"
     },
     {
       "task_id": "P4-BATCH",
@@ -333,7 +333,7 @@ session_id: null
           "bmralph-suite-v5/scripts/bmad_supervisor.py"
         ]
       },
-      "verdict_file": "_bmad-output/verification/phase5-20261018/run-ee579b4875a24729837ea127f7658bdd.verdict.json"
+      "verdict_file": "_bmad-output/verification/phase5-handoff-20261018-attempt3/run-070bbfba55a347f1916cb38e51ba1ca2.verdict.json"
     },
     {
       "task_id": "P4-ISOLATION",
@@ -371,7 +371,7 @@ session_id: null
           "scripts/asset_safety.py"
         ]
       },
-      "verdict_file": "_bmad-output/verification/phase5-20261018/run-01760bb94bae4f289a05e6229d42b1c8.verdict.json"
+      "verdict_file": "_bmad-output/verification/phase5-handoff-20261018-attempt3/run-8b695cdd90184e6a84090d5f6b039106.verdict.json"
     },
     {
       "task_id": "P5-PI-DRIVER",
@@ -436,7 +436,7 @@ session_id: null
           "bmralph-suite-v5/scripts/bmad-exec.py"
         ]
       },
-      "verdict_file": "_bmad-output/verification/phase5-20261018/run-36c3845788d846d18bdfdcbc0fe7dde0.verdict.json"
+      "verdict_file": "_bmad-output/verification/phase5-handoff-20261018-attempt3/run-81779043973644849b8e576706019f23.verdict.json"
     },
     {
       "task_id": "P5-PI-HEADLESS",

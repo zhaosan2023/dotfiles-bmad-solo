@@ -1,0 +1,6 @@
+..................
+----------------------------------------------------------------------
+Ran 18 tests in 18.381s
+
+OK
+BMAD_TEST_RESULT {"directory":"bmralph-suite-v5/tests","discovered":18,"errors":0,"expected_failures":0,"failures":0,"matched_files":1,"minimum_tests":18,"missing_required_tests":[],"pattern":"test_loop_guards.py","reason":"\u5168\u90e8\u9009\u4e2d\u6d4b\u8bd5\u5b9e\u9645\u901a\u8fc7","required_tests":["test_loop_guards.LoopGuards.test_explicit_progress_write_completes_one_task_and_generates_bounded_card","test_loop_guards.LoopGuards.test_failure_with_progress_permission_does_not_check_off_task","test_loop_guards.LoopGuards.test_plan_query_does_not_create_loop_or_business_receipts","test_loop_guards.LoopGuards.test_cli_output_overflow_exits_nonzero_and_preserves_receipt_locator"],"skipped":0,"status":"PASS","tests_run":18,"unexpected_successes":0,"workspace":"/home/ecs-user/dotfiles-bmad-solo"}
