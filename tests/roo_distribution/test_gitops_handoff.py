@@ -93,17 +93,38 @@ class GitOpsHandoff(unittest.TestCase):
 
     def test_new_entry_failure_propagates_without_repeat_or_asset_writes(self):
         self.prepare_update()
+        self.git("checkout", "fixture-new-entry")
+        script = self.repo / "bs.sh"
+        source = script.read_text()
+        self.assertIn('main "$@"', source)
+        script.write_text(source.replace('main "$@"', 'exit 17\nmain "$@"'))
+        self.git("add", "bs.sh")
+        self.git("-c", "commit.gpgsign=false", "commit", "-m", "fixture failing entry")
+        remote = self.sandbox / "local remote.git"
+        # 本地文件远端夹具直接获取新提交；不访问网络或执行 push。
+        self.git("--git-dir", str(remote), "fetch", str(self.repo),
+                 "fixture-new-entry:refs/heads/fixture-new-entry")
+        self.git("checkout", "main")
+        before = self.tree(self.target)
+        result = self.run_command(["bash", "bs.sh", "--update", "v4"])
+        self.assertEqual(result.returncode, 17, result.stdout + result.stderr)
+        self.assertEqual(result.stdout.count("NEW_ENTRY_LOADED"), 1)
+        self.assertEqual(result.stdout.count("显式移交磁盘新版部署入口"), 1)
+        self.assertEqual(self.tree(self.target), before)
+
+    def test_unknown_deployment_blocks_before_git_or_handoff_even_explicit_v4(self):
+        self.prepare_update()
         old = self.target / ".gemini/config/plugins/bmad-suite/plugin.json"
         old.parent.mkdir(parents=True)
         old.write_bytes(b"old unmanaged mirror")
-        before = self.tree(self.target)
-        # 已有未受管资产缺少可信身份时需显式选择，才能进入新版迁移预检。
+        before_repo, before_target = self.tree(self.repo), self.tree(self.target)
         result = self.run_command(["bash", "bs.sh", "--update", "v4"])
         self.assertNotEqual(result.returncode, 0)
-        self.assertEqual(result.stdout.count("NEW_ENTRY_LOADED"), 1)
-        self.assertEqual(result.stdout.count("显式移交磁盘新版部署入口"), 1)
-        self.assertIn("文件接管待授权", result.stdout)
-        self.assertEqual(self.tree(self.target), before)
+        self.assertNotIn("NEW_ENTRY_LOADED", result.stdout)
+        self.assertNotIn("显式移交磁盘新版部署入口", result.stdout)
+        self.assertIn("所有权清单", result.stderr)
+        self.assertEqual(self.tree(self.repo), before_repo)
+        self.assertEqual(self.tree(self.target), before_target)
 
     def test_invalid_resume_or_loop_marker_rejected_without_changes(self):
         commit = self.git("rev-parse", "HEAD").strip()

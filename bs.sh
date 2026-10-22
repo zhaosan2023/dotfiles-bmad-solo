@@ -20,8 +20,7 @@ ROO_ENG_DIR="$ROO_GLOBAL_DIR/rules-bmad-engineer"
 
 DRY_RUN=0
 UNINSTALL=0
-VERSION="v4"
-VERSION_EXPLICIT=0
+readonly VERSION="v4"
 SWITCH_TAG=""
 SWITCH_LATEST=0
 UPDATE_REMOTE=0
@@ -36,7 +35,7 @@ handoff_main() {
         printf '%s\n' '错误：禁止重复执行移交，未再次更新或部署。' >&2
         exit 1
     fi
-    local RESUME_ARGS=(--_resume-main "$1" "$VERSION")
+    local RESUME_ARGS=(--_resume-main "$1")
     if [ $DRY_RUN -eq 1 ]; then RESUME_ARGS+=(--dry-run); fi
     if [ $PREFLIGHT -eq 1 ]; then RESUME_ARGS+=(--preflight); fi
     local TARGET
@@ -47,24 +46,11 @@ handoff_main() {
     exec env BMAD_HANDOFF_ACTIVE=1 bash "$SCRIPT_DIR/bs.sh" "${RESUME_ARGS[@]}" < /dev/null
 }
 
-select_version() {
-    if [ "$VERSION_EXPLICIT" -eq 1 ] && [ "$VERSION" != "$1" ]; then
-        printf '%s\n' '错误：不能同时选择不同套件版本；未更新或部署。' >&2
-        exit 1
-    fi
-    VERSION="$1"
-    VERSION_EXPLICIT=1
-}
-
 show_help() {
-    echo -e "${YELLOW}Usage:${NC} $0 [options] [v3 | v4 | v5]"
+    echo -e "${YELLOW}Usage:${NC} $0 [options]"
     echo ""
-    echo -e "${GREEN}Major Architecture Versions:${NC}"
-    echo "  v5, 5, --v5       显式选择 BMRalph V5 独立套件"
-    echo "  v4, 4, --v4       选择 V4；未指定版本的新安装兼容默认 V4"
-    echo "  v3, 3, --v3       选择 V3 历史基线（源资产仍须通过预检）"
-    echo "  --suite <version> 显式选择 v3、v4 或 v5；不同版本参数冲突即停止"
-    echo "  已有安装省略版本：保留已核验的受管版本；身份未知时要求显式选择"
+    echo "  本仓库仅分发人-AI 值守 V4；退役或未知部署身份停止，不自动覆盖"
+    echo "  v4, 4, --v4, --suite v4  兼容已有 V4 调用，不能绕过身份保护"
     echo ""
     echo -e "${GREEN}GitOps Version Inspection & Updates:${NC}"
     echo "  --update, -u      Fetch & pull latest from origin and deploy physical mirror"
@@ -172,23 +158,13 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         --suite)
-            if [[ $# -lt 2 ]] || [[ ! "$2" =~ ^v[345]$ ]]; then
-                printf '%s\n' '错误：--suite 需要 v3、v4 或 v5。' >&2
+            if [[ $# -lt 2 ]] || [[ "$2" != v4 ]]; then
+                printf '%s\n' '错误：仅支持 --suite v4；退役或未知版本拒绝，不回退。' >&2
                 exit 1
             fi
-            select_version "$2"
             shift 2
             ;;
-        v3|3|--v3|--version-3|-3)
-            select_version "v3"
-            shift
-            ;;
         v4|4|--v4|--version-4|-4)
-            select_version "v4"
-            shift
-            ;;
-        v5|5|--v5|--version-5|-5)
-            select_version "v5"
             shift
             ;;
         *)
@@ -262,17 +238,19 @@ if [ -n "$SWITCH_TAG" ] && { [ $UPDATE_REMOTE -eq 1 ] || [ $SWITCH_LATEST -eq 1 
     exit 1
 fi
 
-# 在网络访问、主分支切换及新版移交前确定有效套件意图。
-# 旧资产或状态目录存在而身份记录缺失时，不按新安装默认回切 V4。
-if [ "$VERSION_EXPLICIT" -eq 0 ]; then
-    INTENT_ROOT="${BMAD_DEPLOY_ROOT:-$HOME}"
-    for MARKER in ".bmad-solo-deployment" ".gemini/config/plugins/bmad-suite" ".gemini/config/rules/bmad-core.md" ".roo/rules/02-bmad-core.md"; do
-        if [ -e "$INTENT_ROOT/$MARKER" ] || [ -L "$INTENT_ROOT/$MARKER" ]; then
-            VERSION=$(timeout 15s python3 -B "$SCRIPT_DIR/scripts/deployment-status.py" --root "$INTENT_ROOT" --active-suite < /dev/null)
-            break
+# 唯一 V4 分发仍须在网络访问、主分支切换及新版移交前核验已有身份。
+# 兼容 V4 参数不代表接管授权；未知、退役或损坏部署均停止。
+INTENT_ROOT="${BMAD_DEPLOY_ROOT:-$HOME}"
+for MARKER in ".bmad-solo-deployment" ".gemini/config/plugins/bmad-suite" ".gemini/config/rules/bmad-core.md" ".roo/rules/02-bmad-core.md"; do
+    if [ -e "$INTENT_ROOT/$MARKER" ] || [ -L "$INTENT_ROOT/$MARKER" ]; then
+        ACTIVE_SUITE=$(timeout 15s python3 -B "$SCRIPT_DIR/scripts/deployment-status.py" --root "$INTENT_ROOT" --active-suite < /dev/null)
+        if [ "$ACTIVE_SUITE" != "$VERSION" ]; then
+            printf '%s\n' '错误：已有部署不是可核验的 V4；停止，不自动覆盖。' >&2
+            exit 1
         fi
-    done
-fi
+        break
+    fi
+done
 MAPPING_ARGS=(--version "$VERSION")
 if [ -n "$SWITCH_TAG" ]; then MAPPING_ARGS+=(--tag "$SWITCH_TAG"); fi
 SOURCE_RELATIVE=$(timeout 15s python3 -B "$SCRIPT_DIR/scripts/suite_versions.py" "${MAPPING_ARGS[@]}" < /dev/null)
@@ -378,13 +356,12 @@ elif [ $SWITCH_LATEST -eq 1 ] || [ -n "$RESUME_COMMIT" ]; then
         handoff_main "$SELECTED_COMMIT"
     fi
     SOURCE_SUITE="$SCRIPT_DIR/$SOURCE_RELATIVE"
-    VERSION_TITLE="BMAD-Solo $VERSION（已选择 main；套件版本独立）"
+    VERSION_TITLE="BMAD-Solo V4（已选择 main）"
     COMMAND_TIPS="  • /bmad-solo  : $VERSION 工程入口\n  • /ana-solo   : 分析入口；以目标运行时实际加载为准"
     echo -e "${GREEN}[✔] 已选择 main，保留套件 $VERSION${NC}\n"
 else
     SOURCE_SUITE="$SCRIPT_DIR/$SOURCE_RELATIVE"
     VERSION_TITLE="BMAD-Solo $VERSION"
-    if [ "$VERSION" = "v5" ]; then VERSION_TITLE="BMRalph V5 独立套件"; fi
     COMMAND_TIPS="  • /bmad-solo  : $VERSION 工程入口\n  • /ana-solo   : 分析入口；以目标运行时实际加载为准"
 fi
 
@@ -458,8 +435,7 @@ echo -e "3. Version & Rollback management:
    • Pull remote updates:   ./bs.sh --update
    • View release tags:     ./bs.sh --tags
    • Rollback to tag:       ./bs.sh --tag <tag> (e.g. ./bs.sh --tag v4.1.0)
-   • Return to latest:      ./bs.sh --latest
-   • Switch major version:  ./bs.sh v3 | ./bs.sh v4 | ./bs.sh v5"
+   • Return to latest:      ./bs.sh --latest"
 printf '%s\n' '安装、更新、分发和 IDE 重载不启动 Ralph；远程试跑与模型认证须另行授权。'
 echo -e ""
 }

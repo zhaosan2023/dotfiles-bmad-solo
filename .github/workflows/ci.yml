@@ -52,11 +52,10 @@ jobs:
               print(f"Valid plugin JSON: {path}")
           ' < /dev/null
 
-      - name: Validate V4 and V5 Configuration and Metadata Contracts
+      - name: Validate V4 Configuration and Metadata Contracts
         run: |
           set -euo pipefail
           timeout 30s python3 -B scripts/validate-roo-contracts.py --suite v4 < /dev/null
-          timeout 30s python3 -B scripts/validate-roo-contracts.py --suite v5 < /dev/null
 
       - name: Test Configuration Contracts
         run: timeout 30s python3 -m unittest discover -s tests/roo_contracts -p 'test_*.py' < /dev/null
@@ -125,6 +124,53 @@ jobs:
           for group in "${groups[@]}"; do
             timeout 30s python3 -B -m unittest discover -s tests/roo_distribution -p "${group##*/}" < /dev/null
           done
+
+      - name: Test Deployment Guards in Bounded Sequential Groups
+        shell: bash
+        run: |
+          set -euo pipefail
+          for group in test_version_guard.py test_task_cleanup_guard.py; do
+            test -f "tests/roo_distribution/$group"
+            timeout 30s python3 -B -m unittest discover -s tests/roo_distribution -p "$group" < /dev/null
+          done
+
+      - name: Test Retired Deployment Migration in Isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f tests/roo_distribution/test_retired_deployment_migration.py
+          cases=$(timeout --kill-after=2s 15s python3 -B -c '
+          import unittest
+          suite = unittest.defaultTestLoader.discover(
+              "tests/roo_distribution", pattern="test_retired_deployment_migration.py",
+          )
+          if suite.countTestCases() == 0:
+              raise SystemExit("Missing retired deployment migration test cases")
+          def flatten(suite):
+              for item in suite:
+                  if isinstance(item, unittest.TestSuite):
+                      yield from flatten(item)
+                  else:
+                      yield item.id()
+          cases = list(flatten(suite))
+          if len(cases) != suite.countTestCases() or len(set(cases)) != len(cases):
+              raise SystemExit("Invalid retired deployment migration collection")
+          print("\n".join(cases))
+          ' < /dev/null)
+          while IFS= read -r case; do
+            timeout --kill-after=2s 30s python3 -B -c '
+          import sys, unittest
+          sys.path.insert(0, "tests/roo_distribution")
+          suite = unittest.defaultTestLoader.loadTestsFromName(sys.argv[1])
+          if suite.countTestCases() != 1:
+              raise SystemExit("Expected exactly one collected migration case")
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          sys.exit(0 if result.wasSuccessful() and not result.skipped else 1)
+          ' "$case" < /dev/null
+          done <<< "$cases"
+
+      - name: Test V4 Analysis Repair Distribution
+        run: timeout 30s python3 -B -m unittest discover -s tests/roo_distribution -p 'test_v4_analysis_distribution.py' < /dev/null
 
       - name: State Verification Boundary
         run: printf '%s\n' 'Isolated disk-asset tests do not verify Roo runtime loading or permission enforcement.'

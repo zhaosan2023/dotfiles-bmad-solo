@@ -22,21 +22,18 @@ class SuiteSpec:
             r"[0-9a-f]{40}|[0-9a-f]{64}", commit
         ):
             raise AssetError("缓存需要实际提交标识")
-        prefix = "" if self.major_version == "v4" else self.major_version + "-"
-        return prefix + "commit-" + commit
+        return "commit-" + commit
 
 
 SUITES = {
-    "v3": SuiteSpec("v3", "bmad-suite-v3", "bmad-suite-v3"),
     "v4": SuiteSpec("v4", "bmad-suite-v4", "bmad-suite-v4"),
-    "v5": SuiteSpec("v5", "bmralph-suite-v5", "bmralph-suite-v5"),
 }
 IDENTITY_FILE = "suite.json"
 
 
 def suite_spec(version: str) -> SuiteSpec:
     if not isinstance(version, str) or version not in SUITES:
-        raise AssetError("套件版本必须显式选择 v3、v4 或 v5")
+        raise AssetError("仅支持 V4 套件身份；退役或未知版本拒绝，不回退")
     return SUITES[version]
 
 
@@ -75,8 +72,6 @@ def validate_identity(source: Path, spec: SuiteSpec) -> SuiteSpec:
     identity_path = source / IDENTITY_FILE
     identity_snapshot = snapshot(checked_path(identity_path))
     if identity_snapshot.content is None:
-        if spec.major_version == "v5":
-            raise AssetError("V5 必须包含可核验的独立套件身份")
         return spec
     identity = read_object(identity_path)
     expected = {
@@ -88,8 +83,6 @@ def validate_identity(source: Path, spec: SuiteSpec) -> SuiteSpec:
     if (type(identity.get("schema_version")) is not int
             or identity != expected):
         raise AssetError("套件身份字段与所选版本不一致")
-    if spec.major_version == "v5" and plugin.get("displayName") != "BMRalph V5":
-        raise AssetError("V5 插件展示名称必须明确标识版本")
     return spec
 
 
@@ -114,7 +107,8 @@ def validate_tag_hint(tag: str, spec: SuiteSpec) -> None:
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="只读解析显式套件映射和来源身份")
-    parser.add_argument("--version", required=True, choices=tuple(SUITES))
+    parser.add_argument("--version", default="v4", choices=tuple(SUITES),
+                        help="唯一 V4；保留参数以兼容已有 V4 调用")
     parser.add_argument("--repo", type=Path,
                         help="提供时核验物理来源；省略只返回固定目录映射")
     parser.add_argument("--tag", help="核验标签主版本线索，不创建缓存")

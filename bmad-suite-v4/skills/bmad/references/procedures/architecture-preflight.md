@@ -7,7 +7,9 @@ description: >
 # Architecture Preflight Procedure
 
 ## Objective
-Run a conflict gate to ensure a proposed task is architecturally safe to implement. This is a mandatory step before any M/L task coding begins.
+在获准工程阶段，针对受影响接口、数据所有权与跨层依赖检查架构约束。按核心场景规则选择，不因任务级别机械覆盖 bugfix 或 ops，不重复已经收敛且仍有效的完整分析。
+
+只读审核仅取证与会话交付，不实施、不运行验证、不持久化、不转正或归档；本流程不增加分析模式的终端权限。
 
 ## Process
 
@@ -39,7 +41,7 @@ Output exactly this structure:
 
 ## Verdict Rules
 
-- **PASS**: No conflicts found, key assumptions have evidence. Proceed to plan/implement.
-- **WARN**: Acceptable architecture debt or risk. Must record mitigation in task state before proceeding.
-- **BLOCK**: Violates a hard invariant. **DO NOT BEGIN CODING.** The plan must be modified, an ADR created, or the user asked for a decision.
-- **UNKNOWN**: Insufficient evidence to judge. **DO NOT ASSUME PASS.** Run an experiment, spike, or benchmark first.
+- PASS：未发现冲突且关键前提有依据；仅在实际授权内推进对应阶段，不把预检通过当作执行许可。
+- WARN：明确可接受风险及缓解条件；需要记录时使用已选唯一任务入口，只读任务不写文件。
+- BLOCK：已证实违反必要不变量，不推进依赖；按冲突选择最小修正或请求关键决策，不强制每次新建 ADR。
+- UNKNOWN：缺乏必要依据，不能判为通过；明确问题、实验范围、环境前提与验收后交给获准工程入口，不自动执行实验、不扩大分析权限。仅阻塞依赖该证据的任务。

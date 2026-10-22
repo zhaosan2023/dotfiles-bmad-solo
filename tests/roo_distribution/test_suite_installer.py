@@ -14,11 +14,6 @@ class SuiteInstaller(unittest.TestCase):
     MANIFEST = '.gemini/config/plugins/bmad-suite/.manifest.json'
 
     def prepare_installer(self):
-        shutil.copytree(fixtures.ROOT / 'bmralph-suite-v5',
-                        self.repo / 'bmralph-suite-v5',
-                        ignore=shutil.ignore_patterns('__pycache__', '*.pyc'))
-        self.git('add', 'bmralph-suite-v5')
-        self.git('-c', 'commit.gpgsign=false', 'commit', '-m', 'fixture V5 installer')
         self.remote = self.sandbox / 'local source.git'
         self.git('clone', '--bare', str(self.repo), str(self.remote))
         self.git('remote', 'add', 'origin', str(self.remote))
@@ -36,30 +31,31 @@ class SuiteInstaller(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         return json.loads((self.target / self.MANIFEST).read_bytes())
 
-    def test_explicit_v5_existing_repository_update_is_forwarded(self):
+    def test_explicit_v4_existing_repository_update_is_forwarded(self):
         self.prepare_installer()
-        manifest = self.run_installer('--suite', 'v5')
-        self.assertEqual(manifest['major_version'], 'v5')
-        self.assertEqual(manifest['source_path'], 'bmralph-suite-v5')
+        manifest = self.run_installer('--suite', 'v4')
+        self.assertEqual(manifest['major_version'], 'v4')
+        self.assertEqual(manifest['source_path'], 'bmad-suite-v4')
         self.assertEqual(list(self.home.iterdir()), [])
 
-    def test_implicit_update_preserves_previously_deployed_v5(self):
+    def test_implicit_update_preserves_previously_deployed_v4(self):
         self.prepare_installer()
-        deployed = self.run_command(['bash', 'bs.sh', 'v5'])
+        deployed = self.run_command(['bash', 'bs.sh'])
         self.assertEqual(deployed.returncode, 0, deployed.stdout + deployed.stderr)
         before = self.tree(self.target)
         manifest = self.run_installer()
-        self.assertEqual(manifest['major_version'], 'v5')
+        self.assertEqual(manifest['major_version'], 'v4')
         self.assertEqual(self.tree(self.target), before)
 
-    def test_fresh_clone_explicit_v5(self):
+    def test_fresh_clone_explicit_v4(self):
         self.prepare_installer()
         clone = self.sandbox / 'new repository'
         self.env['BMAD_SOLO_DIR'] = str(clone)
-        manifest = self.run_installer('v5')
-        self.assertEqual(manifest['major_version'], 'v5')
+        manifest = self.run_installer('v4')
+        self.assertEqual(manifest['major_version'], 'v4')
         self.assertEqual(manifest['source_repository'], str(clone))
-        self.assertTrue((clone / 'bmralph-suite-v5/suite.json').is_file())
+        self.assertTrue((clone / 'bmad-suite-v4/plugin.json').is_file())
+        self.assertFalse((clone / 'bmralph-suite-v5').exists())
 
     def test_fresh_clone_without_version_defaults_to_v4(self):
         self.prepare_installer()
@@ -74,7 +70,8 @@ class SuiteInstaller(unittest.TestCase):
         clone = self.sandbox / 'never cloned'
         self.env['BMAD_SOLO_DIR'] = str(clone)
         before_repo, before_target = self.tree(self.repo), self.tree(self.target)
-        for args in (('v4', 'v5'), ('--suite', 'v5', '--v4'),
+        for args in (('v3',), ('v5',), ('--v5',), ('v4', 'v5'),
+                     ('--suite', 'v5', '--v4'), ('--suite', 'v3'),
                      ('--suite', 'v6'), ('--suite',), ('--unknown',)):
             with self.subTest(args=args):
                 result = self.run_command(['bash', str(self.installer), *args])
@@ -88,7 +85,8 @@ class SuiteInstaller(unittest.TestCase):
         before_repo, before_target = self.tree(self.repo), self.tree(self.target)
         result = self.run_command(['bash', str(self.installer), '--help'])
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn('v5', result.stdout)
+        self.assertIn('V4', result.stdout)
+        self.assertNotIn('v5', result.stdout)
         self.assertIn('不启动 Ralph', result.stdout)
         self.assertEqual(self.tree(self.repo), before_repo)
         self.assertEqual(self.tree(self.target), before_target)

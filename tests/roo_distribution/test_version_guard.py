@@ -18,16 +18,14 @@ import test_suite_selection as selection
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "scripts"))
-sys.path.insert(0, str(ROOT / "bmralph-suite-v5/scripts"))
 from asset_safety import AssetError, deployment_lock
-from bmad_suite_lease import suite_lease
+from shared_lock_fixture import suite_lease
 
 
 class VersionGuard(unittest.TestCase):
     run_command = fixtures.GitOpsDryRun.run_command
     git = fixtures.GitOpsDryRun.git
     tree = fixtures.GitOpsDryRun.tree
-    add_v5 = selection.SuiteSelection.add_v5
     deploy = selection.SuiteSelection.deploy
     MANIFEST = selection.SuiteSelection.MANIFEST
     prepare_update = handoff.GitOpsHandoff.prepare_update
@@ -37,9 +35,8 @@ class VersionGuard(unittest.TestCase):
         self.env.pop("BMAD_VERSION_LOCK_FD", None)
         self.env.pop("BMAD_HANDOFF_ACTIVE", None)
 
-    def install_committed_v5(self):
-        self.add_v5(committed=True)
-        self.deploy("v5")
+    def install_committed_v4(self):
+        self.deploy()
         self.lock = self.target / ".bmad-solo-deployment/deployment.lock"
 
     def track_exclusive_lock(self):
@@ -85,7 +82,7 @@ class VersionGuard(unittest.TestCase):
             self.assertTrue(self.lock.is_file())
 
     def test_update_keeps_exclusive_lock_during_fetch_merge_and_new_entry_deploy(self):
-        self.install_committed_v5()
+        self.install_committed_v4()
         commit, _ = self.prepare_update()
         log = self.track_exclusive_lock()
         result = self.run_command(["bash", "bs.sh", "--update"])
@@ -95,12 +92,12 @@ class VersionGuard(unittest.TestCase):
         self.assertTrue({"fetch", "merge", "archive"}.issubset(
             self.checked_operations(log)))
         manifest = json.loads((self.target / self.MANIFEST).read_bytes())
-        self.assertEqual(manifest["major_version"], "v5")
+        self.assertEqual(manifest["major_version"], "v4")
         self.assertEqual(manifest["source_commit"], commit)
         self.assert_released()
 
     def test_latest_keeps_exclusive_lock_during_switch_and_handoff(self):
-        self.install_committed_v5()
+        self.install_committed_v4()
         self.git("checkout", "-b", "fixture-other-branch")
         log = self.track_exclusive_lock()
         result = self.run_command(["bash", "bs.sh", "--latest"])
@@ -111,27 +108,27 @@ class VersionGuard(unittest.TestCase):
         self.assert_released()
 
     def test_tag_keeps_exclusive_lock_during_cache_preparation_and_deploy(self):
-        self.install_committed_v5()
-        self.git("tag", "fixture-v5-guard")
+        self.install_committed_v4()
+        self.git("tag", "fixture-v4-guard")
         log = self.track_exclusive_lock()
         result = self.run_command([
-            "bash", "bs.sh", "v5", "--tag", "fixture-v5-guard",
+            "bash", "bs.sh", "--tag", "fixture-v4-guard",
         ])
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("archive", self.checked_operations(log))
         manifest = json.loads((self.target / self.MANIFEST).read_bytes())
-        self.assertEqual(manifest["major_version"], "v5")
+        self.assertEqual(manifest["major_version"], "v4")
         self.assertEqual(manifest["source_kind"], "commit_cache")
         self.assert_released()
 
     def test_forged_descriptor_environment_fails_before_version_side_effects(self):
-        self.install_committed_v5()
+        self.install_committed_v4()
         before_repo = self.tree(self.repo)
         before_target = self.tree(self.target)
         for value in ("not-a-descriptor", "2", "999999"):
             with self.subTest(value=value):
                 self.env["BMAD_VERSION_LOCK_FD"] = value
-                result = self.run_command(["bash", "bs.sh", "v5", "--latest"])
+                result = self.run_command(["bash", "bs.sh", "--latest"])
                 self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
                 self.assertNotIn("显式移交磁盘新版部署入口", result.stdout)
                 self.assertEqual(self.tree(self.repo), before_repo)
@@ -140,7 +137,7 @@ class VersionGuard(unittest.TestCase):
         self.assert_released()
 
     def test_cli_rejects_unlocked_and_shared_inherited_descriptors_without_writes(self):
-        self.install_committed_v5()
+        self.install_committed_v4()
         before_repo = self.tree(self.repo)
         before_target = self.tree(self.target)
         for shared in (False, True):
@@ -152,7 +149,7 @@ class VersionGuard(unittest.TestCase):
                     result = subprocess.run(
                         [sys.executable, "-B", str(self.repo / "scripts/deploy-managed-cli.py"),
                          "--root", str(self.target),
-                         "--source", str(self.repo / "bmralph-suite-v5"),
+                         "--source", str(self.repo / "bmad-suite-v4"),
                          "--repository", str(self.repo),
                          "--deployment-lock-fd", str(descriptor)],
                         cwd=self.repo, env=self.env, stdin=subprocess.DEVNULL,
@@ -174,11 +171,11 @@ class VersionGuard(unittest.TestCase):
         self.assert_released()
 
     def test_missing_existing_lock_is_not_recreated_by_version_operation(self):
-        self.install_committed_v5()
+        self.install_committed_v4()
         self.lock.unlink()
         before_repo = self.tree(self.repo)
         before_target = self.tree(self.target)
-        result = self.run_command(["bash", "bs.sh", "v5", "--latest"])
+        result = self.run_command(["bash", "bs.sh", "--latest"])
         self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertFalse(self.lock.exists())
         self.assertNotIn("显式移交磁盘新版部署入口", result.stdout)
@@ -186,11 +183,11 @@ class VersionGuard(unittest.TestCase):
         self.assertEqual(self.tree(self.target), before_target)
 
     def test_version_dry_run_remains_read_only_while_task_holds_lease(self):
-        self.install_committed_v5()
+        self.install_committed_v4()
         before_repo = self.tree(self.repo)
         before_target = self.tree(self.target)
         with suite_lease(self.target):
-            result = self.run_command(["bash", "bs.sh", "v5", "--latest", "--dry-run"])
+            result = self.run_command(["bash", "bs.sh", "--latest", "--dry-run"])
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertEqual(self.tree(self.repo), before_repo)
             self.assertEqual(self.tree(self.target), before_target)

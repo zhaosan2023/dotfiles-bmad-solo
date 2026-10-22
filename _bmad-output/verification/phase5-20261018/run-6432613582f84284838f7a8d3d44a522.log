@@ -1,0 +1,6 @@
+.................................
+----------------------------------------------------------------------
+Ran 33 tests in 6.067s
+
+OK
+BMAD_TEST_RESULT {"directory":"bmralph-suite-v5/tests","discovered":33,"errors":0,"expected_failures":0,"failures":0,"matched_files":1,"minimum_tests":33,"missing_required_tests":[],"pattern":"test_pi_backend.py","reason":"\u5168\u90e8\u9009\u4e2d\u6d4b\u8bd5\u5b9e\u9645\u901a\u8fc7","required_tests":["test_pi_backend.PiBackendGuards.test_exec_interception_preserves_process_group_and_excludes_inherited_config","test_pi_backend.PiBackendGuards.test_frozen_loop_still_rejects_real_pi_without_activation","test_pi_backend.PiBackendGuards.test_authorized_six_round_threshold_must_match_current_writer","test_pi_backend.PiBackendGuards.test_pi_360_second_session_preserves_batch_and_tool_caps","test_pi_backend.PiSupervisorDelegationGuards.test_unknown_cleanup_prohibits_next_call_verification_and_restart"],"skipped":0,"status":"PASS","tests_run":33,"unexpected_successes":0,"workspace":"/home/ecs-user/dotfiles-bmad-solo"}

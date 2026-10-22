@@ -178,6 +178,34 @@ class RepositoryContracts(unittest.TestCase):
         with self.assertRaises(contracts.ContractError):
             contracts.validate_plan(data, self.root)
 
+    def test_timeout_grace_preserves_tiers_and_closed_input(self):
+        marker = self.root / "must-not-exist"
+        for duration in ("15s", "30s", "600s"):
+            for prefix in (f"timeout {duration}",
+                           f"timeout --kill-after=2s {duration}",
+                           f"timeout {duration} --kill-after=2s"):
+                with self.subTest(prefix=prefix):
+                    data = {**self.plan, "verification_command":
+                            f"{prefix} touch {marker} < /dev/null"}
+                    self.write_plan(contracts.DEFAULT_PLAN, data)
+                    result = self.run_cli()
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    self.assertFalse(marker.exists())
+
+    def test_invalid_timeout_grace_or_missing_entry_fails_closed(self):
+        for command in (
+            "timeout --kill-after=2s 60s python3 check.py < /dev/null",
+            "timeout --kill-after=0s 30s python3 check.py < /dev/null",
+            "timeout --kill-after=-2s 30s python3 check.py < /dev/null",
+            "timeout --kill-after=bad 30s python3 check.py < /dev/null",
+            "timeout 30s --kill-after=bad python3 check.py < /dev/null",
+            "timeout --kill-after=2s 30s --kill-after=2s python3 check.py < /dev/null",
+            "timeout --kill-after=2s 30s < /dev/null",
+            "timeout --kill-after=2s 30s python3 check.py",
+        ):
+            with self.subTest(command=command), self.assertRaises(contracts.ContractError):
+                contracts.validate_plan({**self.plan, "verification_command": command}, self.root)
+
     def test_validation_does_not_execute_command(self):
         marker = self.root / "must-not-exist"
         data = {**self.plan, "verification_command": f"timeout 15s touch {marker} < /dev/null"}

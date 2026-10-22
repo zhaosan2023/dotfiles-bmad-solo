@@ -6,14 +6,14 @@ from pathlib import Path
 
 from asset_safety import AssetError
 from managed_files import ownership_record
-from suite_versions import suite_spec, unique_object
+from suite_versions import SuiteSpec, suite_spec, unique_object
 
 
 PLUGIN_PREFIX = '.gemini/config/plugins/bmad-suite/'
 IDENTITY_FIELDS = ('suite_id', 'major_version', 'source_path')
 
 
-def manifest_suite(provenance, observed):
+def manifest_suite(provenance, observed, *, retired_from=None):
     """输入必须来自所有权校验及末次复核后的快照；未知旧记录返回 None。
 
     同账号仍能同时修改清单和文件；此处提供一致性校验，不宣称防篡改。
@@ -23,6 +23,9 @@ def manifest_suite(provenance, observed):
     managed = provenance.get('managed_files')
     if not isinstance(sources, dict) or not isinstance(managed, dict):
         raise AssetError('部署来源文件摘要结构非法')
+    # 可选身份文件仅允许两份清单同时缺省；不能把部分丢失降级为旧 V4。
+    if ('suite.json' in sources) != (PLUGIN_PREFIX + 'suite.json' in managed):
+        raise AssetError('部署身份文件在来源与受管清单中的存在性不一致')
 
     def source_object(relative):
         target = PLUGIN_PREFIX + relative
@@ -40,6 +43,8 @@ def manifest_suite(provenance, observed):
             raise AssetError(f'部署套件身份资产不是对象：{relative}')
         return data
 
+    if retired_from not in {None, 'v5'}:
+        raise AssetError('仅允许显式核验一次性 V5 退役身份')
     fields = [provenance.get(key) for key in IDENTITY_FIELDS]
     directory = provenance.get('source_directory')
     if not isinstance(directory, str) or not directory:
@@ -55,16 +60,24 @@ def manifest_suite(provenance, observed):
     else:
         if any(value is None for value in fields):
             raise AssetError('部署套件身份字段不完整')
-        spec = suite_spec(provenance['major_version'])
+        if retired_from == 'v5':
+            if provenance['major_version'] != 'v5':
+                raise AssetError('退役迁移需要可核验的现有 V5 身份；不重放或回退')
+            # 仅描述退役快照，不加入来源映射，不读取或执行 V5 代码。
+            spec = SuiteSpec('v5', 'bmralph-suite-v5', 'bmralph-suite-v5')
+        else:
+            spec = suite_spec(provenance['major_version'])
         if (provenance['suite_id'] != spec.suite_id
                 or provenance['source_path'] != spec.source_path
                 or Path(directory).name != spec.source_path):
             raise AssetError('部署套件身份与固定来源映射不一致')
 
+    if retired_from == 'v5' and 'suite.json' not in sources:
+        raise AssetError('显式 V5 退役身份缺少受管 suite.json；不凭来源名称接管')
     plugin = source_object('plugin.json')
     if plugin.get('name') != 'bmad-suite':
         raise AssetError('部署插件不符合单一活动槽位契约')
-    if spec.major_version == 'v5' or 'suite.json' in sources:
+    if 'suite.json' in sources:
         identity = source_object('suite.json')
         if (type(identity.get('schema_version')) is not int or identity != {
                 'schema_version': 1,
@@ -73,6 +86,4 @@ def manifest_suite(provenance, observed):
                 'source_path': spec.source_path,
         }):
             raise AssetError('部署套件身份文件与来源清单不一致')
-    if spec.major_version == 'v5' and plugin.get('displayName') != 'BMRalph V5':
-        raise AssetError('部署 V5 插件缺少明确的展示名称')
     return spec

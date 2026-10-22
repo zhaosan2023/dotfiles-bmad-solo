@@ -151,8 +151,8 @@ def main():
     parser = argparse.ArgumentParser(description="按提交核验并发布标签套件缓存")
     parser.add_argument("--repo", required=True, type=Path)
     parser.add_argument("--tag", required=True)
-    parser.add_argument("--suite", choices=("v3", "v4", "v5"), default="v4",
-                        help="显式套件版本；旧调用兼容 V4，不回退所选来源")
+    parser.add_argument("--suite", choices=("v4",), default="v4",
+                        help="唯一 V4 来源；缺源不回退")
     arguments = parser.parse_args()
     try:
         print(prepare_cache(arguments.repo, arguments.tag, arguments.suite))

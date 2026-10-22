@@ -1,0 +1,6 @@
+.
+----------------------------------------------------------------------
+Ran 1 test in 1.049s
+
+OK
+BMAD_TEST_RESULT {"directory":"bmralph-suite-v5/tests","discovered":1,"errors":0,"expected_failures":0,"failures":0,"matched_files":1,"minimum_tests":1,"missing_required_tests":[],"pattern":"test_controller_asset_scope.py","reason":"\u5168\u90e8\u9009\u4e2d\u6d4b\u8bd5\u5b9e\u9645\u901a\u8fc7","required_tests":["test_controller_asset_scope.ControllerAssetScopeGuards.test_offline_checker_can_change_but_live_controller_change_blocks_verification"],"skipped":0,"status":"PASS","tests_run":1,"unexpected_successes":0,"workspace":"/home/ecs-user/dotfiles-bmad-solo"}

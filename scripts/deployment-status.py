@@ -16,7 +16,7 @@ from managed_modes import merge_modes
 from deployment_identity import manifest_suite
 
 
-def inspect(root, *, active_suite=False):
+def inspect(root, *, active_suite=False, retired_from=None):
     root = checked_path(root)
     if not root.is_dir():
         raise AssetError("部署根目录不存在或不是目录")
@@ -130,7 +130,7 @@ def inspect(root, *, active_suite=False):
         spec = manifest_suite(provenance, {
             path.relative_to(root).as_posix(): value
             for path, value in observed.items()
-        })
+        }, retired_from=retired_from)
         if spec is not None:
             print(f'记录的套件身份：{spec.suite_id}')
             print(f'记录的套件主版本：{spec.major_version}')

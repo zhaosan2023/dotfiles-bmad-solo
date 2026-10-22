@@ -22,8 +22,10 @@ Read only these sources (do NOT read the Developer's process narrative):
 2. Git Diff of the changes.
 3. Test and verification evidence (actual terminal output).
 4. Architecture contract (if exists): `_bmad-output/architecture/architecture-contract.yaml`.
-5. Implementation plan: `brain/implementation_plan.md`.
-6. Active task state: `brain/task.md`.
+5. 当前实际绑定的实施计划；明确需求或轻量任务没有计划时不猜测路径、不强制补建。
+6. 当前已选定的唯一任务进度入口；控制器未覆盖时临时引用平台任务记录与真实回执，不另建状态副本。
+
+只读审核仅取证与会话交付，不写文件、不运行验证、不转正或归档。差异取证遵循实际工具权限，不为检查 Git 绕过分析角色的终端限制；现有真实回执可供审查，不能由审核自动启动测试。
 
 ## Review Checklist
 
@@ -34,7 +36,7 @@ Read only these sources (do NOT read the Developer's process narrative):
 - [ ] Does the logic match the stated acceptance criteria?
 
 ### Testing
-- [ ] Were tests actually run (real terminal output exists)?
+- [ ] 需要验证的实施任务是否取得当前阶段的真实回执？只读审核不因此强制运行测试，历史通过不替代受影响证据。
 - [ ] Do tests cover the changed behavior?
 - [ ] Are there missing test cases for boundary conditions?
 - [ ] Is any test modified to hide a real defect?
@@ -76,5 +78,5 @@ Output one of:
 - Test passing is NOT the end condition for review.
 - Do not re-summarize the Developer's explanation as your own finding.
 - If claims contradict evidence, flag the contradiction explicitly.
-- Debugging findings discovered during review must be recorded.
-- For M/L tasks, verify that State Reconciliation was performed.
+- 审核发现随当前交付保留；需要持久化时按实际授权和产物职责路由，只读审核不写文件，不另建进度账本。
+- 按当前阶段契约核对实现、证据与未完成义务；缺必需证据不登记完成，条件接受不能豁免必需验收，阶段交付不等于全计划完成。

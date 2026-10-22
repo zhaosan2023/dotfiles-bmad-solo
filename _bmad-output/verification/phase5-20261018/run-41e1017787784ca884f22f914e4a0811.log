@@ -1,0 +1,6 @@
+..........
+----------------------------------------------------------------------
+Ran 10 tests in 0.007s
+
+OK
+BMAD_TEST_RESULT {"directory":"bmralph-suite-v5/tests","discovered":10,"errors":0,"expected_failures":0,"failures":0,"matched_files":1,"minimum_tests":10,"missing_required_tests":[],"pattern":"test_pi_budget.py","reason":"\u5168\u90e8\u9009\u4e2d\u6d4b\u8bd5\u5b9e\u9645\u901a\u8fc7","required_tests":["test_pi_budget.PiNetworkBudgetGuards.test_exactly_thirty_actual_request_reservations_prohibit_thirty_first","test_pi_budget.PiNetworkBudgetGuards.test_request_and_response_share_decimal_fifteen_megabyte_cap","test_pi_budget.PiNetworkBudgetGuards.test_concurrent_inflight_request_blocks_without_second_reservation","test_pi_budget.PiNetworkBudgetGuards.test_deadline_blocks_new_request_and_further_response_reads"],"skipped":0,"status":"PASS","tests_run":10,"unexpected_successes":0,"workspace":"/home/ecs-user/dotfiles-bmad-solo"}

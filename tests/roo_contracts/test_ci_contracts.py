@@ -1,5 +1,7 @@
 """CI 静态配置回归；不执行网络安装、远程 CI 或真实宿主部署。"""
 from pathlib import Path
+import subprocess
+import tempfile
 import unittest
 
 import yaml
@@ -34,18 +36,18 @@ class CiContracts(unittest.TestCase):
             self.assertEqual(len(checkouts), 1)
             self.assertIs(checkouts[0]["with"]["persist-credentials"], False)
 
-    def test_static_gate_selects_both_versions_explicitly(self):
+    def test_static_gate_selects_only_v4(self):
         script = self.step(
             "lint-and-audit",
-            "Validate V4 and V5 Configuration and Metadata Contracts",
+            "Validate V4 Configuration and Metadata Contracts",
         )["run"]
         self.assertIn("set -euo pipefail", script)
-        for suite in ("v4", "v5"):
-            self.assertIn(
-                "timeout 30s python3 -B scripts/validate-roo-contracts.py "
-                f"--suite {suite} < /dev/null",
-                script,
-            )
+        self.assertIn(
+            "timeout 30s python3 -B scripts/validate-roo-contracts.py "
+            "--suite v4 < /dev/null", script,
+        )
+        self.assertNotIn("--suite v3", script)
+        self.assertNotIn("--suite v5", script)
 
     def test_dependency_preparation_is_separate_from_test_steps(self):
         for name, job in self.config["jobs"].items():
@@ -66,7 +68,7 @@ class CiContracts(unittest.TestCase):
                         self.assertGreater(index, preparation[0])
                         for installer in ("pip install", "apk add", "apt-get install"):
                             self.assertNotIn(installer, script)
-                        self.assertIn("timeout 30s", script)
+                        self.assertRegex(script, r"timeout(?: --kill-after=2s)? 30s")
                         self.assertIn("< /dev/null", script)
 
     def test_distribution_groups_fail_closed_and_run_serially(self):
@@ -91,6 +93,73 @@ class CiContracts(unittest.TestCase):
                 self.assertNotIn("xargs", script)
                 self.assertNotIn("parallel", script)
                 self.assertNotIn("&\n", script)
+
+    def test_retired_migration_gate_is_explicit_bounded_and_serial(self):
+        step = self.step(
+            "test-physical-mirror-install", "Test Retired Deployment Migration in Isolation",
+        )
+        self.assertEqual(step["shell"], "bash")
+        script = step["run"]
+        self.assertIn("set -euo pipefail", script)
+        self.assertIn("test -f tests/roo_distribution/test_retired_deployment_migration.py", script)
+        self.assertIn("timeout --kill-after=2s 15s python3 -B -c", script)
+        self.assertIn("timeout --kill-after=2s 30s python3 -B -c", script)
+        self.assertIn('pattern="test_retired_deployment_migration.py"', script)
+        self.assertIn("suite.countTestCases() == 0", script)
+        self.assertIn("yield from flatten(item)", script)
+        self.assertIn("len(cases) != suite.countTestCases()", script)
+        self.assertIn("len(set(cases)) != len(cases)", script)
+        self.assertIn('while IFS= read -r case; do', script)
+        self.assertIn('done <<< "$cases"', script)
+        self.assertIn("suite.countTestCases() != 1", script)
+        self.assertIn("result.wasSuccessful() and not result.skipped", script)
+        self.assertIn("< /dev/null", script)
+        for forbidden in ("xargs", "parallel", "&", "migrate-retired-deployment.py --root"):
+            self.assertNotIn(forbidden, script)
+
+    def test_retired_migration_collection_fails_closed(self):
+        script = self.step(
+            "test-physical-mirror-install", "Test Retired Deployment Migration in Isolation",
+        )["run"]
+        cases = (
+            ("missing", None, False),
+            ("empty", "import unittest\n", False),
+            ("skipped", "import unittest\nclass Case(unittest.TestCase):\n"
+             "    @unittest.skip('required evidence unavailable')\n"
+             "    def test_required(self): pass\n", False),
+            ("failed", "import unittest\nclass Case(unittest.TestCase):\n"
+             "    def test_required(self): self.fail('injected failure')\n", False),
+            ("passed", "import unittest\nclass Case(unittest.TestCase):\n"
+             "    def test_required(self): self.assertTrue(True)\n", True),
+            ("multiple", "import unittest\nclass Case(unittest.TestCase):\n"
+             "    def test_first(self): self.assertTrue(True)\n"
+             "    def test_second(self): self.assertTrue(True)\n", True),
+            ("mixed_skip", "import unittest\nclass Case(unittest.TestCase):\n"
+             "    def test_first(self): self.assertTrue(True)\n"
+             "    @unittest.skip('required evidence unavailable')\n"
+             "    def test_second(self): pass\n", False),
+        )
+        for name, content, expected in cases:
+            with self.subTest(case=name), tempfile.TemporaryDirectory(
+                prefix="sandbox-ci-collection-", dir=Path(__file__).parent,
+            ) as temporary:
+                root = Path(temporary)
+                directory = root / "tests/roo_distribution"
+                directory.mkdir(parents=True)
+                if content is not None:
+                    (directory / "test_retired_deployment_migration.py").write_text(
+                        content, encoding="utf-8",
+                    )
+                result = subprocess.run(
+                    ["bash", "-c", script], cwd=root, stdin=subprocess.DEVNULL,
+                    capture_output=True, text=True, timeout=10,
+                )
+                self.assertEqual(result.returncode == 0, expected, result.stdout + result.stderr)
+                if name == "empty":
+                    self.assertIn("Missing retired deployment migration test cases", result.stderr)
+                if expected:
+                    self.assertEqual(result.stderr.count("Ran 1 test"),
+                                     2 if name == "multiple" else 1)
 
     def test_runtime_evidence_boundary_remains_explicit(self):
         script = self.step(
