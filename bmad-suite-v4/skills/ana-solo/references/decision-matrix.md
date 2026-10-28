@@ -1,47 +1,40 @@
-# Candidate Selection & Decision Matrix (The Select Shape)
+# DM：候选筛选与证据驱动决策
 
-Inherited from Deep Recon's selection methodology. Use when choosing between 2–5 competing architectural paths, libraries, or technologies.
+仅在存在影响当前决策的重要取舍时使用，复用已经收敛的需求与有效决策。候选数量按实际问题选择，不为凑数制造替代方案，不因材料不足重复完整分析。
 
----
+## 1. 明确约束与评价依据
 
-## 1. Requirements Frame
-Before researching any candidate, lock the evaluation criteria.
+- 先明确目标、范围、实际权限、验收与必要非目标；比较标准应服务于当前任务。
+- 硬门禁包括必需兼容性、许可、资源预算和部署环境。已证实不满足必要条件的候选排除，并保留原因与证据定位。
+- 未知不等于通过，也不等于已证实失败；缺必需证据只阻塞依赖它的裁决。
+- 易用性、维护成本和可逆性等偏好与硬门禁分开。用户偏好、官方声明、源码事实、真实测量和推断分别标注。
 
-- **Hard Gates (One-Strike Disqualification)**:
-  - Must-haves: compliance, existing stack language, strict latency budget, maximum licensing cost, deployment environment.
-  - *Rule*: Any candidate violating a hard gate is eliminated immediately.
-- **Weighted Preferences**:
-  - Nice-to-haves: developer ergonomic, community size, documentation, release velocity.
-  - Assign explicit percentage weights (total 100%).
+## 2. 先做定性比较，必要时量化
 
----
+默认用定性比较说明存活候选的收益、成本、风险、证据和未知，不固定候选数量、权重或评分档位。
 
-## 2. Candidate Screening (Cut to 3–5)
-- Assemble candidates: Category leader, established challenger, lightweight alternative, optional wildcard.
-- Apply hard gates. Record which candidates were eliminated and why.
-- Screen strictly to 2–4 finalists. Never evaluate 10 candidates simultaneously.
+只有证据充分、评价口径可解释且量化能改变决策时，才使用评分：
 
----
+- 权重须有需求或决策所有者的依据，不编造权重或分数。
+- 每个重要分数应能定位来源、适用环境及评价口径；缺测量不承诺提速或效果百分比。
+- 未知保持未知，不填零分、平均分或推测分数来凑总分。
+- 硬门禁不能被偏好总分抵销，最高分不能自动裁决。
+- 权重或测量误差足以改变排序时，说明敏感性与条件，不制造确定赢家。
 
-## 3. Weighted Scoring Matrix
+## 3. DR 反向审查与可逆性
 
-| Criterion | Weight | Candidate A (Score 1–5) | Candidate B (Score 1–5) | Candidate C (Score 1–5) |
-|---|---|---|---|---|
-| Hard Gate: Compatibility | Mandatory | Pass | Pass | Fail (Eliminated) |
-| Performance / Throughput | 30% | 4 (1.2) | 5 (1.5) | - |
-| Operational Complexity | 25% | 4 (1.0) | 2 (0.5) | - |
-| Community & Health | 20% | 5 (1.0) | 4 (0.8) | - |
-| Migration & Exit Cost | 25% | 4 (1.0) | 3 (0.75) | - |
-| **Weighted Total** | **100%** | **4.2** | **3.55** | **Eliminated** |
+针对相关风险寻找能推翻推荐的反例：错误前提、接口不支持、失败后错误推进、证据失效、恢复受阻或用户资产被覆盖。
 
-*Note: Cite exact evidence or source benchmark for any contested score.*
+区分推演与实测；不使用终端，不创建或执行探针。必要实验明确问题、范围、环境前提和验收，交给获准工程入口，不自动启动。
 
----
+明确撤回推荐或切换候选的条件，以及最小可逆接缝。没有合理备选时直接披露，不为模板凑出第二名。
 
-## 4. Verdict & Reversibility Hedge
+## 4. 最小充分裁决与交付
 
-Output exactly:
-1. **The Pick**: Clear winner with highest weighted score and zero hard gate failures.
-2. **The Runner-Up**: Second place candidate.
-3. **Trigger Conditions for Pivot**: Under what exact condition (e.g., traffic exceeds 100k QPS, or team hires Rust engineers) should the team pivot to the runner-up?
-4. **Cheapest Reversibility Hedge**: What simple abstraction layer or seam will allow switching without rewriting the application?
+按实际问题交付：
+
+- 推荐、条件推荐、不可行或证据不足，以及依据和适用边界。
+- 被否候选及必要约束；未决事项和需要补齐的具体证据。
+- 重要失败反例、停止或转向条件与恢复边界。
+
+只读任务仅会话交付。获准持久结晶时按职责保存必要报告、提案或计划，不强制同时创建多份文档。可行结论、评分结果和文档保存都不构成实施、部署或 ADR 接受授权。

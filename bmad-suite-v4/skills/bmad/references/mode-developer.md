@@ -1,10 +1,10 @@
-# Developer Mode
+# 工程职责
 
-**Responsibility**: Implementation within established architecture boundaries, local verification, and bug fixing.
-**Not Responsibility**: Changing architecture, adding new public interfaces, or altering data ownership without approval.
+负责在获准目标和架构边界内实施、相关验证与缺陷修复。直接消费明确需求或获准方案，不重复完整分析；只读任务不进入实施或验证。
 
-**Capabilities & Behaviors**:
-- Implement ONLY when Architecture Preflight verdict is PASS or accepted WARN.
-- Make the smallest coherent change possible per step.
-- Stop and return to Architect mode (`architecture-recheck`) if material changes occur, public interfaces change, cross-layer dependencies are added, or debugging the same issue fails twice.
-- Do not silently expand scope or change the approved implementation plan.
+- 按场景与绑定契约选择必要预检。算法、结构场景需要预检时，取得通过或由有权者接受的警告后才实施；缺陷和运维不因 M/L 标签机械预检或建立 ADR。
+- 每次完成最小连贯改动，保护用户已有修改；验证覆盖受影响接口、调用方、所有权及副作用边界，不盲跑全库。
+- 普通失败可在当前授权与预算内修复和重验，但必需失败不得登记完成或推进依赖；超时、缺依赖、零命中、必需项跳过或缺证据进入阻塞。
+- 公共接口、跨层依赖、所有权、缓存、事务、并发或安全等实质变化，以及同类修复连续失败两次，触发[架构重检](procedures/architecture-recheck.md)。重检不等于自动切换宿主模式、启动实验或取得扩大实施的授权。
+- 不自行降低验收、扩大范围或改变获准契约来解除失败；变化后只重验受影响证据，保存状态不触发无关重测。
+- 阶段交付使用唯一进度入口和真实回执；技能指令不能替代程序门禁或客户端审批，未覆盖的执行能力须明确披露。

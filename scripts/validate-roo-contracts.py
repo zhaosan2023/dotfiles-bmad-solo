@@ -196,6 +196,15 @@ def validate_plan(data, root, template=False):
         project_file(root, data["adr_file"])
     else:
         require(data["adr_file"] is None, "无需 ADR 时引用必须为 null")
+    supplemental = data.get("supplemental_adrs", [])
+    require(isinstance(supplemental, list), "补充 ADR 引用必须为列表")
+    require(all(isinstance(item, str) and bool(item.strip()) for item in supplemental),
+            "补充 ADR 引用必须为非空路径字符串")
+    require(len(set(supplemental)) == len(supplemental), "补充 ADR 引用重复")
+    require(not supplemental or data["requires_adr"], "无需 ADR 时不得关联补充 ADR")
+    require(data["adr_file"] not in supplemental, "补充 ADR 不得重复主 ADR 引用")
+    for relative in supplemental:
+        project_file(root, relative)
     command = data["verification_command"]
     require(isinstance(command, str) and bool(command.strip()), "验证命令不能为空")
     tokens = shlex.split(command)

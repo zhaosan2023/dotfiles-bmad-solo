@@ -1,21 +1,26 @@
 # BMAD-Solo Capability Map
 
-> Only reference procedures that exist in `procedures/`.
-> Capabilities marked `[Commit 2]` or `[Commit 3]` will be added in future commits.
+仅引用本套件已有流程；流程文件存在不证明宿主自动加载、工具权限或运行验证已经通过。
+
+按任务意图、场景、实际影响范围及授权选择能力，不同时加载全部角色。下面的产物是职责说明，不是无条件写入要求：只读任务仅会话交付，持久产物另需授权；明确需求或获准方案不重复完整分析。
 
 ## Active Capabilities
 
-| Capability | Mode | Trigger | Procedure | Required Output |
+| 能力 | 职责 | 触发条件 | 已有流程 | 按授权交付 |
 |---|---|---|---|---|
-| three-pass-analysis | Analyst | 用户提交方案/论文或评估重大设计 | procedures/three-pass-analysis.md | Scheme Analysis Report + Verdict |
-| architecture-decision | Architect | 存在多个重大技术方案 | procedures/architecture-decision.md | ADR |
-| build | Developer | 约束与计划已充分 | procedures/build.md | Code + Tests |
-| code-review | Reviewer | 出现代码 Diff | procedures/code-review.md | Review findings |
-| architecture-baseline | Architect | 缺少或架构状态陈旧 | procedures/architecture-baseline.md | Architecture Contract |
-| architecture-preflight | Architect | 所有 M/L 编码任务 | procedures/architecture-preflight.md | PASS/WARN/BLOCK/UNKNOWN |
-| architecture-recheck | Architect | 关键变更或重复失败 | procedures/architecture-recheck.md | Updated verdict |
-| state-reconcile | Reviewer | 完成前 | procedures/state-reconcile.md | Consistency verdict |
-| algorithm-fit | Architect | 算法或 NFR 敏感任务 | procedures/algorithm-fit.md | Algorithm Contract |
-| architecture-debug | Architect/Developer | 重复失败或跨边界修复 | procedures/architecture-debug.md | Hypothesis log + decision |
-| correct-course | Architect/Product | BLOCK 或架构漂移 | procedures/correct-course.md | ADR、拆分或升级决定 |
-| record-findings | Reviewer/Operator | 重大 Bug 修复完成、容灾恢复或关键经验教训 | procedures/record-findings.md | ADR, project-context 更新, 或 KI |
+| 三遍阅读 | 分析 | 尚未收敛的重要方案、论文或重大设计 | [三遍阅读](procedures/three-pass-analysis.md) | 有依据的裁决；需要且获准时保存报告 |
+| 架构决策 | 架构 | 存在重要新取舍，既有决策不足 | [决策流程](procedures/architecture-decision.md) | 决策建议；获准时保存 PROPOSED 提案 |
+| 构建 | 工程 | 目标、范围、验收和实施授权充分 | [构建流程](procedures/build.md) | 最小连贯改动与适用验证证据 |
+| 代码审查 | 审查 | 相关实现差异需要审查 | [代码审查](procedures/code-review.md) | 发现、边界与未知 |
+| 架构基线 | 架构 | 当前任务依赖的架构依据缺失或陈旧 | [基线流程](procedures/architecture-baseline.md) | 必要约束；获准时保存契约 |
+| 架构预检 | 架构 | 算法或结构场景按契约需要预检 | [架构预检](procedures/architecture-preflight.md) | 范围明确的通过、警告、阻塞或未知 |
+| 架构重检 | 架构 | 实质性边界变化或同类修复连续失败两次 | [架构重检](procedures/architecture-recheck.md) | 重检裁决，不自动扩大授权 |
+| 状态对账 | 审查 | 获准阶段交付前 | [状态对账](procedures/state-reconcile.md) | 当前差异与适用证据的对账结果 |
+| 算法适配 | 架构 | 仅算法场景涉及必要算法或性能约束 | [算法适配](procedures/algorithm-fit.md) | 适配结论；获准时保存必要契约 |
+| 架构调试 | 架构／工程 | 重复失败或跨边界修复需要重审假设 | [架构调试](procedures/architecture-debug.md) | 有界假设与决策，不自动启动实验 |
+| 路线修正 | 架构／需求 | 阻塞或漂移需要调整方案 | [路线修正](procedures/correct-course.md) | 拆分、停止或变更建议；契约变化须批准 |
+| 发现记录 | 审查／运维 | 已验证的重要缺陷、恢复或可复用发现 | [发现记录](procedures/record-findings.md) | 按职责建议交付，事实登记及持久写入另获授权 |
+
+缺陷和运维不因 M/L 标签机械预检、建立 ADR 或重做计划。场景决定验证类型，实际影响范围决定深度；公共接口、所有权等变化仍需必要重检，不能通过改标场景豁免验收。
+
+普通失败可在授权和预算内修复，必需验证未通过不得登记完成或推进依赖。内部能力路由不是权限令牌，也不能替代真实执行入口及阶段推进入口的程序门禁；未实现的宿主覆盖必须披露。
