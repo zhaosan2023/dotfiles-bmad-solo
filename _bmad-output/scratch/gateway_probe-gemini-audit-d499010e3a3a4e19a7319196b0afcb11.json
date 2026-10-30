@@ -1,0 +1,37 @@
+{
+  "probe": "gemini-audit",
+  "started_utc": "2026-10-24T04:20:05Z",
+  "controller_coverage": "unproven; platform task record only",
+  "status": "OBSERVED_OK",
+  "production_changed": false,
+  "automatic_retry": false,
+  "source_versions_changed": [],
+  "quality_audit": {
+    "original_receipt": "_bmad-output/scratch/gateway_probe-gemini-8ba12d0609034815912f401b909636b0.json",
+    "original_checker_issue": "exact equality with import missed evidence strings beginning import followed by explanation; original zero is not model accuracy",
+    "dependency_items": 40,
+    "claimed_import_edges": 39,
+    "matched_direct_import_edges": 37,
+    "unmatched_import_edges": [
+      [
+        "nanobot/nanobot/agent/loop.py",
+        "nanobot/nanobot/agent/context.py"
+      ],
+      [
+        "nanobot/nanobot/agent/loop.py",
+        "nanobot/nanobot/agent/tools/fastcode.py"
+      ]
+    ],
+    "syntactic_import_precision": 0.9487179487179487,
+    "reference_direct_import_edges": 70,
+    "reference_import_coverage": 0.5285714285714286,
+    "dataflow_items": 16,
+    "unique_claimed_symbols": 63,
+    "located_symbols": 63,
+    "unlocated_symbols": [],
+    "unknowns_count": 8,
+    "limitations": "one sample; subset import matching and symbol existence only; no measured dataflow/call-chain precision, runtime correctness, repeated latency or task-completion guarantee"
+  },
+  "total_seconds": 0.4822,
+  "probe_exit_code": 0
+}

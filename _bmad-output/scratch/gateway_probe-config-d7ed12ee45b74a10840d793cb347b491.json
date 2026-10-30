@@ -1,0 +1,21 @@
+{
+  "probe": "config",
+  "started_utc": "2026-10-24T03:20:57Z",
+  "controller_coverage": "unproven; platform task record only",
+  "status": "OBSERVED_OK",
+  "production_changed": false,
+  "automatic_retry": false,
+  "config_top_level_keys": {
+    "studioglobal.json": [
+      "schema_version",
+      "version",
+      "models",
+      "presets"
+    ]
+  },
+  "candidate_counts": {},
+  "configured_credential_found": false,
+  "configured_endpoint_found": false,
+  "total_seconds": 0.0004,
+  "probe_exit_code": 0
+}

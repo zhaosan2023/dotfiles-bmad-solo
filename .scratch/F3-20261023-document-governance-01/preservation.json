@@ -1,0 +1,814 @@
+{
+  "schema": 1,
+  "plan_id": "BMAD-DOCUMENT-TEST-GOVERNANCE-20261022-01",
+  "batch": ".scratch/F3-20261023-document-governance-01",
+  "files": [
+    {
+      "source": "_bmad-output/adrs/ADR-20261022-document-test-governance-and-host-adaptation.md",
+      "target": "docs/adrs/ADR-20261022-document-test-governance-and-host-adaptation.md",
+      "backup": ".scratch/F3-20261023-document-governance-01/_bmad-output/adrs/ADR-20261022-document-test-governance-and-host-adaptation.md",
+      "identity": {
+        "device": 64771,
+        "inode": 844317,
+        "size": 8433,
+        "mode": 436,
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1792735274820210057,
+        "ctime_ns": 1792735274820210057,
+        "links": 1
+      },
+      "sha256": "a4a1940ddf2b0cc39bb66ac517df7df27b08bc61bba4774ebf2f6dfb8940eeff",
+      "references": [
+        {
+          "href": "../../PLAN-20261022-document-test-governance-01.md:13",
+          "target": "PLAN-20261022-document-test-governance-01.md",
+          "suffix": ":13",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../analysis/ANALYSIS-20261022-document-test-governance.md:1",
+          "target": "_bmad-output/analysis/ANALYSIS-20261022-document-test-governance.md",
+          "suffix": ":1",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../PLAN-20261022-document-test-governance-01.md:1",
+          "target": "PLAN-20261022-document-test-governance-01.md",
+          "suffix": ":1",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../pending_implementation_plan.md:2",
+          "target": "_bmad-output/pending_implementation_plan.md",
+          "suffix": ":2",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../AGENTS.md",
+          "target": "AGENTS.md",
+          "suffix": "",
+          "existed": false,
+          "directory": false
+        },
+        {
+          "href": "../../specs/",
+          "target": "specs",
+          "suffix": "",
+          "existed": false,
+          "directory": true
+        },
+        {
+          "href": "./",
+          "target": "_bmad-output/adrs",
+          "suffix": "",
+          "existed": true,
+          "directory": true
+        },
+        {
+          "href": "../../bmad-suite-v4/skills/bmad/references/templates/implementation-plan.template.md:1",
+          "target": "bmad-suite-v4/skills/bmad/references/templates/implementation-plan.template.md",
+          "suffix": ":1",
+          "existed": true,
+          "directory": false
+        }
+      ]
+    },
+    {
+      "source": "_bmad-output/adrs/ADR-20261023-cline-native-plan-act-and-backpressure.md",
+      "target": "docs/adrs/ADR-20261023-cline-native-plan-act-and-backpressure.md",
+      "backup": ".scratch/F3-20261023-document-governance-01/_bmad-output/adrs/ADR-20261023-cline-native-plan-act-and-backpressure.md",
+      "identity": {
+        "device": 64771,
+        "inode": 844907,
+        "size": 20638,
+        "mode": 436,
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1792735272270093478,
+        "ctime_ns": 1792735272270093478,
+        "links": 1
+      },
+      "sha256": "7add078c52dc88d5a35b71d8b601fbdeb2412965ebc37733cdba8d2269d2aaa3",
+      "references": [
+        {
+          "href": "../../PLAN-20261022-document-test-governance-01.md:13",
+          "target": "PLAN-20261022-document-test-governance-01.md",
+          "suffix": ":13",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../PLAN-20261022-document-test-governance-01.md:1",
+          "target": "PLAN-20261022-document-test-governance-01.md",
+          "suffix": ":1",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../scripts/deployment_source.py:17",
+          "target": "scripts/deployment_source.py",
+          "suffix": ":17",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../scripts/deployment_source.py:81",
+          "target": "scripts/deployment_source.py",
+          "suffix": ":81",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../bmad-suite-v4/skills/bmad/SKILL.md:40",
+          "target": "bmad-suite-v4/skills/bmad/SKILL.md",
+          "suffix": ":40",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../bmad-suite-v4/rules/bmad-core.md:118",
+          "target": "bmad-suite-v4/rules/bmad-core.md",
+          "suffix": ":118",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../bmad-suite-v4/hooks.json:2",
+          "target": "bmad-suite-v4/hooks.json",
+          "suffix": ":2",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../scripts/validate-roo-contracts.py:199",
+          "target": "scripts/validate-roo-contracts.py",
+          "suffix": ":199",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../bmad-suite-v4/skills/ana-solo/references/decision-matrix.md:13",
+          "target": "bmad-suite-v4/skills/ana-solo/references/decision-matrix.md",
+          "suffix": ":13",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../bmad-suite-v4/skills/ana-solo/references/decision-matrix.md:41",
+          "target": "bmad-suite-v4/skills/ana-solo/references/decision-matrix.md",
+          "suffix": ":41",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../bmad-suite-v4/skills/bmad/references/capability-map.md:15",
+          "target": "bmad-suite-v4/skills/bmad/references/capability-map.md",
+          "suffix": ":15",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../bmad-suite-v4/skills/bmad/references/mode-developer.md:7",
+          "target": "bmad-suite-v4/skills/bmad/references/mode-developer.md",
+          "suffix": ":7",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../bmad-suite-v4/skills/bmad/references/procedures/build.md:13",
+          "target": "bmad-suite-v4/skills/bmad/references/procedures/build.md",
+          "suffix": ":13",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../scripts/deploy_managed.py:81",
+          "target": "scripts/deploy_managed.py",
+          "suffix": ":81",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../scripts/deploy_managed.py:104",
+          "target": "scripts/deploy_managed.py",
+          "suffix": ":104",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../PLAN-20261022-document-test-governance-01.md:87",
+          "target": "PLAN-20261022-document-test-governance-01.md",
+          "suffix": ":87",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../PLAN-20261022-document-test-governance-01.md:13",
+          "target": "PLAN-20261022-document-test-governance-01.md",
+          "suffix": ":13",
+          "existed": true,
+          "directory": false
+        }
+      ]
+    },
+    {
+      "source": "_bmad-output/analysis/ANALYSIS-20261022-document-test-governance.md",
+      "target": "docs/analysis/ANALYSIS-20261022-document-test-governance.md",
+      "backup": ".scratch/F3-20261023-document-governance-01/_bmad-output/analysis/ANALYSIS-20261022-document-test-governance.md",
+      "identity": {
+        "device": 64771,
+        "inode": 844318,
+        "size": 31008,
+        "mode": 436,
+        "uid": 1000,
+        "gid": 1000,
+        "mtime_ns": 1792669633808239565,
+        "ctime_ns": 1792669633808239565,
+        "links": 1
+      },
+      "sha256": "c9736daa157ace28274b6410266c9cfa18531cf81761a0c2efa72cd5606c1349",
+      "references": [
+        {
+          "href": "../pending_implementation_plan.md:1",
+          "target": "_bmad-output/pending_implementation_plan.md",
+          "suffix": ":1",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../adrs/ADR-20261021-v4-attended-repair-and-repository-cleanup.md:3",
+          "target": "_bmad-output/adrs/ADR-20261021-v4-attended-repair-and-repository-cleanup.md",
+          "suffix": ":3",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../docs/Ralph-Wiggum-Loop/bmad-document-test-optimse.md:3",
+          "target": "docs/Ralph-Wiggum-Loop/bmad-document-test-optimse.md",
+          "suffix": ":3",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../pending_implementation_plan.md:79",
+          "target": "_bmad-output/pending_implementation_plan.md",
+          "suffix": ":79",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../adrs/ADR-20261021-v4-attended-repair-and-repository-cleanup.md:87",
+          "target": "_bmad-output/adrs/ADR-20261021-v4-attended-repair-and-repository-cleanup.md",
+          "suffix": ":87",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../pending_implementation_plan.md:72",
+          "target": "_bmad-output/pending_implementation_plan.md",
+          "suffix": ":72",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../pending_implementation_plan.md:67",
+          "target": "_bmad-output/pending_implementation_plan.md",
+          "suffix": ":67",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../bmad-suite-v4/skills/ana-solo/SKILL.md:23",
+          "target": "bmad-suite-v4/skills/ana-solo/SKILL.md",
+          "suffix": ":23",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../bmad-suite-v4/roo/settings/custom_modes.yaml:5",
+          "target": "bmad-suite-v4/roo/settings/custom_modes.yaml",
+          "suffix": ":5",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../tests/roo_contracts/test_v4_analysis_repair.py:38",
+          "target": "tests/roo_contracts/test_v4_analysis_repair.py",
+          "suffix": ":38",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../bmad-suite-v4/roo/rules-bmad-engineer/01-bmad-engineer-core.md:5",
+          "target": "bmad-suite-v4/roo/rules-bmad-engineer/01-bmad-engineer-core.md",
+          "suffix": ":5",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../bmad-suite-v4/skills/bmad/references/procedures/state-reconcile.md:27",
+          "target": "bmad-suite-v4/skills/bmad/references/procedures/state-reconcile.md",
+          "suffix": ":27",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../bmad-suite-v4/skills/bmad/references/templates/implementation-plan.template.md:17",
+          "target": "bmad-suite-v4/skills/bmad/references/templates/implementation-plan.template.md",
+          "suffix": ":17",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../scripts/validate-roo-contracts.py:172",
+          "target": "scripts/validate-roo-contracts.py",
+          "suffix": ":172",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../pending_implementation_plan.md:89",
+          "target": "_bmad-output/pending_implementation_plan.md",
+          "suffix": ":89",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../tests/roo_distribution/test_v4_analysis_distribution.py:16",
+          "target": "tests/roo_distribution/test_v4_analysis_distribution.py",
+          "suffix": ":16",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../pending_implementation_plan.md:91",
+          "target": "_bmad-output/pending_implementation_plan.md",
+          "suffix": ":91",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../pending_implementation_plan.md:161",
+          "target": "_bmad-output/pending_implementation_plan.md",
+          "suffix": ":161",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../pending_implementation_plan.md:100",
+          "target": "_bmad-output/pending_implementation_plan.md",
+          "suffix": ":100",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../scripts/suite_versions.py:28",
+          "target": "scripts/suite_versions.py",
+          "suffix": ":28",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../bs.sh:241",
+          "target": "bs.sh",
+          "suffix": ":241",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../.github/workflows/ci.yml:137",
+          "target": ".github/workflows/ci.yml",
+          "suffix": ":137",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../install.sh:13",
+          "target": "install.sh",
+          "suffix": ":13",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../bs.sh:386",
+          "target": "bs.sh",
+          "suffix": ":386",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../scripts/deployment_source.py:29",
+          "target": "scripts/deployment_source.py",
+          "suffix": ":29",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../tests/roo_contracts/test_ci_contracts.py:97",
+          "target": "tests/roo_contracts/test_ci_contracts.py",
+          "suffix": ":97",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../pending_implementation_plan.md:118",
+          "target": "_bmad-output/pending_implementation_plan.md",
+          "suffix": ":118",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../adrs/ADR-20261021-v4-attended-repair-and-repository-cleanup.md:91",
+          "target": "_bmad-output/adrs/ADR-20261021-v4-attended-repair-and-repository-cleanup.md",
+          "suffix": ":91",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../project-context.md:1",
+          "target": "_bmad-output/project-context.md",
+          "suffix": ":1",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../bmad-suite-v4/roo/settings/custom_modes.yaml:8",
+          "target": "bmad-suite-v4/roo/settings/custom_modes.yaml",
+          "suffix": ":8",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../bmad-suite-v4/skills/ana-solo/references/decision-matrix.md:13",
+          "target": "bmad-suite-v4/skills/ana-solo/references/decision-matrix.md",
+          "suffix": ":13",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../AGENTS.md",
+          "target": "AGENTS.md",
+          "suffix": "",
+          "existed": false,
+          "directory": false
+        },
+        {
+          "href": "../../specs/",
+          "target": "specs",
+          "suffix": "",
+          "existed": false,
+          "directory": true
+        },
+        {
+          "href": "../adrs/",
+          "target": "_bmad-output/adrs",
+          "suffix": "",
+          "existed": true,
+          "directory": true
+        },
+        {
+          "href": "../../docs/adrs/",
+          "target": "docs/adrs",
+          "suffix": "",
+          "existed": false,
+          "directory": true
+        },
+        {
+          "href": "../pending_implementation_plan.md:1",
+          "target": "_bmad-output/pending_implementation_plan.md",
+          "suffix": ":1",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../plans/",
+          "target": "plans",
+          "suffix": "",
+          "existed": false,
+          "directory": true
+        },
+        {
+          "href": "../archive/plans/",
+          "target": "_bmad-output/archive/plans",
+          "suffix": "",
+          "existed": true,
+          "directory": true
+        },
+        {
+          "href": "../../plans/archive/",
+          "target": "plans/archive",
+          "suffix": "",
+          "existed": false,
+          "directory": true
+        },
+        {
+          "href": "./",
+          "target": "_bmad-output/analysis",
+          "suffix": "",
+          "existed": true,
+          "directory": true
+        },
+        {
+          "href": "../../docs/analysis/",
+          "target": "docs/analysis",
+          "suffix": "",
+          "existed": false,
+          "directory": true
+        },
+        {
+          "href": "../../tests/",
+          "target": "tests",
+          "suffix": "",
+          "existed": true,
+          "directory": true
+        },
+        {
+          "href": "../scratch/",
+          "target": "_bmad-output/scratch",
+          "suffix": "",
+          "existed": true,
+          "directory": true
+        },
+        {
+          "href": "../../.scratch/",
+          "target": ".scratch",
+          "suffix": "",
+          "existed": true,
+          "directory": true
+        },
+        {
+          "href": "../verification/",
+          "target": "_bmad-output/verification",
+          "suffix": "",
+          "existed": true,
+          "directory": true
+        },
+        {
+          "href": "../../scripts/deployment_source.py:81",
+          "target": "scripts/deployment_source.py",
+          "suffix": ":81",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../bmad-suite-v4/skills/bmad/references/templates/implementation-plan.template.md:1",
+          "target": "bmad-suite-v4/skills/bmad/references/templates/implementation-plan.template.md",
+          "suffix": ":1",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../bmad-suite-v4/roo/settings/custom_modes.yaml:8",
+          "target": "bmad-suite-v4/roo/settings/custom_modes.yaml",
+          "suffix": ":8",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../pending_implementation_plan.md:1",
+          "target": "_bmad-output/pending_implementation_plan.md",
+          "suffix": ":1",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../adrs/ADR-20261021-v4-attended-repair-and-repository-cleanup.md:3",
+          "target": "_bmad-output/adrs/ADR-20261021-v4-attended-repair-and-repository-cleanup.md",
+          "suffix": ":3",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../bmad-suite-v4/skills/ana-solo/SKILL.md",
+          "target": "bmad-suite-v4/skills/ana-solo/SKILL.md",
+          "suffix": "",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../bmad-suite-v4/skills/bmad/SKILL.md",
+          "target": "bmad-suite-v4/skills/bmad/SKILL.md",
+          "suffix": "",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../bmad-suite-v4/skills/ana-solo/references/decision-matrix.md",
+          "target": "bmad-suite-v4/skills/ana-solo/references/decision-matrix.md",
+          "suffix": "",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../bmad-suite-v4/roo/settings/custom_modes.yaml",
+          "target": "bmad-suite-v4/roo/settings/custom_modes.yaml",
+          "suffix": "",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../bmad-suite-v4/skills/bmad/references/templates/implementation-plan.template.md",
+          "target": "bmad-suite-v4/skills/bmad/references/templates/implementation-plan.template.md",
+          "suffix": "",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../scripts/validate-roo-contracts.py",
+          "target": "scripts/validate-roo-contracts.py",
+          "suffix": "",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../README.md",
+          "target": "README.md",
+          "suffix": "",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../tests/roo_contracts/",
+          "target": "tests/roo_contracts",
+          "suffix": "",
+          "existed": true,
+          "directory": true
+        },
+        {
+          "href": "../../tests/roo_distribution/",
+          "target": "tests/roo_distribution",
+          "suffix": "",
+          "existed": true,
+          "directory": true
+        },
+        {
+          "href": "../../scripts/validate-roo-contracts.py:233",
+          "target": "scripts/validate-roo-contracts.py",
+          "suffix": ":233",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../tests/roo_contracts/test_v4_analysis_repair.py:38",
+          "target": "tests/roo_contracts/test_v4_analysis_repair.py",
+          "suffix": ":38",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../tests/roo_contracts/test_ci_contracts.py:13",
+          "target": "tests/roo_contracts/test_ci_contracts.py",
+          "suffix": ":13",
+          "existed": true,
+          "directory": false
+        },
+        {
+          "href": "../../tests/roo_distribution/test_v4_analysis_distribution.py:16",
+          "target": "tests/roo_distribution/test_v4_analysis_distribution.py",
+          "suffix": ":16",
+          "existed": true,
+          "directory": false
+        }
+      ]
+    }
+  ],
+  "original_directories": {
+    "_bmad-output/adrs": {
+      "device": 64771,
+      "inode": 787362,
+      "size": 4096,
+      "mode": 509,
+      "uid": 1000,
+      "gid": 1000,
+      "mtime_ns": 1792725436263454997,
+      "ctime_ns": 1792725436263454997,
+      "links": 2
+    },
+    "_bmad-output/analysis": {
+      "device": 64771,
+      "inode": 787364,
+      "size": 4096,
+      "mode": 509,
+      "uid": 1000,
+      "gid": 1000,
+      "mtime_ns": 1792667862565997696,
+      "ctime_ns": 1792667862565997696,
+      "links": 2
+    }
+  },
+  "protected": {
+    "_bmad-output/adrs/ADR-20260918-bmad-v42-adaptive-backpressure-and-adr-governance.md": {
+      "sha256": "351d73ad16166bb929ad62d085a80ca695e7f1b62775d974cd3799643e9c95ef",
+      "mode": 436
+    },
+    "_bmad-output/adrs/ADR-20261008-roocode-bmad-v42-lifecycle-and-governance.md": {
+      "sha256": "1cec2f2cda0e20c7416d9f97965f2f364bb6f7ae841ea28f57df97fbcec3b691",
+      "mode": 436
+    },
+    "_bmad-output/adrs/ADR-20261011-bmad-solo-execution-performance-and-gate-simplification.md": {
+      "sha256": "ad899d6d6437c8c1213d1311026c5182163f16f30b43100c8c88e966f062175e",
+      "mode": 436
+    },
+    "_bmad-output/adrs/ADR-20261012-bmad-solo-anti-bureaucracy-and-programmatic-guards.md": {
+      "sha256": "a9aac366f6486aff8dafa50dff697a92a7491bebed46b5e6ec933d263e21fdae",
+      "mode": 420
+    },
+    "_bmad-output/adrs/ADR-20261021-v4-attended-repair-and-repository-cleanup.md": {
+      "sha256": "41297d76c1c5706fe1451c833dc5e9f2fd4c7e9f0c47e493903dcda774f04ca0",
+      "mode": 436
+    },
+    "_bmad-output/analysis/ANALYSIS-20260911-Arnold-Mather-Finance.md": {
+      "sha256": "513aea62c3207d4516e162b7a1216a406ff876bebfd76e2a124fb4b8a970b137",
+      "mode": 436
+    },
+    "_bmad-output/analysis/ANALYSIS-20260911-watchhusm-chan-signals.md": {
+      "sha256": "19ea47e3a8750f89977c833ca33c7c5871277124e5f835510ac4ac7a4a81d83f",
+      "mode": 436
+    },
+    "_bmad-output/analysis/ANALYSIS-20260912-Branch-UX-and-Version-Visibility.md": {
+      "sha256": "728ea0e707c0f3078906d5cf624e004243d79ef37868c1696e2ec98b1028e23e",
+      "mode": 436
+    },
+    "_bmad-output/analysis/ANALYSIS-20260912-Git-Branch-Tag-Versioning.md": {
+      "sha256": "2029b191d380157080a13985107909e360113c278ea29570bd1b9b67c85ddb38",
+      "mode": 436
+    },
+    "_bmad-output/analysis/ANALYSIS-20260912-License-Selection.md": {
+      "sha256": "944097e130a8d74f2c9eeb5c286511a06d932dd8418a7abb10212f5f03ac5974",
+      "mode": 436
+    },
+    "_bmad-output/analysis/ANALYSIS-20260913-Agent-Background-Command-Hang.md": {
+      "sha256": "d6f729755126f9f8573c84ffb9f24ebf13b70f8269e10c0e46e8a723d6ee12e8",
+      "mode": 436
+    },
+    "_bmad-output/analysis/ANALYSIS-20260913-GitOps-Version-Rollback-Strategy.md": {
+      "sha256": "d93befb539e1f59563dea38a3425e6d70d1f94baa5f8e7f70b34af1b241e1067",
+      "mode": 436
+    },
+    "_bmad-output/analysis/ANALYSIS-20260913-Self-Referential-Downgrade-Paradox.md": {
+      "sha256": "d18866cf49e8bc87df1d214ae440b112388e7747e24819f751c85290efab156c",
+      "mode": 436
+    },
+    "_bmad-output/analysis/ANALYSIS-20260913-Watchhusm-Hang-and-Channel-Asymmetry.md": {
+      "sha256": "c50dbbd58ee70687802258a4491ba84db2928c3b5c14a69b5eacdcb60ec11806",
+      "mode": 436
+    },
+    "_bmad-output/analysis/ANALYSIS-20260915-Cross-Project-Hang-and-Symlink-Permission-Wall.md": {
+      "sha256": "75367542c52b0fe99c05c29edb83d2c9efaa9c56256580c3a69c8dcb95f5e46d",
+      "mode": 436
+    },
+    "_bmad-output/analysis/ANALYSIS-20260915-Physical-Mirror-GitOps-CICD-Architecture.md": {
+      "sha256": "0a1d2a1065f0534dd93910a5987f1ac142afe431fd132ace45b64ef3954c48f0",
+      "mode": 436
+    },
+    "_bmad-output/analysis/ANALYSIS-20260915-Terminal-Invariants-Blindspot-and-Single-Flight-Monad.md": {
+      "sha256": "d8c152ba6839bbf27f51a57a872eda734e169cbc78ea0befbde0d1c4752cf334",
+      "mode": 436
+    },
+    "_bmad-output/analysis/ANALYSIS-20260916-Conversation-Persistence-Forensic-Investigation.md": {
+      "sha256": "e44e29861aee54271ea0f02da78e872301013c91a67e55127af624485eebd7bd",
+      "mode": 436
+    },
+    "_bmad-output/analysis/ANALYSIS-20260916-Penta-Invariants-Rust-Compilation-Timeout-Gap.md": {
+      "sha256": "85fbea0c07f35e7ed238c88e50de8ddfddaf540aaf5d7747069aee108209e435",
+      "mode": 436
+    },
+    "_bmad-output/analysis/ANALYSIS-20260917-Conversation-Persistence-Remote-SSH-Workspace-Decoupling.md": {
+      "sha256": "55f4701f805bc90ce4397518d38d6ddc55d3e29e39b128d2fb9ea123f99efdbf",
+      "mode": 436
+    },
+    "_bmad-output/analysis/ANALYSIS-20260917-History-Session-Loss-Root-Cause.md": {
+      "sha256": "89872635d743d888396713363077834a145b242b8eb40b5f853ead1396a3e358",
+      "mode": 436
+    },
+    "_bmad-output/analysis/ANALYSIS-20261021-production-dynamic-backpressure.md": {
+      "sha256": "ac870ad553afed6a608e2c1a2f595b05f20a862fe39e4133990c1740150b6574",
+      "mode": 436
+    },
+    "_bmad-output/analysis/ANALYSIS-20261021-v4-backpressure-repair.md": {
+      "sha256": "3ad3903c4eb81828745de3c905003b920ea4376bedcbc12f4b7af1746fb8d2d7",
+      "mode": 436
+    },
+    "_bmad-output/analysis/SESSION-INDEX-ALL-CONVERSATIONS.md": {
+      "sha256": "36e7b7b4e51f7de11efc0e48ef56b499ce67f2314d0bcd337bd8a3b1b1f65306",
+      "mode": 436
+    },
+    "_bmad-output/analysis/roo-code-ana-20261006-roocode-integrated-bmadsolo.md": {
+      "sha256": "2976d4954e8114ea9c854404dfa2a6a9bd88440df7589870f53686373870bbd3",
+      "mode": 436
+    },
+    "_bmad-output/pending_implementation_plan.md": {
+      "sha256": "a03caab623e42bab899336084d469e42b3c8ebe175a4c935c0e13c8df78ee779",
+      "mode": 420
+    },
+    "_bmad-output/project-context.md": {
+      "sha256": "a2af6aaee8865c09001da2ec40102a831f779d3fb3d9195e5a8d91a5fb0ea6c9",
+      "mode": 436
+    }
+  }
+}

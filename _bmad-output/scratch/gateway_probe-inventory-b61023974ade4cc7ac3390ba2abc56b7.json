@@ -1,0 +1,47 @@
+{
+  "probe": "inventory",
+  "started_utc": "2026-10-24T04:21:28Z",
+  "controller_coverage": "unproven; platform task record only",
+  "status": "OBSERVED_OK",
+  "production_changed": false,
+  "automatic_retry": false,
+  "cpu_count": 2,
+  "architecture": "x86_64",
+  "credential_environment_present": {
+    "OPENAI_API_KEY": false,
+    "BASE_URL": false
+  },
+  "authorized_dotenv_exists": false,
+  "memory": [
+    "MemTotal:        3714264 kB",
+    "MemAvailable:    1907372 kB"
+  ],
+  "cpu_model": "Intel(R) Xeon(R) Platinum",
+  "venv": {
+    "command": [
+      "/home/ecs-user/project/FastCode/.venv/bin/python",
+      "-c",
+      "import sys,importlib.metadata as m; print(sys.version.split()[0]); x=sorted(d.metadata['Name'] for d in m.distributions()); print('distribution_count',len(x)); print(x)"
+    ],
+    "cwd": ".",
+    "exit_code": 0,
+    "elapsed_seconds": 0.1075,
+    "output": "3.12.3\ndistribution_count 0\n[]\n"
+  },
+  "venv_pip": {
+    "command": [
+      "/home/ecs-user/project/FastCode/.venv/bin/python",
+      "-m",
+      "pip",
+      "--version"
+    ],
+    "cwd": ".",
+    "exit_code": 1,
+    "elapsed_seconds": 0.0281,
+    "output": "/home/ecs-user/project/FastCode/.venv/bin/python: No module named pip\n"
+  },
+  "credential_source": "explicitly authorized loopback; no credentials loaded or sent",
+  "endpoint_validated_without_printing": true,
+  "total_seconds": 0.136,
+  "probe_exit_code": 0
+}

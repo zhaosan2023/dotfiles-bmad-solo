@@ -1,0 +1,430 @@
+{
+  "probe": "benchmark",
+  "started_utc": "2026-10-24T05:00:07Z",
+  "controller_coverage": "unproven; platform task record only",
+  "status": "OBSERVED_OK",
+  "production_changed": false,
+  "automatic_retry": false,
+  "benchmark_contract": {
+    "baseline_receipt": "_bmad-output/scratch/gateway_probe-gemini-8ba12d0609034815912f401b909636b0.json",
+    "input_source_versions_match": true,
+    "skeleton_sha256": "33b07317977586946babeabd91d657bc22cb054cccfcd3be9f025a7b1c004483",
+    "max_tokens": 6000,
+    "stream": true,
+    "deadline_seconds": 180,
+    "samples_per_model": 1,
+    "execution": "serial; no automatic retries",
+    "comparison_limit": "Gemini is a historical single sample; no randomized order or provider-identity verification"
+  },
+  "skeleton": {
+    "files": 81,
+    "symbols": 1029,
+    "skipped": [],
+    "utf8_bytes": 83328,
+    "characters": 83328,
+    "token_estimate_chars_div_4": 20832,
+    "token_estimate_not_actual": true,
+    "scan_seconds": 0.4479,
+    "source_hashes": {
+      "api.py": "e1e0dbda53075a723270db0f6f2709ee097b9054f5f0bb1ff4ecce10373663c0",
+      "fastcode/__init__.py": "5e557105f36a0fb6511dc642230c6c032f302997eb472414678fa2d9384ef294",
+      "fastcode/agent_tools.py": "8e974bce7a1b96ed1256a9aef5fcf8ec32a4c169da56960aff8ce474042f18ca",
+      "fastcode/answer_generator.py": "b48036851a782e3a59eff3e9205af7cd987bfb40aa7e37ced319553eb2bef4e7",
+      "fastcode/cache.py": "5ce18399d23a4ef19d71aedcec731ac0c558e673dd3421c5f7d57945b764b8c9",
+      "fastcode/call_extractor.py": "47cf826c14736b62b616d18d56509a5d51125aaa14da0d149477b426fb449445",
+      "fastcode/definition_extractor.py": "8b3abb3934538a3e05182141f68a68ab0c4c18e072c9a75b060d8ec3e48a89ff",
+      "fastcode/embedder.py": "e98efc54a462bc98e986c8d8139ae2216c91e62ced4f11084cb98a20ed4616b3",
+      "fastcode/global_index_builder.py": "52583ec1d823c67cc5d57a70e38ca2e284722c09188933f67afde07b89cbc3fa",
+      "fastcode/graph_builder.py": "b90052aed78d1fd7e0b50b624e2eb5ad5deea4d80e0999c55166bd283d50116d",
+      "fastcode/import_extractor.py": "9f2651157a7fd840d5c348d28792cb128c62a85040baa1b76fc701b2dc8fdd2f",
+      "fastcode/indexer.py": "d8cf82da1cdbd0e1c851c4dda70f42ba37a543643410dcc591bfbe86a539becc",
+      "fastcode/iterative_agent.py": "7af8db9ec0f7ca4c32291dde249b2e1cf5734f0f60515189a43b242ff5a98eda",
+      "fastcode/llm_utils.py": "f3b9cd16f4068f8727cbd082d4a098373b9aee5502f7c59b522fef07f4f7096d",
+      "fastcode/loader.py": "7284f8188ce03377b73eeb6c16f8aeb5ccd98f9860d11203f0b1b7ab3936a689",
+      "fastcode/main.py": "bdfa77e01d39399b82ed95c5eda091a8db90f3f345ee58d2c091bc8683003553",
+      "fastcode/module_resolver.py": "16c3054df8b808d7e89d55841aa2ea431247f4be616bfd33fc3491dc3faab5f3",
+      "fastcode/parser.py": "9169cd4ba9d632242d1d4d3e57384dbc1dd1ed0a7db9ec95f97c2d949d8e55fd",
+      "fastcode/path_utils.py": "0e9c4d55789f78a83243f6019578789e75ce2d082b9f169f3decf60d107353a0",
+      "fastcode/query_processor.py": "b1f0d6b7657aceee676f0736d48063dce4f13c337ab5b637bf1efa7130c1f9a3",
+      "fastcode/repo_overview.py": "a04f1ec5e28993a8b92f464be281b81cb86b2215e141cad57144982fc8082c56",
+      "fastcode/repo_selector.py": "a2f8dcb0565c61ebcf7e213380747b10fb2220d3f0e5db10ae09e7709a9e4017",
+      "fastcode/retriever.py": "cdd0d2a593df94677eb566ed846e8d5b7a93b86d3f537907df9e8e4719a68228",
+      "fastcode/symbol_resolver.py": "163878bb0a9bda1badd5f6ece144611705ef7de381b0fa7263d2c2a2955b2a20",
+      "fastcode/tree_sitter_parser.py": "8bce14da9729d21e4fe23a4d97ddd7d4b9c62fa21c2f1bb0edd4c1baf3da0c03",
+      "fastcode/utils.py": "8effb3a228f2158f89347357d271514b8e0a04553a796c4f55d1ef6d2a112264",
+      "fastcode/vector_store.py": "5e322be10c928b41c1a3d637e3ddf39e4bf3c7087a8aa1bd23bbce85992d2ee7",
+      "main.py": "dc41352886f60e4ad22f7ca23e8de0e982d40ef1a31e4f4016684f1f8e38d8c9",
+      "mcp_server.py": "f80835866ca0606065fbf6d1d644020193d094f80410370b9a80f6599feb6e95",
+      "nanobot/nanobot/__init__.py": "71f0cf4f6ebde2ac7ec85ab055271eee3f6265a070753d64426a2eb84dd7cc50",
+      "nanobot/nanobot/__main__.py": "c705d5b1518deb75ca4d911198a1933200f442baf544697b668469f8d2af2d40",
+      "nanobot/nanobot/agent/__init__.py": "65f1de892312cb0dddb337e19e3b930f885a06f580c93949614da0205b52824d",
+      "nanobot/nanobot/agent/context.py": "29c25b34adf2754f7b90e6a310b681f3cd3c8000e05f611292f5d32968c0c203",
+      "nanobot/nanobot/agent/loop.py": "3369afdcabd94342507d4922ed6135de05e410b70e1fde17458a6516624323ab",
+      "nanobot/nanobot/agent/memory.py": "b597be9f94b1577bc59548e7a847cbcc4ebcd50094d891766b6e068e81522f5f",
+      "nanobot/nanobot/agent/skills.py": "915811d19a2c9256cd262477d11c044cb0b1c9f9b807824f2c9b49949e4871f0",
+      "nanobot/nanobot/agent/subagent.py": "dea5085a372382997cbce481aedca80b64f58583f47d5f21dd5ae516af2c1bb0",
+      "nanobot/nanobot/agent/tools/__init__.py": "89dad93c7b2353a81f5af4a2478d85f8eaa1fd0cf3e87bd64e3121ecb29765ba",
+      "nanobot/nanobot/agent/tools/base.py": "d561c4b1a5dde0adb0e1c669f3358804328f3f03484665907b545717f719d44d",
+      "nanobot/nanobot/agent/tools/cron.py": "0a2cf65dfa13d8578c54b8d7c772d8ecb1ef4c849569e7a55ae5bc9f0fbfeef4",
+      "nanobot/nanobot/agent/tools/fastcode.py": "47a3fa5a1490970e4a28aef36f6c1fb90aa9b9096d26a71fef775002ddcfe842",
+      "nanobot/nanobot/agent/tools/filesystem.py": "12ba2f95bce2d64c4217dec39a631a4f5baea2ed613036dad7cd2fd78824da6f",
+      "nanobot/nanobot/agent/tools/message.py": "238a47f22f7fba98cd8da9541b6463acada81bcddde50d8da0226692ecee8399",
+      "nanobot/nanobot/agent/tools/registry.py": "67b0d920bbb03d6c5b45316c2a4af1ce545dc48cdd7eeabfaf0757680538cc88",
+      "nanobot/nanobot/agent/tools/shell.py": "09bdba7b19cef75b830ea16348a9d397fbcda65dbbbde080b8af9ed12d910241",
+      "nanobot/nanobot/agent/tools/spawn.py": "8a554118c4b309c2dc1205f1f807f1ac7666adb235548edae85d9bfa4975d058",
+      "nanobot/nanobot/agent/tools/web.py": "b2e5791552a61b44510b53eba7b12a2ab5adb08a1f45dc5e721708bcfd373493",
+      "nanobot/nanobot/bus/__init__.py": "68d0ca509c7becdcc7895b7395b4ae64d2b840ed5d67550684cec16a4406dbd3",
+      "nanobot/nanobot/bus/events.py": "1d4010cad25aa3e99315f6e17061dde4498b16216c5b7800600ffa4e9d3e067c",
+      "nanobot/nanobot/bus/queue.py": "234b04b267425f25172efa85935a4f6ceb2e667b91cf6e4b891fd7ae8860808f",
+      "nanobot/nanobot/channels/__init__.py": "1fa9c42006d1e248cab29cf4bd5e1dda9165ea4870f474630aad106606ea9008",
+      "nanobot/nanobot/channels/base.py": "2c8d89d1b6ff55e231cae80802d35329112f83d69e1f5e8ed53147054760e9ee",
+      "nanobot/nanobot/channels/dingtalk.py": "af345a92a7b88265bb6dee2b85420a9afdbbdce94576852e0e61c5379cc4cae5",
+      "nanobot/nanobot/channels/discord.py": "2266025f6224495c8e1f2242ca899d6a92b9a2ede2b271e8fe2e01fa24d1f9c6",
+      "nanobot/nanobot/channels/email.py": "fa59a0c8c3c1e5c4190ec9852d4c2741f4688a15b36585f9af2d8568f36de612",
+      "nanobot/nanobot/channels/feishu.py": "390574c7257dfc154d39a08e470474b4abb7b7ff3343c1fe1067104c2e888d33",
+      "nanobot/nanobot/channels/manager.py": "50925172d01e8fb31c811ddc6708586b114f1dc388283baf24b62f571a65b89e",
+      "nanobot/nanobot/channels/qq.py": "c4a54a96475d957fe71f8be7e774efe61dd18292729e12000661cafc02327944",
+      "nanobot/nanobot/channels/slack.py": "482af31e0ab785cc402f50290f0ae0b329feef36de2f17b26e14efba683062fb",
+      "nanobot/nanobot/channels/telegram.py": "8eb3376d95b66369ea99fa7f424ce3c3bc7787725cc95dac82ab7f8795ec1a77",
+      "nanobot/nanobot/channels/whatsapp.py": "593fcca347fd4804b08c048351c2839205360b1208a0209064818942e46f6dff",
+      "nanobot/nanobot/cli/__init__.py": "133769600c445467bfb772be9f988686fc4dbd880e9a2999094a4648a70641cf",
+      "nanobot/nanobot/cli/commands.py": "ee9c82c44f6b07198aa7d7d7a749a5db565938d8b08a5b31d41158d87aab6d9b",
+      "nanobot/nanobot/config/__init__.py": "b38c6f8c73c345e45a867266df5a3f8b8c825ed0768bb27bfebd9a2346f89d29",
+      "nanobot/nanobot/config/loader.py": "7b27f498424c82804e7dbc7b47405f57111c1b8fade447a76bd96a4d65ecb482",
+      "nanobot/nanobot/config/schema.py": "6e7bb75547b0744413a7e4c169a619698cf2ee1ea2efbc2f1f087d899090ac44",
+      "nanobot/nanobot/cron/__init__.py": "d889fc2431868344d601c148805b5f8fd4067d9ab5f700f4db1435ed93504e16",
+      "nanobot/nanobot/cron/service.py": "ebf30d5d2ab16ace6e9c2faa5d553417914480712c65ab1ddaf726b07159f444",
+      "nanobot/nanobot/cron/types.py": "571e2a2ce0aed6f13dd21a880ac002c0ddc69568ff19539809a57b6c2a630af7",
+      "nanobot/nanobot/heartbeat/__init__.py": "04e433adfe7ce5c12cea5e3a04d0aa79f16c0da64205d44f704c1db3d740c9ae",
+      "nanobot/nanobot/heartbeat/service.py": "027753060c85d2e58b0e06dee3b516de6747063836f2d6e6d0c2f3879fbabaa6",
+      "nanobot/nanobot/providers/__init__.py": "93764f75914be55726c76cc14f3342d541de10c9b59724b8647fb4c76348437c",
+      "nanobot/nanobot/providers/base.py": "ebc5be69a32a7f22a2118e3dc3a952e59d7d000dc19ecd9e78f5a93a4001221c",
+      "nanobot/nanobot/providers/litellm_provider.py": "3bf32a9fcbdc2ca51c1436a038c296286c10ead751f4743726088df8520c0cb6",
+      "nanobot/nanobot/providers/registry.py": "2596ff60a320470ecd0489f8bbfbf67d7111ff983c67280d91188bbc3ab52c6d",
+      "nanobot/nanobot/providers/transcription.py": "a4067b23cbf0bb55c331afd23e1a8175b41dd77163871c7c86b5a289d4dd81ab",
+      "nanobot/nanobot/session/__init__.py": "af79f03b1e424107a8234e9ad4dfd32b159054fb962b82e1467e647662152bf1",
+      "nanobot/nanobot/session/manager.py": "d84c58d66d4461ffccf9b19a6a197f57b07829441d576733ed7975f42c097b9c",
+      "nanobot/nanobot/utils/__init__.py": "e41e01f77f4ab2d4707772d6430a041a63c1713add97640420dc3f5f48f8931f",
+      "nanobot/nanobot/utils/helpers.py": "1f8854635b829389a16f0366457d93012beafd7993b6968d07048b0d34414ff6",
+      "web_app.py": "10f1852fa658a7ffe5ad42c5276f33ed710d7fe897737091a4f4720b533035a4"
+    },
+    "direct_import_edges": [
+      [
+        "api.py",
+        "fastcode/__init__.py"
+      ],
+      [
+        "fastcode/__init__.py",
+        "fastcode/agent_tools.py"
+      ],
+      [
+        "fastcode/__init__.py",
+        "fastcode/answer_generator.py"
+      ],
+      [
+        "fastcode/__init__.py",
+        "fastcode/indexer.py"
+      ],
+      [
+        "fastcode/__init__.py",
+        "fastcode/iterative_agent.py"
+      ],
+      [
+        "fastcode/__init__.py",
+        "fastcode/loader.py"
+      ],
+      [
+        "fastcode/__init__.py",
+        "fastcode/main.py"
+      ],
+      [
+        "fastcode/__init__.py",
+        "fastcode/parser.py"
+      ],
+      [
+        "fastcode/__init__.py",
+        "fastcode/repo_overview.py"
+      ],
+      [
+        "fastcode/__init__.py",
+        "fastcode/repo_selector.py"
+      ],
+      [
+        "fastcode/__init__.py",
+        "fastcode/retriever.py"
+      ],
+      [
+        "fastcode/agent_tools.py",
+        "fastcode/path_utils.py"
+      ],
+      [
+        "fastcode/answer_generator.py",
+        "fastcode/llm_utils.py"
+      ],
+      [
+        "fastcode/answer_generator.py",
+        "fastcode/utils.py"
+      ],
+      [
+        "fastcode/call_extractor.py",
+        "fastcode/tree_sitter_parser.py"
+      ],
+      [
+        "fastcode/definition_extractor.py",
+        "fastcode/tree_sitter_parser.py"
+      ],
+      [
+        "fastcode/global_index_builder.py",
+        "fastcode/indexer.py"
+      ],
+      [
+        "fastcode/global_index_builder.py",
+        "fastcode/path_utils.py"
+      ],
+      [
+        "fastcode/graph_builder.py",
+        "fastcode/call_extractor.py"
+      ],
+      [
+        "fastcode/graph_builder.py",
+        "fastcode/indexer.py"
+      ],
+      [
+        "fastcode/graph_builder.py",
+        "fastcode/module_resolver.py"
+      ],
+      [
+        "fastcode/graph_builder.py",
+        "fastcode/path_utils.py"
+      ],
+      [
+        "fastcode/graph_builder.py",
+        "fastcode/symbol_resolver.py"
+      ],
+      [
+        "fastcode/graph_builder.py",
+        "fastcode/utils.py"
+      ],
+      [
+        "fastcode/import_extractor.py",
+        "fastcode/tree_sitter_parser.py"
+      ],
+      [
+        "fastcode/indexer.py",
+        "fastcode/embedder.py"
+      ],
+      [
+        "fastcode/indexer.py",
+        "fastcode/loader.py"
+      ],
+      [
+        "fastcode/indexer.py",
+        "fastcode/parser.py"
+      ],
+      [
+        "fastcode/indexer.py",
+        "fastcode/repo_overview.py"
+      ],
+      [
+        "fastcode/indexer.py",
+        "fastcode/utils.py"
+      ],
+      [
+        "fastcode/indexer.py",
+        "fastcode/vector_store.py"
+      ],
+      [
+        "fastcode/iterative_agent.py",
+        "fastcode/agent_tools.py"
+      ],
+      [
+        "fastcode/iterative_agent.py",
+        "fastcode/llm_utils.py"
+      ],
+      [
+        "fastcode/iterative_agent.py",
+        "fastcode/path_utils.py"
+      ],
+      [
+        "fastcode/loader.py",
+        "fastcode/utils.py"
+      ],
+      [
+        "fastcode/main.py",
+        "fastcode/answer_generator.py"
+      ],
+      [
+        "fastcode/main.py",
+        "fastcode/cache.py"
+      ],
+      [
+        "fastcode/main.py",
+        "fastcode/embedder.py"
+      ],
+      [
+        "fastcode/main.py",
+        "fastcode/global_index_builder.py"
+      ],
+      [
+        "fastcode/main.py",
+        "fastcode/graph_builder.py"
+      ],
+      [
+        "fastcode/main.py",
+        "fastcode/indexer.py"
+      ],
+      [
+        "fastcode/main.py",
+        "fastcode/loader.py"
+      ],
+      [
+        "fastcode/main.py",
+        "fastcode/module_resolver.py"
+      ],
+      [
+        "fastcode/main.py",
+        "fastcode/parser.py"
+      ],
+      [
+        "fastcode/main.py",
+        "fastcode/query_processor.py"
+      ],
+      [
+        "fastcode/main.py",
+        "fastcode/retriever.py"
+      ],
+      [
+        "fastcode/main.py",
+        "fastcode/symbol_resolver.py"
+      ],
+      [
+        "fastcode/main.py",
+        "fastcode/utils.py"
+      ],
+      [
+        "fastcode/main.py",
+        "fastcode/vector_store.py"
+      ],
+      [
+        "fastcode/module_resolver.py",
+        "fastcode/global_index_builder.py"
+      ],
+      [
+        "fastcode/parser.py",
+        "fastcode/tree_sitter_parser.py"
+      ],
+      [
+        "fastcode/parser.py",
+        "fastcode/utils.py"
+      ],
+      [
+        "fastcode/query_processor.py",
+        "fastcode/llm_utils.py"
+      ],
+      [
+        "fastcode/repo_overview.py",
+        "fastcode/llm_utils.py"
+      ],
+      [
+        "fastcode/repo_selector.py",
+        "fastcode/llm_utils.py"
+      ],
+      [
+        "fastcode/retriever.py",
+        "fastcode/embedder.py"
+      ],
+      [
+        "fastcode/retriever.py",
+        "fastcode/graph_builder.py"
+      ],
+      [
+        "fastcode/retriever.py",
+        "fastcode/indexer.py"
+      ],
+      [
+        "fastcode/retriever.py",
+        "fastcode/iterative_agent.py"
+      ],
+      [
+        "fastcode/retriever.py",
+        "fastcode/query_processor.py"
+      ],
+      [
+        "fastcode/retriever.py",
+        "fastcode/repo_selector.py"
+      ],
+      [
+        "fastcode/retriever.py",
+        "fastcode/utils.py"
+      ],
+      [
+        "fastcode/retriever.py",
+        "fastcode/vector_store.py"
+      ],
+      [
+        "fastcode/symbol_resolver.py",
+        "fastcode/global_index_builder.py"
+      ],
+      [
+        "fastcode/symbol_resolver.py",
+        "fastcode/module_resolver.py"
+      ],
+      [
+        "fastcode/vector_store.py",
+        "fastcode/utils.py"
+      ],
+      [
+        "main.py",
+        "fastcode/__init__.py"
+      ],
+      [
+        "mcp_server.py",
+        "fastcode/__init__.py"
+      ],
+      [
+        "mcp_server.py",
+        "fastcode/utils.py"
+      ],
+      [
+        "web_app.py",
+        "fastcode/__init__.py"
+      ]
+    ],
+    "scope": "root *.py + fastcode/**/*.py + nanobot/**/*.py; no bodies/defaults/docs/config/credentials"
+  },
+  "requested_model": "deepseek-v4.1-flash",
+  "prompt_sha256": "ec294cdc9fec1122033f3fd11ce49c7d0f5a83485891257b6586c199a2de62bb",
+  "credential_source": "explicitly authorized loopback; no credentials loaded or sent",
+  "endpoint_path": "/v1/chat/completions",
+  "request_attempts": 1,
+  "timeout_seconds": 180,
+  "redirects_followed": 0,
+  "retries": 0,
+  "request_body_bytes": 85825,
+  "authorization_header_sent": false,
+  "http_status": 200,
+  "headers_seconds": 1.4759,
+  "content_type": "text/event-stream",
+  "response_bytes": 51306,
+  "sse_events": 181,
+  "done_received": true,
+  "finish_reason": "stop",
+  "ttft_seconds": 37.7968,
+  "first_event_seconds": 37.7968,
+  "first_line_seconds": 6.4775,
+  "max_line_wait_seconds": 5.0016,
+  "reported_model": "deepseek-v4.1-flash",
+  "answer": "````markdown\n{\n  \"summary\": \"项目可分为 FastCode 检索引擎、API/CLI/MCP 接入层，以及通过 HTTP 工具连接 FastCode 的 nanobot 智能体层。FastCode 的静态结构以 FastCode 为入口，连接仓库加载、解析、索引、向量存储、图构建、检索、查询处理、答案生成和缓存模块；以下依赖与数据流仅依据给出的 import 和签名，不能据此确认运行时调用顺序或副作用。\",\n  \"dependencies\": [\n    {\n      \"from_file\": \"api.py\",\n      \"to_file\": \"fastcode/__init__.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"web_app.py\",\n      \"to_file\": \"fastcode/__init__.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"main.py\",\n      \"to_file\": \"fastcode/__init__.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"mcp_server.py\",\n      \"to_file\": \"fastcode/__init__.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"nanobot/nanobot/agent/loop.py\",\n      \"to_file\": \"nanobot/nanobot/agent/tools/fastcode.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"nanobot/nanobot/agent/tools/fastcode.py\",\n      \"to_file\": \"api.py\",\n      \"evidence\": \"inference\"\n    },\n    {\n      \"from_file\": \"fastcode/__init__.py\",\n      \"to_file\": \"fastcode/main.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/main.py\",\n      \"to_file\": \"fastcode/loader.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/main.py\",\n      \"to_file\": \"fastcode/parser.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/main.py\",\n      \"to_file\": \"fastcode/embedder.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/main.py\",\n      \"to_file\": \"fastcode/indexer.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/main.py\",\n      \"to_file\": \"fastcode/vector_store.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/main.py\",\n      \"to_file\": \"fastcode/graph_builder.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/main.py\",\n      \"to_file\": \"fastcode/symbol_resolver.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/main.py\",\n      \"to_file\": \"fastcode/module_resolver.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/main.py\",\n      \"to_file\": \"fastcode/global_index_builder.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/main.py\",\n      \"to_file\": \"fastcode/retriever.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/main.py\",\n      \"to_file\": \"fastcode/query_processor.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/main.py\",\n      \"to_file\": \"fastcode/answer_generator.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/main.py\",\n      \"to_file\": \"fastcode/cache.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/indexer.py\",\n      \"to_file\": \"fastcode/loader.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/indexer.py\",\n      \"to_file\": \"fastcode/parser.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/indexer.py\",\n      \"to_file\": \"fastcode/embedder.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/indexer.py\",\n      \"to_file\": \"fastcode/repo_overview.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/indexer.py\",\n      \"to_file\": \"fastcode/vector_store.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/parser.py\",\n      \"to_file\": \"fastcode/tree_sitter_parser.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/retriever.py\",\n      \"to_file\": \"fastcode/vector_store.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/retriever.py\",\n      \"to_file\": \"fastcode/embedder.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/retriever.py\",\n      \"to_file\": \"fastcode/graph_builder.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/retriever.py\",\n      \"to_file\": \"fastcode/indexer.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/retriever.py\",\n      \"to_file\": \"fastcode/query_processor.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/retriever.py\",\n      \"to_file\": \"fastcode/repo_selector.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/retriever.py\",\n      \"to_file\": \"fastcode/iterative_agent.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/graph_builder.py\",\n      \"to_file\": \"fastcode/module_resolver.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/graph_builder.py\",\n      \"to_file\": \"fastcode/symbol_resolver.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/graph_builder.py\",\n      \"to_file\": \"fastcode/call_extractor.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/module_resolver.py\",\n      \"to_file\": \"fastcode/global_index_builder.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/symbol_resolver.py\",\n      \"to_file\": \"fastcode/global_index_builder.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/symbol_resolver.py\",\n      \"to_file\": \"fastcode/module_resolver.py\",\n      \"evidence\": \"import\"\n    },\n    {\n      \"from_file\": \"fastcode/call_extractor.py\",\n      \"to_file\": \"fastcode/tree_sitter_parser.py\",\n      \"evidence\": \"import\"\n    }\n  ],\n  \"dataflows\": [\n    {\n      \"symbols\": [\n        \"api.py: load_repository / index_repository / load_and_index\",\n        \"mcp_server.py: reindex_repo\",\n        \"fastcode/main.py: FastCode.load_repository / FastCode.index_repository\",\n        \"fastcode/loader.py: RepositoryLoader.load_from_url / load_from_path / load_from_zip / scan_files\",\n        \"fastcode/parser.py: CodeParser.parse_file\",\n        \"fastcode/indexer.py: CodeIndexer.index_repository / index_files / _index_file\"\n      ],\n      \"description\": \"静态结构显示多个入口可接入 FastCode；仓库加载器提供 URL、路径、ZIP 和文件扫描接口，解析器产出 FileParseResult，索引器接受文件信息与解析结果并生成 CodeElement。具体入口到这些方法的运行时调用先后不能由签名确认。\",\n      \"certainty\": \"medium\"\n    },\n    {\n      \"symbols\": [\n        \"fastcode/parser.py: CodeParser\",\n        \"fastcode/tree_sitter_parser.py: TSParser\",\n        \"fastcode/call_extractor.py: CallExtractor\",\n        \"fastcode/definition_extractor.py: DefinitionExtractor\",\n        \"fastcode/import_extractor.py: ImportExtractor\"\n      ],\n      \"description\": \"解析能力包括 Python AST/LibCST 路径及多语言 Tree-sitter 解析器；另有独立的调用、定义和导入提取器。骨架能确认各模块及其解析器依赖，但不能确认 CodeParser 是否在运行时调用这些提取器，也不能确认各语言的实际分派条件。\",\n      \"certainty\": \"medium\"\n    },\n    {\n      \"symbols\": [\n        \"fastcode/indexer.py: CodeIndexer\",\n        \"fastcode/embedder.py: CodeEmbedder.embed_code_elements\",\n        \"fastcode/vector_store.py: VectorStore.add_vectors / search\",\n        \"fastcode/repo_overview.py: RepositoryOverviewGenerator.generate_overview\",\n        \"fastcode/cache.py: CacheManager\"\n      ],\n      \"description\": \"可推断的索引路径是将解析后的代码元素交给索引器，由嵌入器生成向量并交由向量库保存；索引器还依赖仓库概览生成器。是否对每类元素都嵌入、何时写入缓存以及存储的实际实现细节，无法从签名确定。\",\n      \"certainty\": \"medium\"\n    },\n    {\n      \"symbols\": [\n        \"fastcode/global_index_builder.py: GlobalIndexBuilder\",\n        \"fastcode/module_resolver.py: ModuleResolver.resolve_import\",\n        \"fastcode/symbol_resolver.py: SymbolResolver.resolve_symbol\",\n        \"fastcode/call_extractor.py: CallExtractor.extract_calls\",\n        \"fastcode/graph_builder.py: CodeGraphBuilder.build_graphs\"\n      ],\n      \"description\": \"图构建相关模块覆盖模块/符号解析、调用提取及依赖图、继承图、调用图构建接口。GlobalIndexBuilder 提供文件、模块和导出符号索引接口；从依赖和签名可推断这些组件用于解析跨文件关系，但不能确认具体解析算法或图边生成规则。\",\n      \"certainty\": \"medium\"\n    },\n    {\n      \"symbols\": [\n        \"fastcode/main.py: FastCode.query / query_stream\",\n        \"fastcode/query_processor.py: QueryProcessor.process\",\n        \"fastcode/retriever.py: HybridRetriever.retrieve\",\n        \"fastcode/vector_store.py: VectorStore.search\",\n        \"fastcode/retriever.py: index_for_bm25 / _semantic_search / _keyword_search / _expand_with_graph / _rerank\",\n        \"fastcode/answer_generator.py: AnswerGenerator.generate / generate_stream\"\n      ],\n      \"description\": \"检索模块显式依赖向量库、嵌入器、图构建器和查询处理器，并提供语义、关键词、图扩展、重排等接口；答案生成器提供普通与流式生成接口。整体可概括为查询处理、混合检索、答案生成，但具体执行顺序、融合权重和筛选策略不能由骨架验证。\",\n      \"certainty\": \"medium\"\n    },\n    {\n      \"symbols\": [\n        \"fastcode/cache.py: CacheManager.get_embedding / set_embedding\",\n        \"fastcode/cache.py: CacheManager.get_query_result / set_query_result\",\n        \"fastcode/cache.py: CacheManager.save_dialogue_turn / get_dialogue_history\",\n        \"fastcode/main.py: _try_load_from_cache / _save_to_cache / _get_full_dialogue_history\"\n      ],\n      \"description\": \"缓存模块接口覆盖嵌入、查询结果和会话对话轮次；FastCode 另有索引缓存加载/保存及会话历史接口。存在 DiskCache 与可选 Redis 的导入线索，但实际启用的后端、缓存键规则和失效时机无法确定。\",\n      \"certainty\": \"medium\"\n    },\n    {\n      \"symbols\": [\n        \"mcp_server.py: code_qa / search_symbol / get_repo_structure / get_file_summary / get_call_chain\",\n        \"nanobot/nanobot/agent/tools/fastcode.py: FastCodeLoadRepoTool / FastCodeQueryTool / FastCodeListReposTool / FastCodeStatusTool / FastCodeSessionTool\",\n        \"api.py: FastAPI 路由函数\"\n      ],\n      \"description\": \"MCP 服务直接导入 FastCode 并提供问答、符号、结构、摘要和调用链等工具接口。nanobot 的 FastCode 工具模块使用 httpx，且由 AgentLoop 注册；其经 HTTP 与 API 层交互是基于模块职责作出的推断，给出的骨架未提供请求 URL、路由映射或响应处理细节。\",\n      \"certainty\": \"low\"\n    }\n  ],\n  \"unknowns\": [\n    \"没有函数体，不能核验实际运行时调用关系、调用顺序、异常路径或副作用；上述数据流是基于依赖与签名的静态推断。\",\n    \"FastCode 的默认配置、模型与嵌入提供方、向量索引类型、Redis 是否启用及持久化策略均无法确定。\",\n    \"增量索引、跨仓库索引合并、文件变更检测及缓存失效的具体条件和一致性规则无法确定。\",\n    \"MCP 工具与 API 路由的逐项映射、nanobot HTTP 工具使用的端点，以及流式响应格式无法从骨架验证。\",\n    \"解析器对各语言的覆盖范围、提取器与 CodeParser/CodeIndexer 的实际协作方式，以及图解析失败时的回退行为无法确定。\",\n    \"HybridRetriever 与 IterativeAgent 的实际启用条件、检索融合和迭代停止策略，以及 AnswerGenerator 的供应商选择与降级行为无法确定。\",\n    \"nanobot 与 FastCode 在同一部署中的启动、配置、鉴权和网络拓扑关系未由这些符号签名说明。\"\n  ]\n}\n````",
+  "answer_bytes": 11791,
+  "elapsed_seconds": 51.4386,
+  "connection_closed": true,
+  "dependency_check": {
+    "status": "unstructured answer; manual source check required"
+  },
+  "source_versions_changed": [],
+  "quality_status": "BLOCKED",
+  "quality_error_type": "JSONDecodeError",
+  "quality_error": "invalid structure; inspect saved answer",
+  "total_seconds": 52.2908,
+  "probe_exit_code": 0
+}

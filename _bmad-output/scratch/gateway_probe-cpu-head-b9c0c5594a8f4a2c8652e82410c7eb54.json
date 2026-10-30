@@ -1,0 +1,79 @@
+{
+  "probe": "cpu-head",
+  "started_utc": "2026-10-24T04:17:20Z",
+  "controller_coverage": "unproven; platform task record only",
+  "status": "OBSERVED_OK",
+  "production_changed": false,
+  "automatic_retry": false,
+  "reused_existing_report": true,
+  "wheel_sizes": [
+    {
+      "name": "torch",
+      "version": "2.14.1+cpu",
+      "wheel_bytes": 196253677,
+      "head_status": 200
+    },
+    {
+      "name": "fsspec",
+      "version": "2026.7.0",
+      "wheel_bytes": 206583,
+      "head_status": 200
+    },
+    {
+      "name": "networkx",
+      "version": "3.6.1",
+      "wheel_bytes": 2068504,
+      "head_status": 200
+    },
+    {
+      "name": "setuptools",
+      "version": "78.1.0",
+      "wheel_bytes": 1256108,
+      "head_status": 200
+    },
+    {
+      "name": "sympy",
+      "version": "1.14.0",
+      "wheel_bytes": 6299353,
+      "head_status": 200
+    },
+    {
+      "name": "typing_extensions",
+      "version": "4.16.0",
+      "wheel_bytes": 45571,
+      "head_status": 200
+    },
+    {
+      "name": "filelock",
+      "version": "3.32.3",
+      "wheel_bytes": 98901,
+      "head_status": 200
+    },
+    {
+      "name": "Jinja2",
+      "version": "3.1.6",
+      "wheel_bytes": 134899,
+      "head_status": 200
+    },
+    {
+      "name": "MarkupSafe",
+      "version": "3.0.3",
+      "wheel_bytes": 22947,
+      "head_status": 200
+    },
+    {
+      "name": "mpmath",
+      "version": "1.3.0",
+      "wheel_bytes": 536198,
+      "head_status": 200
+    }
+  ],
+  "head_seconds": 2.3314,
+  "known_total_wheel_bytes": 206922741,
+  "size_complete": true,
+  "actual_install_performed": false,
+  "pip_report": "_bmad-output/scratch/gateway_probe-cpu-1663d1c9641a4afcb09ffc1fc9d7a9f1-pip-report.json",
+  "installation_time_estimate": "unknown; HEAD and dry-run do not measure installation or full FastCode footprint",
+  "total_seconds": 2.3343,
+  "probe_exit_code": 0
+}
