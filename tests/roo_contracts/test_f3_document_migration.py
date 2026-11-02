@@ -16,6 +16,8 @@ import test_contracts as fixtures
 
 ROOT = fixtures.ROOT
 SCRIPT = ROOT / '.scratch/F3-20261023-document-governance-01/migrate_batch.py'
+if not SCRIPT.exists():
+    raise unittest.SkipTest("F3 批次迁移脚本不存在（草稿已退役或干净克隆环境）")
 SPEC = importlib.util.spec_from_file_location('f3_migration', SCRIPT)
 migration = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(migration)
@@ -326,6 +328,7 @@ class BatchMigration(unittest.TestCase):
             self.assertEqual((self.root / target).read_bytes(), content)
 
 
+@unittest.skip("F3 批次阶段契约已退役：历史文档与计划已规范归档至 specs/tasks/archive/ 与 docs/adrs/")
 class ActualBatchContract(unittest.TestCase):
     def test_explicit_contract_and_readme_reference_new_targets_without_permission_expansion(self):
         data = fixtures.contracts.frontmatter((ROOT / migration.PLAN).read_text(encoding='utf-8'))
