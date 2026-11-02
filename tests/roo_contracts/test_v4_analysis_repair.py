@@ -27,7 +27,7 @@ ANALYSIS_PATHS = (
     "skills/bmad/references/procedures/three-pass-analysis.md",
 )
 TEMPLATE = "skills/bmad/references/templates/implementation-plan.template.md"
-REPORT = ROOT / "_bmad-output/analysis/ANALYSIS-20261021-v4-backpressure-repair.md"
+REPORT = ROOT / "docs/analysis/ANALYSIS-20261021-v4-backpressure-repair.md"
 ORIGINAL = ROOT / "docs/Ralph-Wiggum-Loop/dr_dm_v4_backpressure_optimization.md"
 
 
@@ -223,7 +223,7 @@ class V4AnalysisRepair(unittest.TestCase):
         header = original.split("---", 1)[0]
         self.assertIn("已退役，不作为规范", header)
         self.assertIn("不作为有效规范、授权、性能基线或验收证据", header)
-        target = "../../_bmad-output/analysis/ANALYSIS-20261021-v4-backpressure-repair.md"
+        target = "../analysis/ANALYSIS-20261021-v4-backpressure-repair.md"
         self.assertIn("](" + target + ")", header)
         self.assertEqual((ORIGINAL.parent / target).resolve(strict=True), REPORT.resolve())
         self.assertIn("## 五、 DM (Decision Matrix)", original)

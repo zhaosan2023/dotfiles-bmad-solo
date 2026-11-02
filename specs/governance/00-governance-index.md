@@ -75,7 +75,7 @@ session_id: null
 
 - [Roo 模式资产](../../bmad-suite-v4/roo/settings/custom_modes.yaml:1)的目录权限仍须按另行获准的宿主迁移处理。
 - [Cline 路由资产](../../bmad-suite-v4/cline/templates/bmad-router.md:1)自称未激活模板。
-- [项目事实基线](../../_bmad-output/project-context.md:1)保留历史描述，不由本次文档任务改写。
+- [项目事实基线](../../docs/project-context.md:1)保留历史描述，不由本次文档任务改写。
 - 默认活动计划缺失是正常状态；无关任务不由治理文档接管。
 - 治理规范归属独立领域目录，与[任务入口](../tasks/_active.md)及任务归档分离；目录移动不证明宿主已加载。
 - 本次没有核验治理控制器的可用性和覆盖范围，不声明存在程序防篡改保障。

@@ -507,8 +507,8 @@ timeout --kill-after=5s 30s bash -o pipefail -c '
 - [8] [`validate-task-state.py`](../../bmad-suite-v4/skills/bmad/scripts/validate-task-state.py:12)：现有状态解析和检查，第12—46行。
 - [9] [`state-reconcile.md`](../../bmad-suite-v4/skills/bmad/references/procedures/state-reconcile.md:14)：证据读取和完成裁决，第14—38行。
 - [10] [`validate-roo-contracts.py`](../../scripts/validate-roo-contracts.py:18)：安全加载、重复键处理、计划字段及命令形状，第18—38、165—198行。
-- [11] [`aurora_roocodedownload.md`](../../docs/logs/aurora_roocodedownload.md:722)：历史执行记录第722—1716行；历史业务检查器第2151—2437行；字段镜像第2265—2319行；文案与资产检查第2358—2385行。
-- [12] [`aurora.log`](../../docs/logs/aurora.log:1)：单次隔离验证、包安装、事件及结束输出，第1—24、229—236行；中间存在省略，不能据此完整统计全部测试事件。
+- [11] [`aurora_roocodedownload.md`](../logs/aurora_roocodedownload.md:722)：历史执行记录第722—1716行；历史业务检查器第2151—2437行；字段镜像第2265—2319行；文案与资产检查第2358—2385行。
+- [12] [`aurora.log`](../logs/aurora.log:1)：单次隔离验证、包安装、事件及结束输出，第1—24、229—236行；中间存在省略，不能据此完整统计全部测试事件。
 - [13] [`ADR-20261008-roocode-bmad-v42-lifecycle-and-governance.md`](ADR-20261008-roocode-bmad-v42-lifecycle-and-governance.md:37)：生命周期、权限、受管事务和接受边界，第37—105、142—150行。
 - [14] [`project-context.md`](../project-context.md:5)：已登记的治理和分发边界，第5—13行；本轮未修改。
 - [15] [`custom_modes.yaml`](../../bmad-suite-v4/roo/settings/custom_modes.yaml:33)：本会话搜索返回的工程模式绑定及验证指令，第33—37行；不是运行时加载证据。

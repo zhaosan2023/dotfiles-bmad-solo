@@ -4,7 +4,7 @@ status: COMPLETED
 scenario: structural
 impact_tier: M
 requires_adr: true
-adr_file: "_bmad-output/adrs/ADR-20261008-roocode-bmad-v42-lifecycle-and-governance.md"
+adr_file: "docs/adrs/ADR-20261008-roocode-bmad-v42-lifecycle-and-governance.md"
 verification_type: config_syntax
 verification_command: "timeout 30s python3 scripts/validate-roo-contracts.py < /dev/null"
 verification_command_status: "AVAILABLE"
@@ -20,10 +20,10 @@ session_id: null
 
 ## 1. 契约、授权与现状
 
-本计划落实[新 ADR 提案](../../adrs/ADR-20261008-roocode-bmad-v42-lifecycle-and-governance.md)，替换原有固定暂存入口。用户已授权保留旧任务并刷新本文件；这不是执行生产修改或部署的授权。
+本计划落实[新 ADR 提案](../../../../../docs/adrs/ADR-20261008-roocode-bmad-v42-lifecycle-and-governance.md)，替换原有固定暂存入口。用户已授权保留旧任务并刷新本文件；这不是执行生产修改或部署的授权。
 
 - [旧验证任务](plan-20260918-bmad-v42-verification-suspended.md)已另存并标记暂停，原有未完成任务保留；不得自动执行、完成或转正旧 ADR。
-- 本次结晶只涉及旧计划归档、新 ADR 与本计划，不修改[项目事实基线](../../project-context.md)。
+- 本次结晶只涉及旧计划归档、新 ADR 与本计划，不修改[项目事实基线](../../../../../docs/project-context.md)。
 - 审计为静态源码审计，没有运行测试、检查真实部署或验证目标 Roo 版本。
 - 新增校验器和测试目录均是拟创建产物，不是现有文件或已通过的证据。
 - 前文源码行号是审计快照，工程阶段修改前重新定位并检查 Git 状态，不覆盖用户已有改动。
@@ -77,7 +77,7 @@ READY → EXECUTING → VERIFYING → COMPLETED → ARCHIVED
 
 ### 3.3 物理分发
 
-源为[套件目录](../../../bmad-suite-v4/)，目标为受管资产副本。物理复制不意味着可以删除共享目录内其他文件，也不保证源或目标没有符号链接。
+源为[套件目录](../../../../../bmad-suite-v4/)，目标为受管资产副本。物理复制不意味着可以删除共享目录内其他文件，也不保证源或目标没有符号链接。
 
 必须先预检全部目标，再进行受管写入；损坏输入失败关闭。单文件采用备份和原子替换，多目标采用部署锁、指纹复核、提交记录及恢复，不宣称整体原子提交。
 
@@ -106,16 +106,16 @@ timeout 15s git --no-pager diff --check < /dev/null
 
 主要目标：
 
-- [模式定义](../../../bmad-suite-v4/roo/settings/custom_modes.yaml:5)：移除固定先读暂存文件和禁止对话输出的冲突条款；限制分析编辑路径，禁止终端组及事实基线写入。
-- [全局入口和闭环](../../../bmad-suite-v4/roo/rules/02-bmad-core.md:5)：按意图、授权、权限和实际计划路由，场景化验证，禁止固定归档其他任务。
-- [分析规则](../../../bmad-suite-v4/roo/rules-ana-architect/01-ana-solo-core.md:5)：补齐只读例外、Mary 证据结构、历史不变量、覆盖确认与真理隔离。
-- [工程规则](../../../bmad-suite-v4/roo/rules-bmad-engineer/01-bmad-engineer-core.md:9)：完整三级路由、契约字段、状态恢复和绑定式完工。
-- [原生工程入口](../../../bmad-suite-v4/skills/bmad/SKILL.md:22)、[原生分析入口](../../../bmad-suite-v4/skills/ana-solo/SKILL.md:96)及[计划模板](../../../bmad-suite-v4/skills/bmad/references/templates/implementation-plan.template.md:1)：同步核心语义，避免平台间漂移。
+- [模式定义](../../../../../bmad-suite-v4/roo/settings/custom_modes.yaml:5)：移除固定先读暂存文件和禁止对话输出的冲突条款；限制分析编辑路径，禁止终端组及事实基线写入。
+- [全局入口和闭环](../../../../../bmad-suite-v4/roo/rules/02-bmad-core.md:5)：按意图、授权、权限和实际计划路由，场景化验证，禁止固定归档其他任务。
+- [分析规则](../../../../../bmad-suite-v4/roo/rules-ana-architect/01-ana-solo-core.md:5)：补齐只读例外、Mary 证据结构、历史不变量、覆盖确认与真理隔离。
+- [工程规则](../../../../../bmad-suite-v4/roo/rules-bmad-engineer/01-bmad-engineer-core.md:9)：完整三级路由、契约字段、状态恢复和绑定式完工。
+- [原生工程入口](../../../../../bmad-suite-v4/skills/bmad/SKILL.md:22)、[原生分析入口](../../../../../bmad-suite-v4/skills/ana-solo/SKILL.md:96)及[计划模板](../../../../../bmad-suite-v4/skills/bmad/references/templates/implementation-plan.template.md:1)：同步核心语义，避免平台间漂移。
 
 任务：
 
 - [ ] 实施上述规则最小修改，不通过全文重写引入无关变化。
-- [ ] 建立拟新增的[配置契约校验器](../../../scripts/validate-roo-contracts.py)及[规则契约测试](../../../tests/roo_contracts/)。
+- [ ] 建立拟新增的[配置契约校验器](../../../../../scripts/validate-roo-contracts.py)及[规则契约测试](../../../../../tests/roo_contracts/)。
 - [ ] 校验器解析真实 YAML 和 frontmatter，检查模式标识唯一、权限组、写入范围、必需元数据和交叉引用；错误输入非零退出。
 - [ ] 为禁止目录、正常产物路径、相似路径及路径穿越变体建立静态权限用例；明确这些用例不能替代 Roo 实际授权验证。
 - [ ] 将生命周期场景维护为可审查用例；若使用参考路由模型，明确其只验证规范，不等于模型运行时保证。
@@ -133,7 +133,7 @@ timeout 15s git --no-pager diff --check < /dev/null
 
 ### 阶段 2：部署资产保护与失败关闭
 
-目标：[部署、合并和卸载逻辑](../../../bs.sh:244)。
+目标：[部署、合并和卸载逻辑](../../../../../bs.sh:244)。
 
 - [ ] 将共享目录删除式镜像改为受管文件同步；未知文件保留，用户修改过的资产报告冲突。
 - [ ] 卸载仅处理明确受管规则和模式，不删除整个共享目录。
@@ -142,7 +142,7 @@ timeout 15s git --no-pager diff --check < /dev/null
 - [ ] 合法输入保留非受管模式及顶层配置；首次同标识接管须显式处理。
 - [ ] 路径通过参数传递，建立字节备份、同目录临时文件、原子替换及必要的恢复记录。
 - [ ] 增加单写者锁与提交前指纹复核；外部编辑冲突不能静默覆盖。
-- [ ] 建立拟新增的[隔离分发测试](../../../tests/roo_distribution/)，由 Python 测试夹具创建临时目录和子进程，限制每个子进程时长。
+- [ ] 建立拟新增的[隔离分发测试](../../../../../tests/roo_distribution/)，由 Python 测试夹具创建临时目录和子进程，限制每个子进程时长。
 
 验证：
 
@@ -155,7 +155,7 @@ timeout 30s python3 -m unittest discover -s tests/roo_distribution -p 'test_asse
 
 ### 阶段 3：多环境、版本和生命周期分发
 
-目标：[目标探测](../../../bs.sh:384)、[更新和标签](../../../bs.sh:261)、[状态和清单](../../../bs.sh:49)；必要时修正[安装入口](../../../install.sh:17)的失败忽略。
+目标：[目标探测](../../../../../bs.sh:384)、[更新和标签](../../../../../bs.sh:261)、[状态和清单](../../../../../bs.sh:49)；必要时修正[安装入口](../../../../../install.sh:17)的失败忽略。
 
 - [ ] 分别覆盖 Antigravity IDE Server、VS Code Server、本地 Code 候选布局，支持显式目标覆盖，并报告命中与跳过原因。
 - [ ] 无模式目标时不得称完整激活；区分文件已分发和运行时已加载。
@@ -177,7 +177,7 @@ timeout 15s bash -n install.sh < /dev/null
 
 ### 阶段 4：CI 与目标 Roo 运行时验收
 
-目标：[CI](../../../.github/workflows/ci.yml:42)和[部署说明](../../../README.md:25)。
+目标：[CI](../../../../../.github/workflows/ci.yml:42)和[部署说明](../../../../../README.md:25)。
 
 - [ ] 修复与现有文档不匹配的超时关键词检查，逐步以配置契约校验替代仅查关键词。
 - [ ] CI 显式提供所需依赖并创建三类目标夹具，使 YAML 合并分支实际被测试。
@@ -306,7 +306,7 @@ timeout 15s git --no-pager diff --check < /dev/null
 - 首次接管保护阻断后，按已审查清单显式接管 47 个 BMAD 文件及一个全局配置目标中的两个模式。受管部署入口返回退出码 0，事务记录为提交完成；没有执行网络更新、版本切换、卸载或恢复。
 - 事务目录为宿主部署状态目录中的 transaction-4f2bb72068ff4f95a692c03330e4654c；日志 SHA-256 为 68dcd1d2c20725b178351d219b2960b83aac2690701764f2a7b1962baea12054。
 - 随后运行正式部署入口返回无需变更；状态诊断确认 47 个受管文件及 1 个模式目标摘要匹配。配置契约校验和 Git 差异检查均通过，串行命令链退出码为 0；这些检查不证明 Roo 已加载新配置。
-- [事务复核脚本](../../scratch/verify-deployment-20261008.py)在项目根目录以 30 秒进程超时、5 秒终止宽限期及封闭标准输入执行，退出码 0：49 个事务目标摘要与权限匹配，48 份备份摘要及存储权限匹配，17 项记录为已应用。原权限仅核验日志记录合法性，未执行恢复测试；顺序复核不排除不遵守锁协议的外部并发写入。
+- [事务复核脚本](../../../../../.scratch/legacy-bmad-output-20261102T120208Z/verify-deployment-20261008.py)在项目根目录以 30 秒进程超时、5 秒终止宽限期及封闭标准输入执行，退出码 0：49 个事务目标摘要与权限匹配，48 份备份摘要及存储权限匹配，17 项记录为已应用。原权限仅核验日志记录合法性，未执行恢复测试；顺序复核不排除不遵守锁协议的外部并发写入。
 - 已安装扩展清单及所检索的五份宿主 Roo 日志均记录版本 3.54.0，日志包含扩展激活记录。这证明该版本曾激活，不足以关联当前会话或证明部署后新配置已经生效。
 - 已读取磁盘全局模式配置，包含分析模式的受限编辑配置与工程模式配置；仍缺当前会话有效配置来源、分析模式实际终端及生产写入拒绝、允许文档编辑，以及生命周期矩阵的运行时证据。不以日志搜索未命中解释为权限通过。
 - 更新本记录前，绑定计划 SHA-256 再次核验为 71436b14d72b600f8aa372f23f71edbd8c66085c514b657af34f88ecac3abc09；Git 状态检查退出码 0，既有改动保留。记录写入后仍须复核新指纹、配置契约及差异检查。

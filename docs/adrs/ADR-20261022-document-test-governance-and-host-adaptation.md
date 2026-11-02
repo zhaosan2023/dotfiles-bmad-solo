@@ -3,16 +3,16 @@
 - Status: PROPOSED
 - 日期：2026-10-22。
 - 决策所有者：项目维护者。
-- 结晶时授权（历史）：仅分析与文档结晶，当时不授权实施、目录迁移、真实宿主写入或终端验证。当前执行权限以[绑定计划](../../PLAN-20261022-document-test-governance-01.md:13)、用户明确指令及客户端实际审批为准；本 ADR 不独立授予权限。
+- 结晶时授权（历史）：仅分析与文档结晶，当时不授权实施、目录迁移、真实宿主写入或终端验证。当前执行权限以[绑定计划](../../specs/tasks/archive/20261102T120208Z-document-closeout/PLAN-20261022-document-test-governance-01.md:13)、用户明确指令及客户端实际审批为准；本 ADR 不独立授予权限。
 - 分析依据：[`ANALYSIS-20261022-document-test-governance.md`](../analysis/ANALYSIS-20261022-document-test-governance.md:1)，承载旧任务对账、研究证据、DM 比较与 DR 推演。
-- 执行契约：[独立实施计划](../../PLAN-20261022-document-test-governance-01.md:1)，标识为 BMAD-DOCUMENT-TEST-GOVERNANCE-20261022-01；不绑定或覆盖旧活动入口。Cline 原生模式与最小门禁取舍由[补充提案](ADR-20261023-cline-native-plan-act-and-backpressure.md:1)细化，不建立第二份执行计划。
+- 执行契约：[独立实施计划](../../specs/tasks/archive/20261102T120208Z-document-closeout/PLAN-20261022-document-test-governance-01.md:1)，标识为 BMAD-DOCUMENT-TEST-GOVERNANCE-20261022-01；不绑定或覆盖旧活动入口。Cline 原生模式与最小门禁取舍由[补充提案](ADR-20261023-cline-native-plan-act-and-backpressure.md:1)细化，不建立第二份执行计划。
 - 会话标识：未知，不编造。
 
 ## 1. 背景与决策范围
 
 需要治理的是长期测试、临时验证、运行证据、领域规范、决策历史和执行契约的职责边界，而不是单纯减少文件数。目录整洁不能优先于语言封装、回归覆盖、唯一证据和旧任务保护。
 
-旧[`活动计划`](../../_bmad-output/pending_implementation_plan.md:2)仍为 BLOCKED，旧[`ADR`](ADR-20261021-v4-attended-repair-and-repository-cleanup.md:3)仍为 PROPOSED。其真实宿主验收尚未完成，不能由本提案接受、冻结或归档。旧任务已列明的验收及条件收尾授权保持独立。
+旧[`活动计划`](../../specs/tasks/archive/20261102T120208Z-BMAD-V4-ATTENDED-CLEANUP-20261021-01/pending_implementation_plan.md:2)仍为 BLOCKED，旧[`ADR`](ADR-20261021-v4-attended-repair-and-repository-cleanup.md:3)仍为 PROPOSED。其真实宿主验收尚未完成，不能由本提案接受、冻结或归档。旧任务已列明的验收及条件收尾授权保持独立。
 
 ## 2. 决策
 
@@ -22,7 +22,7 @@
 
 - 项目入口候选为根目录[`AGENTS.md`](../../AGENTS.md)：稳定导航、操作纪律、构建与验证入口，不保存逐轮进度，不整体复制项目事实基线。
 - 领域规范候选为[`specs/`](../../specs/)：当前需求、接口、不变量与验收，引用必要 ADR，不吸收全部决策历史。
-- 架构决策暂留[`现有 ADR 目录`](../../_bmad-output/adrs/)：背景、取舍、后果和替代关系；保留必要提案与历史。目录是否迁移是后续契约，不是本轮动作。
+- 架构决策暂留[`现有 ADR 目录`](./)：背景、取舍、后果和替代关系；保留必要提案与历史。目录是否迁移是后续契约，不是本轮动作。
 - 计划保存目标、授权、依赖及验收；每个任务显式绑定契约。旧默认入口不腾空，新计划仅使用独立、经确认且实际允许的路径。
 - 分析材料区分当前、历史、被替代及待核验；默认不加载历史不等于删除历史。提炼结论保留来源、适用范围及未知。
 

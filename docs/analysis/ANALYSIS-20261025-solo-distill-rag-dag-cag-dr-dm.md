@@ -10,7 +10,7 @@ session_id: null
 
 推荐在既有轻量路线内采用“本地生命周期骨架配额＋有界证据展开＋共享引用知识包”，不恢复重引擎、不建设向量库、不重选网关或模型。此结论是当前约束下的条件性推荐，不是已经实施的架构、全局最优证明或验收通过。
 
-- 关联契约：[当前提案](../../PROPOSAL-20261023-fastcode-knowledge-distillation.md)。
+- 关联契约：[当前提案](../../specs/tasks/archive/20261102T120208Z-document-closeout/PROPOSAL-20261023-fastcode-knowledge-distillation.md)。
 - 实施对象：[独立轻量服务](../../../project/solo-distill-mcp/pyproject.toml)。FastCode、LightRAG 与 8080 网关保持只读参考／既有服务边界。
 - 本文保存证据分层、方案与待评审决策，不保存逐轮流水、不接管其他活动计划、不建立第二份进度账本。
 - 控制器覆盖未证明，当前任务进度仍使用平台任务记录及真实回执。文档保存不触发业务重测。

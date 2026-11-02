@@ -2,7 +2,7 @@
 > 本文件保留原有正文供审校追溯。下文的免审批探针赋权、未经测量的效果数字、无依据评分及“已实施完成”结论均不作为有效规范、授权、性能基线或验收证据；保留原文不表示认可这些主张。
 > **核心背景**：针对 `dotfiles-bmad-solo` 中 V4/V5 的历史教训，用户准确指出了当前方法论的核心病症——陷入了如同 **“Verus 形式化证明 (Formal Verification)” 的脆性背压陷阱**。
 > 本报告聚焦于 **V4 “人-AI” 人值守协同场景**，解开导致工程无法归档、反复死锁的根本矛盾，完成 V5 与 V4 `ana-solo` 的本质对比，落地 V4 探针赋能，并对 V4 的背压重构给出严格的 **DR（反向推翻审查）** 与 **DM（决策矩阵）** 裁决。
-> 修正后的证据与比较见[V4 返修分析](../../_bmad-output/analysis/ANALYSIS-20261021-v4-backpressure-repair.md)；当前决策见[关联 ADR](../../_bmad-output/adrs/ADR-20261021-v4-attended-repair-and-repository-cleanup.md)，实施范围与验收见[关联计划](../../_bmad-output/pending_implementation_plan.md)。本处仅保留历史来源，不维护执行进度，不证明返修已通过验证或宿主已加载。
+> 修正后的证据与比较见[V4 返修分析](../analysis/ANALYSIS-20261021-v4-backpressure-repair.md)；当前决策见[关联 ADR](../adrs/ADR-20261021-v4-attended-repair-and-repository-cleanup.md)，实施范围与验收见[关联计划](../../specs/tasks/archive/20261102T120208Z-BMAD-V4-ATTENDED-CLEANUP-20261021-01/pending_implementation_plan.md)。本处仅保留历史来源，不维护执行进度，不证明返修已通过验证或宿主已加载。
 ---
 
 ## 一、 病理解剖：从“形式化证明陷阱”转向“动态属性背压”

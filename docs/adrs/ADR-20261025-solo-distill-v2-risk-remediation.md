@@ -2,8 +2,8 @@
 adr_id: "BMAD-SOLO-DISTILL-V2-RISK-REMEDIATION-20261025-01"
 status: ACCEPTED
 plan_id: "BMAD-SOLO-DISTILL-V2-RISK-REMEDIATION-20261025-01"
-plan_file: "../../PLAN-20261025-solo-distill-v2-risk-remediation-01.md"
-proposal_file: "../../PROPOSAL-20261023-fastcode-knowledge-distillation.md"
+plan_file: "../../specs/tasks/archive/20261102T120208Z-document-closeout/PLAN-20261025-solo-distill-v2-risk-remediation-01.md"
+proposal_file: "../../specs/tasks/archive/20261102T120208Z-document-closeout/PROPOSAL-20261023-fastcode-knowledge-distillation.md"
 authorization: "2026-10-26 用户明确授权 E0—E5 离线风险修复最终完工对账、E5 交付登记、绑定计划 COMPLETED、本 ADR ACCEPTED 及完整绑定式归档。以指定 205 项离线回归全绿和用户确认的既有 20,188 字节无损紧凑帧为本轮依据；真实 A/B、原 E6、宿主、第二项目及缓存收益移出本轮，不登记其通过。禁止新网络或模型调用、网关排查、参考仓库修改或执行、依赖安装、事实登记及未经授权的提交推送；未知会话标识保持 null。"
 session_id: null
 ---
@@ -14,16 +14,16 @@ session_id: null
 
 本 ADR 按 2026-10-26 用户明确授权转为 ACCEPTED，仅接受 E0—E5 已完成离线风险修复的架构决策。接受不表示真实模型语义、宿主消费、完整 A/B、第二项目或缓存收益已经验证，也不转正关联总提案。
 
-- 绑定[风险修复计划](../../PLAN-20261025-solo-distill-v2-risk-remediation-01.md:1)及[关联提案](../../PROPOSAL-20261023-fastcode-knowledge-distillation.md:294)。
+- 绑定[风险修复计划](../../specs/tasks/archive/20261102T120208Z-document-closeout/PLAN-20261025-solo-distill-v2-risk-remediation-01.md:1)及[关联提案](../../specs/tasks/archive/20261102T120208Z-document-closeout/PROPOSAL-20261023-fastcode-knowledge-distillation.md:294)。
 - 绑定计划契约版本 7、修订标识 SDV2-DRDM-20261026-07；最终范围为 E0—E5 离线修复，原 E6 与真实运行时门禁移出本轮。旧重依赖安装及其他治理任务保持独立。
 - 目标工程为当前工作区 solo-distill-mcp，Git 与指定离线验证均已取得该工作目录的真实回执；指定计划及本 ADR 的原生读取、计划精准修改权限已有成功回执。
 - 仅在当前明确授权与客户端实际权限内更新关联文档；不绕过拒绝或写入其他任务。完整归档保留活动源为 COMPLETED，绑定路径与计划身份不变。
 
 ## 背景与选择依据
 
-[提案的历史覆盖记录](../../PROPOSAL-20261023-fastcode-knowledge-distillation.md:82)仅作为待核验基准，不继承历史测试通过或源码身份。候选域、来源表示和配额政策存在结构性变化，因此以显式 V2 契约实施增量，不静默替换 V1 或场景 B。
+[提案的历史覆盖记录](../../specs/tasks/archive/20261102T120208Z-document-closeout/PROPOSAL-20261023-fastcode-knowledge-distillation.md:82)仅作为待核验基准，不继承历史测试通过或源码身份。候选域、来源表示和配额政策存在结构性变化，因此以显式 V2 契约实施增量，不静默替换 V1 或场景 B。
 
-采用[提案的分层最小修正版](../../PROPOSAL-20261023-fastcode-knowledge-distillation.md:459)，不新增向量库、图数据库、持久缓存或通用控制器，不按冻结答案特化候选。
+采用[提案的分层最小修正版](../../specs/tasks/archive/20261102T120208Z-document-closeout/PROPOSAL-20261023-fastcode-knowledge-distillation.md:459)，不新增向量库、图数据库、持久缓存或通用控制器，不按冻结答案特化候选。
 
 ## E0：执行前提（保留历史门禁）
 

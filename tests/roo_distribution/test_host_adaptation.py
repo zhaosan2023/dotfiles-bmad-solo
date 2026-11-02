@@ -29,7 +29,7 @@ class HostTemplateContracts(unittest.TestCase):
         self.assertTrue(links, "模板必须实际引用已有方法论，而非复制全文")
         expected = {
             "bmad-suite-v4/rules/bmad-constitution.md",
-            "_bmad-output/project-context.md",
+            "docs/project-context.md",
             "bmad-suite-v4/skills/ana-solo/SKILL.md",
             "bmad-suite-v4/skills/bmad/SKILL.md",
         }
@@ -102,7 +102,7 @@ class HostTemplateContracts(unittest.TestCase):
             or relative.startswith("PLAN-")
             for relative in sources
         ))
-        private = (ROOT / "_bmad-output/project-context.md").read_bytes()
+        private = (ROOT / "docs/project-context.md").read_bytes()
         self.assertTrue(private)
         self.assertNotIn(private, [value.content for value in files.values()])
 

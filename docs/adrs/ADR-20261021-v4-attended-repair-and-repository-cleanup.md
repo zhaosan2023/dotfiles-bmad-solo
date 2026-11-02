@@ -1,24 +1,24 @@
 # ADR-20261021：V4 人值守工程返修、版本收敛与安装分发入口简化
 
-- Status: PROPOSED
+- Status: ACCEPTED
 - 创建日期：2026-10-21。
 - 决策所有者：项目维护者。
-- 关联计划：[V4 分阶段计划](../pending_implementation_plan.md:1)；计划标识 BMAD-V4-ATTENDED-CLEANUP-20261021-01。已取得写入成功回执并全文回读；当前入口绑定此 V4 计划，不恢复 V5。工程接管仍须核对实际授权、候选变化和阶段门禁，文档保存不表示验证通过或宿主已加载。
+- 关联计划：[本地 V4 收口计划](../../specs/tasks/archive/20261102T120208Z-BMAD-V4-ATTENDED-CLEANUP-20261021-01/pending_implementation_plan.md:1)；计划标识 BMAD-V4-ATTENDED-CLEANUP-20261021-01，契约版本 2；不是 V5 恢复或真实宿主验收。
 - 会话标识：null。
-- 当前授权：2026-10-22 用户授权继续关联活动计划及本 ADR，以全部必需门禁通过后的转正与归档为目标；工程取舍可通过硬门禁及 DR/DM 自治决定，在当前技术栈落实类型契约、属性与确定性模糊输入背压，保护既有改动，不重复清理或恢复 V5。前序本地清理范围及 V5 独立迁移的用户确认保持历史语境，不作为本仓库独立实测的迁移结论。
-- 授权边界：条件收尾不实例化尚未知的真实宿主目标、配置写入范围或加载交互接口，不取消客户端审批。阶段 2 的目标、执行入口或必需运行时证据缺失时保持 BLOCKED，不由自治裁决豁免验收。全部必需门禁通过后方可接受本 ADR；全计划完成后方可防覆盖归档实际绑定的活动计划并复核源版本。不授权恢复 V5、项目外迁移、联网安装、准备模型认证、Git 提交或推送、无关生产部署或事实基线更新。
+- 当前授权：2026-11-02 用户明确确认只关闭本地 V4 整改，宿主验收移出范围并保留未完成；指定 V4 校验、迁移复核与本任务差异审查通过后接受本 ADR 的本地决策范围，防覆盖归档并仅提交本任务改动。
+- 授权边界：不启动宿主、不恢复 V5、不联网安装、不推送、不登记新的事实；原阶段 2 的目标、配置权限、执行入口与运行时验收仍缺证据，保留为独立未完成事项，不冒称通过。
 
 ## 1. 背景与证据边界
 
 项目当前目标改为人值守的 V4 工程套件；无人值守工程计划迁往独立项目 solo-engine。此前 V4 分析入口优化及其 DR/DM 报告需要返修，不能以文字赋权或评分表证明已经落地。
 
-- 返修前的分析入口曾宣称免审批只读命令和草稿探针执行权；[旧报告的赋权声明](../../docs/Ralph-Wiggum-Loop/dr_dm_v4_backpressure_optimization.md:50)保留这一问题背景。[Roo 模式配置](../../bmad-suite-v4/roo/settings/custom_modes.yaml:5)的分析权限只有读取、受限编辑和浏览，入口文字不能扩大权限；[当前技能的权限边界](../../bmad-suite-v4/skills/ana-solo/SKILL.md:25)是返修候选，不能当作返修前原文或宿主加载证据。
+- 返修前的分析入口曾宣称免审批只读命令和草稿探针执行权；[旧报告的赋权声明](../Ralph-Wiggum-Loop/dr_dm_v4_backpressure_optimization.md:50)保留这一问题背景。[Roo 模式配置](../../bmad-suite-v4/roo/settings/custom_modes.yaml:5)的分析权限只有读取、受限编辑和浏览，入口文字不能扩大权限；[当前技能的权限边界](../../bmad-suite-v4/skills/ana-solo/SKILL.md:25)是返修候选，不能当作返修前原文或宿主加载证据。
 - 接管时发现技能计划示例使用未支持的验证类型，命令缺少超时和封闭输入；历史问题与依据保存在[返修分析](../analysis/ANALYSIS-20261021-v4-backpressure-repair.md:43)。[现有模板](../../bmad-suite-v4/skills/bmad/references/templates/implementation-plan.template.md:20)与[校验器](../../scripts/validate-roo-contracts.py:175)限定三种验证类型；[当前技能](../../bmad-suite-v4/skills/ana-solo/SKILL.md:79)引用套件内模板，不为了示例新增验证协议，不将已删除的示例行号作为当前定位。
-- [旧 DR/DM 报告](../../docs/Ralph-Wiggum-Loop/dr_dm_v4_backpressure_optimization.md:30)含未经测量的智能程度、注意力释放及提速断言，[其防线](../../docs/Ralph-Wiggum-Loop/dr_dm_v4_backpressure_optimization.md:90)没有定位真实实现，[其结论](../../docs/Ralph-Wiggum-Loop/dr_dm_v4_backpressure_optimization.md:149)把部分文本修改写成完整落地。该报告不作为接受决策或性能基线。
+- [旧 DR/DM 报告](../Ralph-Wiggum-Loop/dr_dm_v4_backpressure_optimization.md:30)含未经测量的智能程度、注意力释放及提速断言，[其防线](../Ralph-Wiggum-Loop/dr_dm_v4_backpressure_optimization.md:90)没有定位真实实现，[其结论](../Ralph-Wiggum-Loop/dr_dm_v4_backpressure_optimization.md:149)把部分文本修改写成完整落地。该报告不作为接受决策或性能基线。
 - [部署入口](../../bs.sh:109)集中处理参数、更新、新版移交、标签来源和分发；[安装入口](../../install.sh:67)调用它完成安装或更新。简化必须保留已有失败关闭和所有权边界，不按行数删除保护。
 - 接管时[套件映射](../../scripts/suite_versions.py:29)、[CI](../../.github/workflows/ci.yml:55)和测试存在多版本依赖；本轮须同步退役分支和相关回归，不能只删目录留下悬空契约。
 - 旧通用套件此前身份待确认；最新用户已明确授权删除该目录，不再依赖插件通用名称推断版本。未列入清理清单的资产继续保护。
-- V5 计划已取得完整冻结保全及源复核回执，实际目标为[V5 冻结计划](../archive/plans/plan-20261021-BMAD-ANTI-BUREAUCRACY-20261012-01-frozen.md)；[V5 ADR 头部](ADR-20261012-bmad-solo-anti-bureaucracy-and-programmatic-guards.md:14)标注暂停和历史路径语境。冻结不表示开发完成或宿主进程已停止。
+- V5 计划已取得完整冻结保全及源复核回执，实际目标为[V5 冻结计划](../../specs/tasks/archive/20261102T120208Z-document-closeout/legacy-plans/plan-20261021-BMAD-ANTI-BUREAUCRACY-20261012-01-frozen.md)；[V5 ADR 头部](ADR-20261012-bmad-solo-anti-bureaucracy-and-programmatic-guards.md:14)标注暂停和历史路径语境。冻结不表示开发完成或宿主进程已停止。
 
 本次结论基于仓库静态读取及客户端保全回执。旧任务通过记录不继承为本任务绿灯；用户使用体验是问题线索，不是对照测量。
 
@@ -74,7 +74,7 @@ V4 是本仓库唯一套件，阶段 1 本地验收不等于宿主加载。本�
 
 最新用户确认已完整保全并独立迁往 solo-engine，明确授权直接删除本仓库 V5 源码与专属测试，替代此前“暂留源码、只评估迁移”的决定。本轮不访问或修改外部项目，不将用户确认写成本仓库独立核验结果。
 
-保留[V5 原提案](ADR-20261012-bmad-solo-anti-bureaucracy-and-programmatic-guards.md)和[V5 冻结计划](../archive/plans/plan-20261021-BMAD-ANTI-BUREAUCRACY-20261012-01-frozen.md)及真实回执；其中源码路径属于历史语境，不证明现存资产或继承权限。V5 未完成承诺不因本仓库退役而标记完成，不继续其开发或启动任务。
+保留[V5 原提案](ADR-20261012-bmad-solo-anti-bureaucracy-and-programmatic-guards.md)和[V5 冻结计划](../../specs/tasks/archive/20261102T120208Z-document-closeout/legacy-plans/plan-20261021-BMAD-ANTI-BUREAUCRACY-20261012-01-frozen.md)及真实回执；其中源码路径属于历史语境，不证明现存资产或继承权限。V5 未完成承诺不因本仓库退役而标记完成，不继续其开发或启动任务。
 
 ## 4. 不变量与历史关系
 
@@ -86,6 +86,6 @@ V4 是本仓库唯一套件，阶段 1 本地验收不等于宿主加载。本�
 
 ## 5. 风险、验收及接受边界
 
-分阶段验收和实际命令只保存于[关联计划](../pending_implementation_plan.md)，ADR 不镜像任务状态。阶段交付不等于全计划完成；本轮相关验证失败不得推进，真实宿主身份和加载证据缺口不被本地清理通过掩盖。
+分阶段验收和命令见[关联计划](../../specs/tasks/archive/20261102T120208Z-BMAD-V4-ATTENDED-CLEANUP-20261021-01/pending_implementation_plan.md)；ADR 不镜像任务流水。本次仅接受明确收窄的本地整改决策，真实宿主切换、身份、加载与权限行为仍未验收。
 
-接受本 ADR 前须完成：两入口契约对齐、旧报告事实修复与路由、实际 V4 切换证据、范围明确的版本清理、安装分发相关回归及保护边界对账。2026-10-22 用户已给予全部必需门禁通过后的转正及全计划完成后的归档授权，但授权本身不提供缺失证据；必需宿主验收未通过时保持 PROPOSED，保留活动计划，不以局部交付闭环。不足以比较优化前后效率时明确无对照结论。
+接受边界按 2026-11-02 用户明确授权收窄：本地 V4 整改基线、文档迁移保全及复核、指定 V4 静态校验和本任务差异审查；原阶段 2/AC-6 不属于本次必需出口。没有真实宿主加载、权限交互或优化前后效率的验收结论，不以本次接受替代这些独立门禁。

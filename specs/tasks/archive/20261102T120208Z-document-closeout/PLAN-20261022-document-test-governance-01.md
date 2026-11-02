@@ -8,7 +8,7 @@ adr_file: "docs/adrs/ADR-20261022-document-test-governance-and-host-adaptation.m
 supplemental_adrs:
   - "docs/adrs/ADR-20261023-cline-native-plan-act-and-backpressure.md"
 verification_type: config_syntax
-verification_command: "timeout --kill-after=2s 30s python3 -B scripts/validate-roo-contracts.py --suite v4 --plan PLAN-20261022-document-test-governance-01.md < /dev/null"
+verification_command: "timeout --kill-after=2s 30s python3 -B scripts/validate-roo-contracts.py --suite v4 --plan specs/tasks/archive/20261102T120208Z-document-closeout/PLAN-20261022-document-test-governance-01.md < /dev/null"
 verification_command_status: AVAILABLE
 authorization: "2026-10-23 首批历史授权：三份文档迁移至 docs/adrs/ 和 docs/analysis/ 同名文件，原目录保全、消费者适配及相关回归；三文件批次程序复制/删除为专项例外，失败保留源、目标与诊断。当前用户确认首批闭环，授权收敛 F3：剩余 20 个历史分析区 Markdown 原地保留为冷资产，停止全量物理搬迁；仅修订本计划收敛契约并准备项目内 FastCode 前置知识蒸馏立项提案。沿用相关只读 Git 检查、V0 及受影响首批静态/项目内回归权限，不重做复制、删除或恢复。不授权外部 FastCode 仓库访问、接入实施、其他生产迁移、F4 安装配置或激活、真实仓库提交推送、凭据读取迁移、私有分支、通用控制器、ADR 接受、事实登记或归档；不解除 F2/F4 必需门禁或扩大分析编辑权限。"
 session_id: null
@@ -18,13 +18,13 @@ session_id: null
 
 ## 契约实例化与授权
 
-- 契约版本：4；本轮收敛修订标识：F3-CAP-20261023-01。绑定身份须同时包含版本、修订标识及 F3 收敛阶段；不改变首批三文件操作契约。唯一绑定路径为本文件[`PLAN-20261022-document-test-governance-01.md`](PLAN-20261022-document-test-governance-01.md)，标识为 BMAD-DOCUMENT-TEST-GOVERNANCE-20261022-01。本轮只收敛文档，不重做已闭环首批，不采用宿主桥接，不以 F3 封顶解除 F2/F4 门禁；原生模式与动态背压决策见[`补充 ADR`](docs/adrs/ADR-20261023-cline-native-plan-act-and-backpressure.md:1)。保留关联 ADR 的身份及 PROPOSED，全计划元数据保持 BLOCKED。FastCode 仅准备独立立项提案，不新建本计划的平行执行实例；当前进度仅由平台任务记录承载。
+- 契约版本：4；本轮收敛修订标识：F3-CAP-20261023-01。绑定身份须同时包含版本、修订标识及 F3 收敛阶段；不改变首批三文件操作契约。唯一绑定路径为本文件[`PLAN-20261022-document-test-governance-01.md`](PLAN-20261022-document-test-governance-01.md)，标识为 BMAD-DOCUMENT-TEST-GOVERNANCE-20261022-01。本轮只收敛文档，不重做已闭环首批，不采用宿主桥接，不以 F3 封顶解除 F2/F4 门禁；原生模式与动态背压决策见[`补充 ADR`](../../../../docs/adrs/ADR-20261023-cline-native-plan-act-and-backpressure.md:1)。保留关联 ADR 的身份及 PROPOSED，全计划元数据保持 BLOCKED。FastCode 仅准备独立立项提案，不新建本计划的平行执行实例；当前进度仅由平台任务记录承载。
 - 下方 F0、新建权限及“本轮仅保存”的表述仅保留 2026-10-22 结晶时的历史边界；当前权限以本契约 authorization、当前用户明确指令与平台真实审批为准。计划保存契约与验收，不保存逐轮进度或通过流水；继续授权不补足未知接口，也不解除依赖门禁。
-- 依据为[`关联 ADR`](docs/adrs/ADR-20261022-document-test-governance-and-host-adaptation.md:1)及[`结晶分析`](docs/analysis/ANALYSIS-20261022-document-test-governance.md:180)；二者是决策依据，不冒充可执行计划。关联 ADR 当前为 PROPOSED，本轮不得接受。
-- 实例化来源是[`真实计划模板`](bmad-suite-v4/skills/bmad/references/templates/implementation-plan.template.md:1)。保留其授权、摄入绑定、目标、验收、架构、影响、Epic、验证矩阵、恢复和审批职责，不复制完整研究或执行流水。
-- 工程模式源配置列出读取、编辑、终端能力，见[`工程权限配置`](bmad-suite-v4/roo/settings/custom_modes.yaml:18)，不证明宿主已加载源版本，也不豁免客户端审批。2026-10-22 结晶阶段禁止终端；当前 F1 允许授权范围内的相关限时验证与只读 Git 检查，不扩大分析角色权限。
+- 依据为[`关联 ADR`](../../../../docs/adrs/ADR-20261022-document-test-governance-and-host-adaptation.md:1)及[`结晶分析`](../../../../docs/analysis/ANALYSIS-20261022-document-test-governance.md:180)；二者是决策依据，不冒充可执行计划。关联 ADR 当前为 PROPOSED，本轮不得接受。
+- 实例化来源是[`真实计划模板`](../../../../bmad-suite-v4/skills/bmad/references/templates/implementation-plan.template.md:1)。保留其授权、摄入绑定、目标、验收、架构、影响、Epic、验证矩阵、恢复和审批职责，不复制完整研究或执行流水。
+- 工程模式源配置列出读取、编辑、终端能力，见[`工程权限配置`](../../../../bmad-suite-v4/roo/settings/custom_modes.yaml:18)，不证明宿主已加载源版本，也不豁免客户端审批。2026-10-22 结晶阶段禁止终端；当前 F1 允许授权范围内的相关限时验证与只读 Git 检查，不扩大分析角色权限。
 - 新建前原生读取目标返回 ENOENT，根目录列举未展示该目标；这是当时未发现现有内容，不是权限拒绝或磁盘故障。标识检索只定位到分析中的候选标识，未观察到其他执行实例冲突；不保证排除并发创建。
-- [`项目内路径接口`](scripts/validate-roo-contracts.py:115)要求项目内相对路径、不得包含父目录段、真实解析后不越界且为普通文件；[`显式计划接口`](scripts/validate-roo-contracts.py:233)支持传入独立路径，不要求使用默认入口。以上为源码检查，未执行校验；新文件尚不存在时不能宣称其严格解析已经通过。
+- [`项目内路径接口`](../../../../scripts/validate-roo-contracts.py:115)要求项目内相对路径、不得包含父目录段、真实解析后不越界且为普通文件；[`显式计划接口`](../../../../scripts/validate-roo-contracts.py:233)支持传入独立路径，不要求使用默认入口。以上为源码检查，未执行校验；新文件尚不存在时不能宣称其严格解析已经通过。
 - 原生写入工具没有声明排他创建或整体原子保证。目标若出现其他内容、路径冲突或客户端拒绝，应停止写入、报告 BLOCKED，不覆盖、不换路径、不扩大权限。收到真实写入成功回执后才报告已保存。
 - 元数据中的 AVAILABLE 仅表示所指静态校验脚本已经存在并完成有界源码读取；不表示环境依赖、独立计划解析、阶段验收或宿主行为已验证。新增治理及桥接验证资产分别保持 PLANNED_NOT_YET_CREATED。
 - 用户当前授权优先于依据中的历史授权。会话标识未知，保持 null；不继承依据中无法定位的网页编号、旧平台调用标识或历史通过摘要作为本计划的验收证据。
@@ -32,7 +32,7 @@ session_id: null
 ## 摄入路由与执行绑定
 
 - 后续授权须明确本计划标识、路径、契约版本、阶段及允许的写入和验证范围；仅在接管、契约变化、阶段边界复核绑定及关联 ADR。发现外部变化先停止对账，不逐修改重绑，不由模型手工计算或同步指纹。
-- 显式绑定本计划时跳过旧[`pending_implementation_plan.md`](_bmad-output/pending_implementation_plan.md)。本轮不读取该文件来替换任务，不写、不改名、不腾空、不冻结、不完成、不归档旧入口及其关联任务。
+- 显式绑定本计划时跳过旧[`pending_implementation_plan.md`](../20261102T120208Z-BMAD-V4-ATTENDED-CLEANUP-20261021-01/pending_implementation_plan.md)。本轮不读取该文件来替换任务，不写、不改名、不腾空、不冻结、不完成、不归档旧入口及其关联任务。
 - 新计划不依赖旧任务先完成；新任务的阶段结果不得自动替代旧任务验收。旧任务现状来自结晶依据，本轮不重新核验或更新其状态，不恢复其他历史执行实例。
 - 默认入口缺失正常；显式路径缺失、非法、拒绝、磁盘错误及格式损坏分别报告，不降级选取其他计划。历史恢复须单独授权、新执行实例及重验，不继承历史绿灯。
 - 本轮仅使用平台任务记录及真实工具回执跟踪接管与计划交付。控制器是否真实可用并覆盖此任务未确认，不宣称已有程序防篡改保证，不新增状态账本、手写状态卡或计划/ADR 流水副本。
@@ -64,9 +64,9 @@ session_id: null
 
 ## 架构基线
 
-- 相关组件：[`工程技能`](bmad-suite-v4/skills/bmad/SKILL.md:21)、[`分析技能`](bmad-suite-v4/skills/ana-solo/SKILL.md)、[`共享核心`](bmad-suite-v4/rules/bmad-core.md:11)、[`Roo 核心`](bmad-suite-v4/roo/rules/02-bmad-core.md:5)、[`工程规则`](bmad-suite-v4/roo/rules-bmad-engineer/01-bmad-engineer-core.md:5)、[`模式配置`](bmad-suite-v4/roo/settings/custom_modes.yaml:1)、[`静态校验器`](scripts/validate-roo-contracts.py:172)及现有测试分组。
-- 事实基线：已读取[`project-context.md`](_bmad-output/project-context.md:1)，首行有字面换行转义；仅引用，不修写，不把其中历史执行摘要当成本轮验收。
-- 决策依据：复用关联 PROPOSED ADR 的职责分离、薄适配、语言兼容、旧任务保护和保全条件；既有生命周期决策的关系见[`ADR 的既有决策关系`](docs/adrs/ADR-20261022-document-test-governance-and-host-adaptation.md:67)，不追改历史接受记录。
+- 相关组件：[`工程技能`](../../../../bmad-suite-v4/skills/bmad/SKILL.md:21)、[`分析技能`](../../../../bmad-suite-v4/skills/ana-solo/SKILL.md)、[`共享核心`](../../../../bmad-suite-v4/rules/bmad-core.md:11)、[`Roo 核心`](../../../../bmad-suite-v4/roo/rules/02-bmad-core.md:5)、[`工程规则`](../../../../bmad-suite-v4/roo/rules-bmad-engineer/01-bmad-engineer-core.md:5)、[`模式配置`](../../../../bmad-suite-v4/roo/settings/custom_modes.yaml:1)、[`静态校验器`](../../../../scripts/validate-roo-contracts.py:172)及现有测试分组。
+- 事实基线：已读取[`project-context.md`](../../../../docs/project-context.md:1)，首行有字面换行转义；仅引用，不修写，不把其中历史执行摘要当成本轮验收。
+- 决策依据：复用关联 PROPOSED ADR 的职责分离、薄适配、语言兼容、旧任务保护和保全条件；既有生命周期决策的关系见[`ADR 的既有决策关系`](../../../../docs/adrs/ADR-20261022-document-test-governance-and-host-adaptation.md:67)，不追改历史接受记录。
 - 必须保留：当前工作区边界、第三方资产、受管分发的所有权/源复核/锁/事务与恢复；分批保存不承诺跨目录整体原子性，禁止软链接绕过保护。
 - 现有布局是过渡及失败退路。候选根入口、规范目录和迁移目录不表示已创建，路径不支持时保留原位与显式读取。
 
@@ -92,19 +92,19 @@ session_id: null
 ### Story F1.1：统一职责和授权，保留既有入口及拒绝边界
 
 - 依赖：F0 交付；用户明确授权 F1 的具体文件、相关新增测试及本地验证。保存本计划不满足实施授权。
-- 预期变更路径：[`分析技能`](bmad-suite-v4/skills/ana-solo/SKILL.md)、[`工程技能`](bmad-suite-v4/skills/bmad/SKILL.md)、[`DM 参考`](bmad-suite-v4/skills/ana-solo/references/decision-matrix.md:13)、[`共享核心`](bmad-suite-v4/rules/bmad-core.md)、[`Roo 核心`](bmad-suite-v4/roo/rules/02-bmad-core.md)、[`分析规则`](bmad-suite-v4/roo/rules-ana-architect/01-ana-solo-core.md)、[`工程规则`](bmad-suite-v4/roo/rules-bmad-engineer/01-bmad-engineer-core.md)、[`模式配置`](bmad-suite-v4/roo/settings/custom_modes.yaml)、[`计划模板`](bmad-suite-v4/skills/bmad/references/templates/implementation-plan.template.md)、[`校验器`](scripts/validate-roo-contracts.py)及[`README.md`](README.md)。按实际差异精确选择，不要求全改。
+- 预期变更路径：[`分析技能`](../../../../bmad-suite-v4/skills/ana-solo/SKILL.md)、[`工程技能`](../../../../bmad-suite-v4/skills/bmad/SKILL.md)、[`DM 参考`](../../../../bmad-suite-v4/skills/ana-solo/references/decision-matrix.md:13)、[`共享核心`](../../../../bmad-suite-v4/rules/bmad-core.md)、[`Roo 核心`](../../../../bmad-suite-v4/roo/rules/02-bmad-core.md)、[`分析规则`](../../../../bmad-suite-v4/roo/rules-ana-architect/01-ana-solo-core.md)、[`工程规则`](../../../../bmad-suite-v4/roo/rules-bmad-engineer/01-bmad-engineer-core.md)、[`模式配置`](../../../../bmad-suite-v4/roo/settings/custom_modes.yaml)、[`计划模板`](../../../../bmad-suite-v4/skills/bmad/references/templates/implementation-plan.template.md)、[`校验器`](../../../../scripts/validate-roo-contracts.py)及[`README.md`](../../../../README.md)。按实际差异精确选择，不要求全改。
 - 连贯变更：职责和生命周期保持单源；将 DM 的强制权重/候选数量/最高分裁决改为证据充分时才量化；当前用户授权与能力分开；独立计划路径规则仅允许明确确认的范围，不用通配全开放，也不把历史目录伪装成活动入口。
-- 补充 ADR 指定的相关下层消费者纳入 F1：[`能力映射`](bmad-suite-v4/skills/bmad/references/capability-map.md)、[`开发角色`](bmad-suite-v4/skills/bmad/references/mode-developer.md)及[`构建流程`](bmad-suite-v4/skills/bmad/references/procedures/build.md)。仅修正与场景自适应、产物授权和失败背压有关的冲突，不顺手重构。
+- 补充 ADR 指定的相关下层消费者纳入 F1：[`能力映射`](../../../../bmad-suite-v4/skills/bmad/references/capability-map.md)、[`开发角色`](../../../../bmad-suite-v4/skills/bmad/references/mode-developer.md)及[`构建流程`](../../../../bmad-suite-v4/skills/bmad/references/procedures/build.md)。仅修正与场景自适应、产物授权和失败背压有关的冲突，不顺手重构。
 - 动态背压契约须保留：场景决定验证类型，实际影响范围决定深度；普通失败允许授权预算内修复，必需失败不得推进依赖；重复失败和实质性架构变化触发重检；变化后仅重验受影响证据。F1 修订规则不等于实现 Cline 程序拦截，后者仍属于 F2/F4 的明确范围与验收。
 - 路径边界：本轮工程可创建根计划不代表分析模式也能创建。后续分析写入范围必须另行确认并适配；未确认前不扩大其正则。保留绝对路径、父目录穿越、嵌套/伪扩展、尾随换行及越界链接的拒绝边界。
 - 不包含：创建通用项目入口或规范目录、搬迁文档/测试/证据、真实宿主分发、旧任务修订或事实登记。
 
 ### Task F1.1.1：相关契约回归与隔离分发门禁
 
-- 测试资产：复用[`test_contracts.py`](tests/roo_contracts/test_contracts.py:115)、[`test_v4_analysis_repair.py`](tests/roo_contracts/test_v4_analysis_repair.py:38)及已发现的[`test_document_test_governance.py`](tests/roo_contracts/test_document_test_governance.py:1)。文件存在仅确认资产可定位，相关阶段是否通过仍由适用的真实回执判定，不在计划镜像测试流水。
+- 测试资产：复用[`test_contracts.py`](../../../../tests/roo_contracts/test_contracts.py:115)、[`test_v4_analysis_repair.py`](../../../../tests/roo_contracts/test_v4_analysis_repair.py:38)及已发现的[`test_document_test_governance.py`](../../../../tests/roo_contracts/test_document_test_governance.py:1)。文件存在仅确认资产可定位，相关阶段是否通过仍由适用的真实回执判定，不在计划镜像测试流水。
 - 必要断言：独立根路径、显式输入跳过损坏旧默认入口、缺失显式文件不降级、旧资产不变、精确写入范围与拒绝边界、职责/授权一致性。保留既有属性及缺陷回归，不只检查新增关键词。
-- 分发影响复用[`test_v4_analysis_distribution.py`](tests/roo_distribution/test_v4_analysis_distribution.py:16)；夹具的 Git 初始化、提交和分发只发生在项目内独立临时仓库，见[`隔离夹具`](tests/roo_distribution/test_gitops_dry_run.py:13)。后续授权须涵盖这些夹具副作用，不授予真实工作仓库 Git 或真实宿主操作权限。
-- 校验器变化涉及版本接口时追加[`test_suite_contracts.py`](tests/roo_contracts/test_suite_contracts.py)；发现/CI 变化涉及[`test_ci_contracts.py`](tests/roo_contracts/test_ci_contracts.py:39)。选择依据记录在唯一任务入口，不盲跑全库。
+- 分发影响复用[`test_v4_analysis_distribution.py`](../../../../tests/roo_distribution/test_v4_analysis_distribution.py:16)；夹具的 Git 初始化、提交和分发只发生在项目内独立临时仓库，见[`隔离夹具`](../../../../tests/roo_distribution/test_gitops_dry_run.py:13)。后续授权须涵盖这些夹具副作用，不授予真实工作仓库 Git 或真实宿主操作权限。
+- 校验器变化涉及版本接口时追加[`test_suite_contracts.py`](../../../../tests/roo_contracts/test_suite_contracts.py)；发现/CI 变化涉及[`test_ci_contracts.py`](../../../../tests/roo_contracts/test_ci_contracts.py:39)。选择依据记录在唯一任务入口，不盲跑全库。
 - 出口：V0、V1、V2 及实际受影响的条件门禁取得真实合格回执；缺依赖、零收集、必需项跳过、超时或清理未知均 BLOCKED。静态通过只证明静态契约，不能登记宿主行为通过。
 
 ## Epic F2：薄宿主适配与项目内隔离验证
@@ -112,10 +112,10 @@ session_id: null
 ### Story F2.1：按已核实版本接口桥接单一权威项目内容
 
 - 依赖：F1 相关必需门禁取得适用回执；按上述目标版本定位原生规则发现、技能材料和可靠模式输入。继续授权允许项目内 F2，但不把交接中的未知接口或安装资产当作已验收能力；缺接口只阻塞对应事项，不触发自行安装、真实宿主激活或配置写入。
-- 预期变更路径：仅经确认的项目内宿主桥接/模板和必要分发消费者；消费者候选为[`deployment_source.py`](scripts/deployment_source.py)、[`deployment_targets.py`](scripts/deployment_targets.py)。桥接最终文件名与发现路径须由目标接口确定，不预造模式条件字段，不将 Roo 存储发现套用于 Cline，不新增真实全局配置路径。
+- 预期变更路径：仅经确认的项目内宿主桥接/模板和必要分发消费者；消费者候选为[`deployment_source.py`](../../../../scripts/deployment_source.py)、[`deployment_targets.py`](../../../../scripts/deployment_targets.py)。桥接最终文件名与发现路径须由目标接口确定，不预造模式条件字段，不将 Roo 存储发现套用于 Cline，不新增真实全局配置路径。
 - 薄路由：只常驻公共纪律、职责选择与导航，按需引用现有分析和工程方法论；不同时常驻两套完整角色指令，不双写项目事实。可靠模式输入未确认时不得宣称自动角色绑定；显式读取仅是保留的退路，不满足无需技能口令的原生体验验收。
 - 分发：仅确有需要时扩展来源映射，复用受管协调器；新增 Cline 不得通过缩减旧输入集合连带退役 Gemini/Roo。必要测试覆盖既有消费者、资产所有权、锁、缓存、源复核及恢复边界，不另造部署框架。
-- 验证资产：候选新增[`test_host_adaptation.py`](tests/roo_distribution/test_host_adaptation.py)，仍为 PLANNED_NOT_YET_CREATED。接口及文件清单核实后才创建；先有真实资产，再运行 V3，不能用零收集或模拟模型响应冒充接口覆盖。
+- 验证资产：候选新增[`test_host_adaptation.py`](../../../../tests/roo_distribution/test_host_adaptation.py)，仍为 PLANNED_NOT_YET_CREATED。接口及文件清单核实后才创建；先有真实资产，再运行 V3，不能用零收集或模拟模型响应冒充接口覆盖。
 - 隔离验收：薄引用可解析、项目事实不双写或泄露、第三方及旧宿主资产保留、源不变、目标冲突无副作用、源变化拒绝与获准恢复；覆盖合法操作、越权拒绝、失败后授权内修复及过期证据拒绝。实际业务入口未覆盖时，单独状态机或关键词断言不算硬门禁通过。
 - 预算：只执行相关项目内静态及隔离命令；串行、前台同步、标准输入封闭，探测 15s、验证 30s、构建 600s，强杀宽限 2s。本阶段不安装依赖、不请求模型、不启动后台或真实宿主；普通修复不得扩大范围，同类连续失败两次先重检。未获得更大预算时不自动延长超时。
 - 出口：V0、V2、V3 及影响范围内必要安全回归取得真实合格回执；硬门禁另须满足下方覆盖契约。独立资产通过不等于 F2 全部通过，更不能解除 F3/F4 依赖或接受 ADR。接口不足保持对应出口 BLOCKED，不静默降级。
@@ -133,11 +133,11 @@ session_id: null
 ### Story F3.1：先保全与消费者核对，再迁移明确批准的批次
 
 - 依赖：保留首批采用的 F1 路径与消费者兼容门禁；采用桥接的未来变更仍须满足 F2 相关门禁。当前用户确认首批闭环并终止剩余历史分析的全量迁移要求；首批清单及命令作为保全、审计和失败恢复契约保留，不构成重复操作授权，不允许按目录通配执行。
-- 原候选根[`AGENTS.md`](AGENTS.md)、[`specs/`](specs/)、[`plans/`](plans/)及其他目录布局不作为本轮 F3 的必需交付或欠账。已迁核心目标保持原位；现有[`tests/`](tests/)、[`verification/`](_bmad-output/verification/)、旧活动入口、其他 ADR 和计划均不搬迁、不清理。未来布局变更须另行提出具体范围与授权，不复活本次全量搬迁要求。
+- 原候选根[`AGENTS.md`](../../../../AGENTS.md)、[`specs/`](../../../)、[`plans/`](../../../../plans/)及其他目录布局不作为本轮 F3 的必需交付或欠账。已迁核心目标保持原位；现有[`tests/`](../../../../tests/)、[`verification/`](../../../../verification/legacy-bmad-output/)、旧活动入口、其他 ADR 和计划均不搬迁、不清理。未来布局变更须另行提出具体范围与授权，不复活本次全量搬迁要求。
 - 每批清单须含源、目标、用途与当前/历史/被替代/待核验分类、必要引用、测试发现/调用方、所有权、唯一证据依赖、保全位置、失败恢复及适用命令。未确认源身份和目标不覆盖条件前不得写入。
 - 测试边界：Python 默认复用集中分组；需要未导出成员访问的 Go 白盒留同包。本仓库当前没有取得相关 Go 迁移清单或工具链证据，Go 仅为兼容约束，不声明本仓库已实测。
 - 保全：先完整保存获准源内容与原目录语境，取得成功回执再复核源身份/内容版本；源已变化、保存失败或目标出现其他内容时保留源并停止。不为补证重复删除，不以摘要替代唯一原始结果。
-- 首批程序为[三文件批次程序](.scratch/F3-20261023-document-governance-01/migrate_batch.py:1)，范围不扩大；非通用控制器、非沙箱。保留[批次回归](tests/roo_contracts/test_f3_document_migration.py:1)及原始保全，不为剩余冷资产创建迁移程序、批次测试或逐篇摘要。
+- 首批程序为[三文件批次程序](../../../../.scratch/F3-20261023-document-governance-01/migrate_batch.py:1)，范围不扩大；非通用控制器、非沙箱。保留[批次回归](../../../../tests/roo_contracts/test_f3_document_migration.py:1)及原始保全，不为剩余冷资产创建迁移程序、批次测试或逐篇摘要。
 - 出口：逐项引用/发现前后对齐，语义与副作用边界保留，跨机器证据保留/脱敏策略明确；V0、受影响现有门禁及批准后的批次命令全部通过。任何引用失效、测试发现丢失、语言封装失败、唯一证据缺口或清理未知阻塞本批及依赖阶段。
 
 ### F3 首批：三文件清单及消费者契约
@@ -147,9 +147,9 @@ session_id: null
 
 | 源（原目录语境） | 获准目标 | 保全文件 |
 |---|---|---|
-| [治理 ADR 原位](_bmad-output/adrs/ADR-20261022-document-test-governance-and-host-adaptation.md) | [治理 ADR](docs/adrs/ADR-20261022-document-test-governance-and-host-adaptation.md:1) | [原字节保全](.scratch/F3-20261023-document-governance-01/_bmad-output/adrs/ADR-20261022-document-test-governance-and-host-adaptation.md) |
-| [Cline ADR 原位](_bmad-output/adrs/ADR-20261023-cline-native-plan-act-and-backpressure.md) | [Cline ADR](docs/adrs/ADR-20261023-cline-native-plan-act-and-backpressure.md:1) | [原字节保全](.scratch/F3-20261023-document-governance-01/_bmad-output/adrs/ADR-20261023-cline-native-plan-act-and-backpressure.md) |
-| [分析原位](_bmad-output/analysis/ANALYSIS-20261022-document-test-governance.md) | [结晶分析](docs/analysis/ANALYSIS-20261022-document-test-governance.md:1) | [原字节保全](.scratch/F3-20261023-document-governance-01/_bmad-output/analysis/ANALYSIS-20261022-document-test-governance.md) |
+| [治理 ADR 原位](../../../../docs/adrs/ADR-20261022-document-test-governance-and-host-adaptation.md) | [治理 ADR](../../../../docs/adrs/ADR-20261022-document-test-governance-and-host-adaptation.md:1) | [原字节保全](../../../../.scratch/F3-20261023-document-governance-01/_bmad-output/adrs/ADR-20261022-document-test-governance-and-host-adaptation.md) |
+| [Cline ADR 原位](../../../../docs/adrs/ADR-20261023-cline-native-plan-act-and-backpressure.md) | [Cline ADR](../../../../docs/adrs/ADR-20261023-cline-native-plan-act-and-backpressure.md:1) | [原字节保全](../../../../.scratch/F3-20261023-document-governance-01/_bmad-output/adrs/ADR-20261023-cline-native-plan-act-and-backpressure.md) |
+| [分析原位](../../../../docs/analysis/ANALYSIS-20261022-document-test-governance.md) | [结晶分析](../../../../docs/analysis/ANALYSIS-20261022-document-test-governance.md:1) | [原字节保全](../../../../.scratch/F3-20261023-document-governance-01/_bmad-output/analysis/ANALYSIS-20261022-document-test-governance.md) |
 
 - 引用与调用方：适配本计划 frontmatter 的主/补充 ADR、正文引用及[README 导航](README.md:127)；搬迁文档的本地链接按原文件目录解析后重定位，保持原目标身份、行号和片段。跨本批次引用指向新目标，指向旧任务、现有方法论、原始来源和候选目录的引用仍指向原对象；原本未创建的候选或缺失引用须单独披露，不通过本批次伪造资产或缩减断言。
 - 发现与权限：静态校验器原生项目内相对路径接口已支持目标，不扩大分析模式正则，不创建新宿主发现承诺。测试和 CI 收集路径保持原位；本批次只采用显式工程绑定，分析编辑新路径另须授权。
@@ -159,7 +159,7 @@ session_id: null
 
 ### F3 收敛：20 个冷资产原地保留与防膨胀封顶
 
-- 固定范围：当前[`历史分析区`](_bmad-output/analysis/)原生列举的 20 个 Markdown 文件，实际为 19 篇报告与 1 篇[`历史会话索引`](_bmad-output/analysis/SESSION-INDEX-ALL-CONVERSATIONS.md:1)。本次封顶不要求读取其全部正文、追溯数据库或重建会话；索引中的完整性宣称不是本轮核验事实。
+- 固定范围：当前[`历史分析区`](../../../../docs/analysis/)原生列举的 20 个 Markdown 文件，实际为 19 篇报告与 1 篇[`历史会话索引`](../../../../docs/analysis/SESSION-INDEX-ALL-CONVERSATIONS.md:1)。本次封顶不要求读取其全部正文、追溯数据库或重建会话；索引中的完整性宣称不是本轮核验事实。
 - 冷资产职责：原路径和内容保留，不搬、不删、不改名、不逐篇打标、不合并、不生成 20 份摘要或第二份索引；不改忽略配置或自动分发。原有引用、历史授权、唯一证据及旧任务未完成义务继续有效，历史宣称不升级为当前事实。
 - 热上下文封顶：本集合默认正文加载数为 0；只有当前问题需要时，先按主题定位，再读取必要片段，禁止目录级全文摄入。当前任务常驻入口只绑定本计划，不把全部分析或会话索引作为前置知识；恢复时仅带目标、授权和有界未完成事项，遵守至多 80 行及实际字节预算，预算不足阻塞、不截掉义务。
 - 增量原则：新的稳定知识只在获准目标中按主题最小蒸馏，保留来源、适用范围、未知和失效条件；不因历史文件数新建映射、账本或迁移工程。冷资产分类是本轮契约，不宣称宿主已自动排除加载或已有程序防膨胀保证。
@@ -183,7 +183,7 @@ session_id: null
 - 环境前提：Linux/Bash 来自当前环境信息；Python/PyYAML、GNU timeout 及相关 Shell/Git 工具的安装、版本和可执行性未验证。缺依赖先 BLOCKED，环境准备单独授权，测试不联网安装。探测限时 15s、验证 30s、构建 600s，2s 强杀宽限；本计划无当前构建需求，不凭空增加构建命令。
 - 接受条件：实际退出 0 不是唯一条件；相关测试必须非零收集、无必需项跳过，输出与测试范围匹配，夹具清理明确。普通 unittest 的跳过或零用例即使退出 0，也不得记为通过。
 - 每次回执保存命令、工作目录、实际退出状态、关键输出、目标、适用输入/契约版本及测试收集情况，唯一任务入口引用；完整日志保存在另行批准的位置，不镜像到计划或 ADR。
-- 本地校验脚本只检查静态契约形状及项目内路径，不是 Shell 安全解析器，也不执行计划命令，见[`校验边界`](scripts/validate-roo-contracts.py:199)。当前不宣称计划已被解析通过。
+- 本地校验脚本只检查静态契约形状及项目内路径，不是 Shell 安全解析器，也不执行计划命令，见[`校验边界`](../../../../scripts/validate-roo-contracts.py:199)。当前不宣称计划已被解析通过。
 
 ### V0：显式独立计划及相关源契约静态校验
 
@@ -191,7 +191,7 @@ session_id: null
 - 前提：已保存本计划、关联 ADR 存在、阶段验证已获授权、本地依赖可用。
 
 ```bash
-timeout --kill-after=2s 30s python3 -B scripts/validate-roo-contracts.py --suite v4 --plan PLAN-20261022-document-test-governance-01.md < /dev/null
+timeout --kill-after=2s 30s python3 -B scripts/validate-roo-contracts.py --suite v4 --plan specs/tasks/archive/20261102T120208Z-document-closeout/PLAN-20261022-document-test-governance-01.md < /dev/null
 ```
 
 ### V1：F1 契约、路径与治理回归
@@ -231,7 +231,7 @@ timeout --kill-after=2s 30s python3 -B -m unittest discover -s tests/roo_distrib
 
 ### V4：F3 批次迁移验证
 
-- 首批历史验收复用 V0 和 V1 三组契约回归，追加[批次回归](tests/roo_contracts/test_f3_document_migration.py:1)。本次仅改变文档收敛契约，重验 V0 与该批次兼容回归；不重做保全、准备、移除或恢复，不运行无关 V1/V2/V3 或全库测试。冷资产保留由原生列举和已有[保全保护记录](.scratch/F3-20261023-document-governance-01/preservation.json)的相关审计检查，不生成新账本。批次程序只检查原首批身份和版本 4，不能证明收敛修订绑定、上下文自动限流或宿主行为；本轮修订边界由原生读取与平台回执核对。
+- 首批历史验收复用 V0 和 V1 三组契约回归，追加[批次回归](../../../../tests/roo_contracts/test_f3_document_migration.py:1)。本次仅改变文档收敛契约，重验 V0 与该批次兼容回归；不重做保全、准备、移除或恢复，不运行无关 V1/V2/V3 或全库测试。冷资产保留由原生列举和已有[保全保护记录](../../../../.scratch/F3-20261023-document-governance-01/preservation.json)的相关审计检查，不生成新账本。批次程序只检查原首批身份和版本 4，不能证明收敛修订绑定、上下文自动限流或宿主行为；本轮修订边界由原生读取与平台回执核对。
 - 批次程序先由原生工具完整创建并取得回执，再分步串行调用。用户批准的工具正交例外仅限三文件复制及移除；草稿不是执行级沙箱。以下保全/准备/移除命令是操作契约，不是通过记录；恢复命令仅在失败恢复范围内调用，不默认执行。
 
 ```bash
@@ -287,3 +287,7 @@ timeout --kill-after=2s 15s python3 -B .scratch/F3-20261023-document-governance-
 - F3：2026-10-23 首批三文件迁移授权及专项例外保留为历史契约；当前用户确认首批闭环，批准剩余 20 个历史分析区文件原地冷存、停止全量迁移并收敛阶段结论。本轮仅修订本计划与保存 FastCode 立项提案，不重做首批操作，不包含 F2/F4 或外部项目接入。
 - F4：待明确目标的真实宿主配置及交互验收授权。
 - ADR 接受、事实登记、提交推送、完成归档均未获授权；本轮仅 F3 收敛及新立项准备，不自动推进 F2/F4 或 FastCode 试点。计划与提案保存、首批静态通过及冷资产封顶不证明适配、硬门禁、宿主部署或全计划完成。
+
+## 2026-11-02 历史资产保全迁移边界
+
+本文件仅获准迁入任务归档区冷存；原状态、未完成义务和历史授权保持独立，不代表任务完成、恢复或提案接受。原字节保全见本次本地迁移清单，执行进度不在此复制。

@@ -4,9 +4,9 @@ status: SUSPENDED
 scenario: structural
 impact_tier: M
 requires_adr: true
-adr_file: "_bmad-output/adrs/ADR-20261012-bmad-solo-anti-bureaucracy-and-programmatic-guards.md"
+adr_file: "docs/adrs/ADR-20261012-bmad-solo-anti-bureaucracy-and-programmatic-guards.md"
 verification_type: config_syntax
-verification_command: "timeout 30s python3 -B scripts/validate-roo-contracts.py --suite v5 --plan _bmad-output/pending_implementation_plan.md < /dev/null"
+verification_command: "timeout 30s python3 -B scripts/validate-roo-contracts.py --suite v5 --plan specs/tasks/archive/20261102T120208Z-BMAD-V4-ATTENDED-CLEANUP-20261021-01/pending_implementation_plan.md < /dev/null"
 verification_command_status: AVAILABLE
 authorization: "2026-10-21 当前用户授权未完成冻结保全：完整保留 V5 计划、历史任务状态、关联提案和证据定位；核对保全目标完整保存及源未变化后，才将默认入口交给新的 V4 任务。不是开发完成归档，不转正 ADR，不勾选未完成任务，不继承旧预算或绿灯，不恢复或启动 V5，不删除 V5 源码、测试及回执。当前分析入口仅进行获准文档编辑，不运行终端或验证；文档冻结不证明宿主进程已经停止。另行结晶 V4 返修、版本清理和安装入口重构的分阶段 ADR 与计划，再移交工程入口按当前授权实施。"
 session_id: null
@@ -33,7 +33,7 @@ session_id: null
 - **关联 ADR**：[本任务提案](adrs/ADR-20261012-bmad-solo-anti-bureaucracy-and-programmatic-guards.md)（状态：PROPOSED）。
 - **接管契约**：绑定本文件、原计划标识及关联 PROPOSED ADR；最新紧急纠偏授权、ADR 决策 11 和重写后的 Phase 7 为当前契约。Phase 6 未被明确替代的安全约束与未完成事项保留；较早工程和启动授权仅作历史，不自动延续。八项历史类型化任务状态与回执保持不变，原 Epic 与其他未完成承诺保留；本次明确替代的旧 Phase 7 规格及 AC 17–19 见下文对应关系，不把替代写成已完成。未知会话标识保持 null。
 - **验证命令契约**：头部静态命令保留，AVAILABLE 仅表示既有入口存在，不表示本次运行或通过。本轮不运行终端、静态检查或业务测试；未来获准工程仅重验受影响证据，不追加与四组件无关的全量回归，不修改证据匹配规则制造通过。
-- **当前授权边界**：仅修订本文件和[同一提案](adrs/ADR-20261012-bmad-solo-anti-bureaucracy-and-programmatic-guards.md)，在文档中冻结存储扩张路线；不改动源码、测试、凭据、项目事实、V4 或历史回执，不声称运行入口已停用。此前[接管回执](../.bmad-runtime/phase6-engineering-20261019-1130/intake.json)仅作历史定位，不证明当前无进程。本轮不自动交接实施，不启动、不提交、不恢复、不接受或归档；未来人类显式启动及对应范围、预算是执行前提。
+- **当前授权边界**：仅修订本文件和[同一提案](adrs/ADR-20261012-bmad-solo-anti-bureaucracy-and-programmatic-guards.md)，在文档中冻结存储扩张路线；不改动源码、测试、凭据、项目事实、V4 或历史回执，不声称运行入口已停用。此前[接管回执](../../../../../_bmad-output/archive/.bmad-runtime/phase6-engineering-20261019-1130/intake.json)仅作历史定位，不证明当前无进程。本轮不自动交接实施，不启动、不提交、不恢复、不接受或归档；未来人类显式启动及对应范围、预算是执行前提。
 - **历史语境**：Phase 1–4 描述保留为历史局部交付及授权，不覆盖当前窄范围。此前工程接管记录 HEAD 为 11483cf、若干未提交改动及冻结资产差异为空；这些是历史回执描述，本次未检查 Git，不代表当前工作树。旧 Roo 名称和回执不重命名为 Pi 证据；纯文档变化不触发业务重测，实际实现、测试或契约变化后仅重验受影响证据。
 
 ## 1. 目标 (Goal)
@@ -42,9 +42,9 @@ session_id: null
 
 在原轻量执行控制器设计上补充输入预算、新工程会话、任务期远程循环与必要持久记忆。目标是：人通过本地 IDE 提交已授权任务后，VPS 上独立 Agent 仍能选择任务、自主思考、修改、验证并启动下一轮，不依赖本地客户端在线。
 
-本次仅结晶同一计划与 ADR 的紧急纠偏：以 [`architecture-v5.md`](../docs/Ralph-Wiggum-Loop/architecture-v5.md:8)为架构基准，Phase 7 收敛为状态总线与独立树状看板、进度卡片与文本经验反射、Jev 工具语义门禁、Tmux 四槽位外层编排四个组件。Cline 保留规划候选，不再承担必需统一总控；通用持久决定存储停止扩张。原 Epic 1–7、八项历史任务及回执保留，未替代的 Phase 6 要求仍须完成；旧 Phase 7 和 AC 17–19 的明确替代不表示其已经通过。本轮文档完成不等于工程或全计划完成。
+本次仅结晶同一计划与 ADR 的紧急纠偏：以 [`architecture-v5.md`](../../../../../_bmad-output/archive/docs/Ralph-Wiggum-Loop/architecture-v5.md:8)为架构基准，Phase 7 收敛为状态总线与独立树状看板、进度卡片与文本经验反射、Jev 工具语义门禁、Tmux 四槽位外层编排四个组件。Cline 保留规划候选，不再承担必需统一总控；通用持久决定存储停止扩张。原 Epic 1–7、八项历史任务及回执保留，未替代的 Phase 6 要求仍须完成；旧 Phase 7 和 AC 17–19 的明确替代不表示其已经通过。本轮文档完成不等于工程或全计划完成。
 
-版本放置以 [bmralph-suite-v5](../bmralph-suite-v5/) 为新套件唯一生产源码根目录，现有 [bmad-suite-v4](../bmad-suite-v4/) 作为本任务不修改的对照基线，不宣称整个仓库已冻结或工作树洁净。V5 规则、入口、引用、运行程序和专属测试自包含，禁止运行时回指 V4；仓库根部署基础设施只做兼容性扩展，不承载 V5 任务循环。现有共享文档保留于原路径，不建立镜像计划或 ADR。
+版本放置以 [bmralph-suite-v5](../../../../../_bmad-output/archive/bmralph-suite-v5/) 为新套件唯一生产源码根目录，现有 [bmad-suite-v4](../../../../../_bmad-output/archive/bmad-suite-v4/) 作为本任务不修改的对照基线，不宣称整个仓库已冻结或工作树洁净。V5 规则、入口、引用、运行程序和专属测试自包含，禁止运行时回指 V4；仓库根部署基础设施只做兼容性扩展，不承载 V5 任务循环。现有共享文档保留于原路径，不建立镜像计划或 ADR。
 
 ## 2. 非目标 (Non-Goals)
 
@@ -99,27 +99,27 @@ session_id: null
 
 - 当前阶段为现有 Pi 薄驱动的本地证据接管。P5-PI-DRIVER 的原源状态 SUSPENDED 及空回执先保留；六项旧完成证据全部有效刷新后，单独授权受限脚本仅恢复为 PENDING、回执仍为空，再以精确匹配证据程序登记本地完成。P5-PI-HEADLESS 始终 SUSPENDED、回执 null；计划头部 READY 或行政恢复均不授权真实运行。
 - 前序接管报告官方 Pi 1.3.0 已安装、入口为 /usr/local/bin/pi；安装及版本查询不证明模型运行，本轮不重装、不更新、不换引擎。后端固定来源、包名、版本和安装路径；真实提供方认证、规则/技能映射、权限、等待/取消/清理、内部请求及用量仍须另获授权实证，不读取凭据正文。
-- 实际落点改为[现有后端内薄驱动](../bmralph-suite-v5/scripts/bmad_agent_backend.py:81)，使用固定版本单次 JSON 输出模式和封闭文件输入，不另建生产驱动或永久 RPC 服务。[循环真实门禁](../bmralph-suite-v5/scripts/bmad_loop.py:353)及[入口后端枚举](../bmralph-suite-v5/scripts/bmad-loop.py:19)仍冻结；仅后端支持 Pi 不等于真实接通，不删除门禁、不把真实 Pi 标为夹具。
-- 新反例实际位于[现有测试目录中的 Pi 测试](../bmralph-suite-v5/tests/test_pi_backend.py:1)，替代此前独立 tests_pi 目录及独立驱动规划；不迁移既有测试。测试目录集合和实际后端输入变化使六项完成证据失效，按四组原验证对象定向重验并承担成本，不删输入、不降低下限、不修补旧回执、不默认全套重跑。
+- 实际落点改为[现有后端内薄驱动](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_agent_backend.py:81)，使用固定版本单次 JSON 输出模式和封闭文件输入，不另建生产驱动或永久 RPC 服务。[循环真实门禁](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_loop.py:353)及[入口后端枚举](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad-loop.py:19)仍冻结；仅后端支持 Pi 不等于真实接通，不删除门禁、不把真实 Pi 标为夹具。
+- 新反例实际位于[现有测试目录中的 Pi 测试](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_pi_backend.py:1)，替代此前独立 tests_pi 目录及独立驱动规划；不迁移既有测试。测试目录集合和实际后端输入变化使六项完成证据失效，按四组原验证对象定向重验并承担成本，不删输入、不降低下限、不修补旧回执、不默认全套重跑。
 - P5-PI-DRIVER 绑定当前实际测试标识，下限为 31（不低于原有 27），全部当前反例列为必需；八类原防线逐项映射如下，资产存在不代表已通过。P5-PI-HEADLESS 的未来测试及回执裁决资产仍未创建，不修改其验证契约。完成只由匹配当前 PASS 证据的程序写回，普通文本编辑不得设置 COMPLETED 或填写回执。
 
 ### P5-PI-DRIVER 原防线与实际验收映射
 
 | 原验收类别 | 当前实际测试标识（共同前缀为 test_pi_backend） | 行为及边界 |
 |---|---|---|
-| 未授权运行不得启动 | [PiBackendGuards.test_unapproved_runtime_blocks_invoke_before_request_or_launch](../bmralph-suite-v5/tests/test_pi_backend.py:169)；[test_source_version_authorization_and_runtime_cannot_be_relaxed](../bmralph-suite-v5/tests/test_pi_backend.py:150) | 未授权在请求和进程创建前失败；不只验证配置文字 |
-| 真实 Pi 不得声明为夹具 | [PiBackendGuards.test_real_pi_category_cannot_be_loaded_as_isolated_fixture](../bmralph-suite-v5/tests/test_pi_backend.py:188)；[test_frozen_loop_still_rejects_real_pi_without_activation](../bmralph-suite-v5/tests/test_pi_backend.py:422) | 保留真实类别与冻结外层门禁 |
-| 每次独立新会话、不得恢复历史 | [PiBackendGuards.test_each_invocation_has_distinct_input_and_only_current_feedback](../bmralph-suite-v5/tests/test_pi_backend.py:326)；[test_argument_allowlist_uses_one_shot_ephemeral_json_and_closed_option_parsing](../bmralph-suite-v5/tests/test_pi_backend.py:116) | 新外层会话及请求，参数排除恢复，反馈不串线；真实 Pi 会话尚未实证 |
-| 缺独立凭据不得启动或泄漏秘密 | [PiBackendGuards.test_missing_credentials_blocks_load_before_driver_read_or_launch](../bmralph-suite-v5/tests/test_pi_backend.py:180)；[test_missing_credentials_blocks_invoke_before_request_or_process](../bmralph-suite-v5/tests/test_pi_backend.py:228)；[test_exec_interception_preserves_process_group_and_excludes_inherited_config](../bmralph-suite-v5/tests/test_pi_backend.py:382) | 仅合成凭据；不使用或读取真实认证 |
-| 协议失败或非零退出不得变成 OK | [PiBackendGuards.test_nonzero_exit_cannot_be_masked_by_valid_protocol_or_promise](../bmralph-suite-v5/tests/test_pi_backend.py:306)；[test_completion_promise_and_exit_without_protocol_are_rejected](../bmralph-suite-v5/tests/test_pi_backend.py:246)；[test_model_error_abort_missing_settled_or_late_activity_blocks](../bmralph-suite-v5/tests/test_pi_backend.py:266)及其余协议反例 | 完成口令、完整文本或退出零不能替代协议及独立业务验收 |
-| 请求、工具、会话及批次时限不混淆 | [PiBackendGuards.test_request_tool_session_and_batch_caps_are_not_conflated](../bmralph-suite-v5/tests/test_pi_backend.py:367)；[test_legacy_timeout_is_not_claimed_as_model_request_timeout](../bmralph-suite-v5/tests/test_pi_backend.py:359) | 保留 15/30/600 秒工具上限及 30 秒驱动，内部模型请求时限明确 UNKNOWN |
-| 取消必须等待受管进程清理 | [PiSupervisorDelegationGuards.test_agent_call_interrupt_cleans_same_group_and_preserves_changes](../bmralph-suite-v5/tests/test_pi_backend.py:625)；[test_agent_call_timeout_cleans_same_group_and_preserves_changes](../bmralph-suite-v5/tests/test_pi_backend.py:620) | 实际隔离 Python 同组进程终止、回收及组消失；不是 Pi 实跑，不外推脱组后代 |
-| 清理未知禁止下一次调用 | [PiSupervisorDelegationGuards.test_unknown_cleanup_prohibits_next_call_verification_and_restart](../bmralph-suite-v5/tests/test_pi_backend.py:574)；[PiBackendGuards.test_timeout_cancellation_and_unknown_cleanup_override_protocol_ok](../bmralph-suite-v5/tests/test_pi_backend.py:316) | 故障注入后仅一次调用，无验证、无下次调用、无重启；不得仅模拟一次失败代替禁调行为 |
+| 未授权运行不得启动 | [PiBackendGuards.test_unapproved_runtime_blocks_invoke_before_request_or_launch](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_pi_backend.py:169)；[test_source_version_authorization_and_runtime_cannot_be_relaxed](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_pi_backend.py:150) | 未授权在请求和进程创建前失败；不只验证配置文字 |
+| 真实 Pi 不得声明为夹具 | [PiBackendGuards.test_real_pi_category_cannot_be_loaded_as_isolated_fixture](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_pi_backend.py:188)；[test_frozen_loop_still_rejects_real_pi_without_activation](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_pi_backend.py:422) | 保留真实类别与冻结外层门禁 |
+| 每次独立新会话、不得恢复历史 | [PiBackendGuards.test_each_invocation_has_distinct_input_and_only_current_feedback](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_pi_backend.py:326)；[test_argument_allowlist_uses_one_shot_ephemeral_json_and_closed_option_parsing](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_pi_backend.py:116) | 新外层会话及请求，参数排除恢复，反馈不串线；真实 Pi 会话尚未实证 |
+| 缺独立凭据不得启动或泄漏秘密 | [PiBackendGuards.test_missing_credentials_blocks_load_before_driver_read_or_launch](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_pi_backend.py:180)；[test_missing_credentials_blocks_invoke_before_request_or_process](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_pi_backend.py:228)；[test_exec_interception_preserves_process_group_and_excludes_inherited_config](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_pi_backend.py:382) | 仅合成凭据；不使用或读取真实认证 |
+| 协议失败或非零退出不得变成 OK | [PiBackendGuards.test_nonzero_exit_cannot_be_masked_by_valid_protocol_or_promise](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_pi_backend.py:306)；[test_completion_promise_and_exit_without_protocol_are_rejected](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_pi_backend.py:246)；[test_model_error_abort_missing_settled_or_late_activity_blocks](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_pi_backend.py:266)及其余协议反例 | 完成口令、完整文本或退出零不能替代协议及独立业务验收 |
+| 请求、工具、会话及批次时限不混淆 | [PiBackendGuards.test_request_tool_session_and_batch_caps_are_not_conflated](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_pi_backend.py:367)；[test_legacy_timeout_is_not_claimed_as_model_request_timeout](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_pi_backend.py:359) | 保留 15/30/600 秒工具上限及 30 秒驱动，内部模型请求时限明确 UNKNOWN |
+| 取消必须等待受管进程清理 | [PiSupervisorDelegationGuards.test_agent_call_interrupt_cleans_same_group_and_preserves_changes](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_pi_backend.py:625)；[test_agent_call_timeout_cleans_same_group_and_preserves_changes](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_pi_backend.py:620) | 实际隔离 Python 同组进程终止、回收及组消失；不是 Pi 实跑，不外推脱组后代 |
+| 清理未知禁止下一次调用 | [PiSupervisorDelegationGuards.test_unknown_cleanup_prohibits_next_call_verification_and_restart](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_pi_backend.py:574)；[PiBackendGuards.test_timeout_cancellation_and_unknown_cleanup_override_protocol_ok](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_pi_backend.py:316) | 故障注入后仅一次调用，无验证、无下次调用、无重启；不得仅模拟一次失败代替禁调行为 |
 
-- 四项不变量保留：独立新会话（上述新会话反例）；三轮无进展熔断（[实际禁止第四次隔离调用及依赖推进](../bmralph-suite-v5/tests/test_pi_backend.py:551)，加上[冻结监督器三轮反例](../bmralph-suite-v5/tests/test_pi_backend.py:510)）；既有写租约及同组清理（[租约所有者核验](../bmralph-suite-v5/tests/test_pi_backend.py:207)及上述真实 Python 清理）；外层客观验证（[协议成功不登记业务完成](../bmralph-suite-v5/tests/test_pi_backend.py:239)，失败三轮不写回、不推进依赖）。这些是本地协议与委托原语证据，不是实际 Pi 编码证据。
-- 六项旧完成任务的环境、目录、模式、下限、必需测试及实现输入顺序完整取自原 verification 对象：P3-PLAN 18 项；P3-BACKEND/P3-OFFLINE/P4-BUDGET 17 项且仅对象完全一致时共享回执；P4-BATCH 12 项；P4-ISOLATION 7 项。候选均经[completed_evidence](../bmralph-suite-v5/scripts/bmad_state.py:172)精确核验后，持同一写租约与源版本调用[refresh_completed](../bmralph-suite-v5/scripts/bmad_plan_adapter.py:131)一次刷新全部六项。
-- 受限恢复没有现成产品接口：草稿仅复用内部[_save_plan](../bmralph-suite-v5/scripts/bmad_plan_adapter.py:167)，在既有写租约下核验计划身份、源版本、P5-PI-DRIVER 确为 SUSPENDED/空回执及其他任务不变，原子保存后核对；不改生产原语，不宣称已有通用恢复能力。恢复后查询依赖就绪，精确协议证据满足后调用[complete](../bmralph-suite-v5/scripts/bmad_plan_adapter.py:100)。任务清单仍是唯一进度；未覆盖行政入口与静态检查临时引用平台真实回执，草稿及回执不是第二份账本。
-- P5-PI-DRIVER 仅交付获准薄驱动和协议反例，不证明真实 Agent 编码。P5-PI-HEADLESS 仅交付真实运行回执判定的反例；当前[任务契约](../bmralph-suite-v5/scripts/bmad_state.py:62)只支持 Python 单测，不能把远程两轮塞进 unit-test 假装运行通过。真实两轮仍归 Epic 5、AC 8–10 和验证矩阵 P5，不能由这两项完成替代。
+- 四项不变量保留：独立新会话（上述新会话反例）；三轮无进展熔断（[实际禁止第四次隔离调用及依赖推进](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_pi_backend.py:551)，加上[冻结监督器三轮反例](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_pi_backend.py:510)）；既有写租约及同组清理（[租约所有者核验](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_pi_backend.py:207)及上述真实 Python 清理）；外层客观验证（[协议成功不登记业务完成](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_pi_backend.py:239)，失败三轮不写回、不推进依赖）。这些是本地协议与委托原语证据，不是实际 Pi 编码证据。
+- 六项旧完成任务的环境、目录、模式、下限、必需测试及实现输入顺序完整取自原 verification 对象：P3-PLAN 18 项；P3-BACKEND/P3-OFFLINE/P4-BUDGET 17 项且仅对象完全一致时共享回执；P4-BATCH 12 项；P4-ISOLATION 7 项。候选均经[completed_evidence](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_state.py:172)精确核验后，持同一写租约与源版本调用[refresh_completed](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_plan_adapter.py:131)一次刷新全部六项。
+- 受限恢复没有现成产品接口：草稿仅复用内部[_save_plan](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_plan_adapter.py:167)，在既有写租约下核验计划身份、源版本、P5-PI-DRIVER 确为 SUSPENDED/空回执及其他任务不变，原子保存后核对；不改生产原语，不宣称已有通用恢复能力。恢复后查询依赖就绪，精确协议证据满足后调用[complete](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_plan_adapter.py:100)。任务清单仍是唯一进度；未覆盖行政入口与静态检查临时引用平台真实回执，草稿及回执不是第二份账本。
+- P5-PI-DRIVER 仅交付获准薄驱动和协议反例，不证明真实 Agent 编码。P5-PI-HEADLESS 仅交付真实运行回执判定的反例；当前[任务契约](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_state.py:62)只支持 Python 单测，不能把远程两轮塞进 unit-test 假装运行通过。真实两轮仍归 Epic 5、AC 8–10 和验证矩阵 P5，不能由这两项完成替代。
 - 后续获准真实接入时，每次业务失败修复创建新 Pi 进程及新会话，保留未提交成果，只携带必要约束、未完成事项和真实失败反馈。当前薄驱动采用单次 JSON 输出模式，以受预算约束的请求文件输入、stdin 封闭，读取 JSONL 生命周期；不是 RPC 会话接入，不建设永久 RPC 服务。Claude Code 与 Pi 使用不同原生协议，兼容仅指映射到同一本地契约，不宣称线协议互换或已有 Claude 适配器；本轮不启动真实 Pi。
 - 维持 30 秒驱动进程、15/30/600 秒工具分级、600 秒批次及既有停止等待上限。不把驱动调用数冒充模型请求数，不把用量/价格元数据冒充可强制执行的费用预算；内部请求、重试、工具和费用覆盖未知时明确阻塞或披露。需要扩大上限另获确认。
 - 真试跑前一次性确认主机、工作区、来源/版本、显式任务集合与依赖、写入白名单、禁止修改的验收资产、认证方式及变量名称、确切启动/查询/取消/清理命令、各级时间与轮次/调用/费用预算及计量缺口、关闭客户端后新步骤采集、清理未知禁止重启。此前不安装、不准备认证、不启动模型或宿主。
@@ -179,10 +179,10 @@ session_id: null
 - 启动器返回绑定工作区、计划、运行副本、独立进程和日志定位的回执后，前台退出执行职责。后续控制器、Pi、认证、验证和预算不依赖客户端或扩展宿主；不自动切视图、不微步轮询、不逐任务弹窗重试。
 - Roo 和 Pi 使用同一获准工作区，执行期只有控制器管理的一条写入链；前台只读观察。协作锁不是系统隔离。运行中的控制器继续绑定冻结运行副本；Pi 可以修改获准源码，不能热改正在执行的监督器后继续运行。
 - Pi 按需读取本计划和 ADR；可提出授权内任务拆分、定位与必要发现，控制器经契约检查原子写回。目标、授权、验收放宽和 ADR 决策变化回到人工，不因全自动迭代而自动接受。
-- 复用[状态投影](../bmralph-suite-v5/scripts/bmad_state.py:189)和[输入接入](../bmralph-suite-v5/scripts/bmad_context_inputs.py:49)，将稳定经验与同义词导航按需装配，失败快照只传定位和最新有效反馈。自动加载关闭时显式接入必要 procedures/skills，不复制文件后假定生效，不增加完整进度日志。
+- 复用[状态投影](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_state.py:189)和[输入接入](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_context_inputs.py:49)，将稳定经验与同义词导航按需装配，失败快照只传定位和最新有效反馈。自动加载关闭时显式接入必要 procedures/skills，不复制文件后假定生效，不增加完整进度日志。
 - 状态卡仍为唯一任务清单的程序投影，至多 80 行并受字节预算限制，包含全部未完成项及当前检查点/事故定位；不能只显示就绪任务。现有投影只覆盖类型化清单，不声称已包含全部宏观 Epic。新增任务纳入与未覆盖承诺定位须由迁移契约保证；超限报告预算阻塞，不悄悄遗漏。
 - 挂起时停止新请求，取消并确认受管进程结束，保存脱敏现场、任务状态、最终退出回执和事故报告，再释放租约。若清理或写盘未知，保留持久重启阻断；进程死亡导致锁释放不等于可恢复，不强求异常中声称干净退出。
-- 事故报告候选文件为[accident_report.json](../.bmad-runtime/accident_report.json)，每次运行实际使用独立子目录而非覆盖全局现场。内容须含版本、计划/运行/任务身份、原因代码、实际网络/验证回执及脱敏错误、最新检查点、修改快照/补丁/新文件清单定位、预算计数、清理与恢复状态、需授权的人工恢复步骤。未执行单测字段保持空值，不编造报错。
+- 事故报告候选文件为[accident_report.json](../../../../../_bmad-output/archive/.bmad-runtime/accident_report.json)，每次运行实际使用独立子目录而非覆盖全局现场。内容须含版本、计划/运行/任务身份、原因代码、实际网络/验证回执及脱敏错误、最新检查点、修改快照/补丁/新文件清单定位、预算计数、清理与恢复状态、需授权的人工恢复步骤。未执行单测字段保持空值，不编造报错。
 - SUSPENDED_FOR_HUMAN 先作为事故原因/显示语义映射到现有 SUSPENDED；新增枚举须先实现版本契约，不直接写入当前清单。恢复只在新工程实例内获准接管和重验，不自动恢复旧进程、补发残缺工具调用或继承旧绿灯。
 
 ### Task 本地 Git 检查点事务（必选）
@@ -211,17 +211,17 @@ session_id: null
 
 ### 最小受控改动与证据定位
 
-- 复用而不重建：[循环](../bmralph-suite-v5/scripts/bmad_loop.py:1)与[入口](../bmralph-suite-v5/scripts/bmad-loop.py)、[后端](../bmralph-suite-v5/scripts/bmad_agent_backend.py:82)、[传输](../bmralph-suite-v5/scripts/bmad_pi_transport.py)、[网络预算](../bmralph-suite-v5/scripts/bmad_pi_budget.py:21)、[上下文预算](../bmralph-suite-v5/scripts/bmad_context.py:64)及[输入接入](../bmralph-suite-v5/scripts/bmad_context_inputs.py:49)。职责分别为生命周期/授权、协议与模型选择、流式恢复/诊断、真实计量及必要输入；不是此次可编辑白名单。
-- [共享网络预算](../bmralph-suite-v5/scripts/bmad_pi_budget.py:21)已添加显式启用的连续失败计数原语；失败尝试不返还累计请求或字节预算，跨传输会话及模型复用同一预算对象时不重置计数。达到门限后锁定阻断，[传输快照](../bmralph-suite-v5/scripts/bmad_pi_transport.py:340)聚合共享预算阻断并保留原失败诊断。HTTP 200、DONE 或心跳不能自动清零；有效回复确认仅核验当前请求归属与完整传输事实，仍依赖调用方先完成原生回复验收，尚未接入 Agent 原生验收路径或循环操作契约。会话结束的生命周期不能逐一关联会话内物理请求，因此[后端调用门禁](../bmralph-suite-v5/scripts/bmad_agent_backend.py:410)拒绝启用该未接通的连续失败运行策略，在环境复核、会话文件、转发和进程启动前停止；不改变既有未启用门限的固定模型路径，也不授予其新运行权限。相关资产为[预算反例](../bmralph-suite-v5/tests/test_pi_budget.py)、[重试反例](../bmralph-suite-v5/tests/test_pi_retry.py)、[传输诊断反例](../bmralph-suite-v5/tests/test_pi_transport_diagnostics.py)及[后端禁启反例](../bmralph-suite-v5/tests/test_pi_activation.py)。本地显式六次门限夹具不批准真实运行预算，不证明有效语义、续接去重、Token 计量、后台挂起或恢复；默认运行不暗启该门限，实际回执仅由平台任务记录引用。
-- [任务运行](../bmralph-suite-v5/scripts/bmad_task_run.py:96)、[计划适配](../bmralph-suite-v5/scripts/bmad_plan_adapter.py:100)、[状态](../bmralph-suite-v5/scripts/bmad_state.py:189)与[真实证据裁决](../bmralph-suite-v5/scripts/bmad_pi_evidence.py)承担清理、事务接管、唯一进度、卡片和真实运行验收。复用现有[来源绑定](../bmralph-suite-v5/scripts/bmad_suite_source.py)、[运行副本](../bmralph-suite-v5/scripts/bmad_run_copy.py)及[监督器](../bmralph-suite-v5/scripts/bmad_supervisor.py)，不降低冻结运行资产边界。
-- [模型路由模块](../bmralph-suite-v5/scripts/bmad_model_router.py:1)、[非秘密模型注册表](../bmralph-suite-v5/settings/model-registry.json)及[只读选择入口](../bmralph-suite-v5/scripts/bmad-exec.py:125)已创建；仅核对完整模型选项、显式候选与固定策略，不发送请求、不读取凭据、不改变在途模型，不证明真实 Jev 接入或固定模型后台闭环。未知精确 ID、能力和容量保持空值，候选注册不授予调用权限。
-- [显式记忆接入](../bmralph-suite-v5/scripts/bmad_context_inputs.py:71)复用原输入组装：请求可显式指定非秘密索引，绑定计划/Task 身份、源字节与别名，完整装配必要流程、经验和导航；索引失效、冲突或累计字节超限失败关闭，不扫描历史、不裁剪必要条目。[批次接管](../bmralph-suite-v5/scripts/bmad_plan_adapter.py:49)与[循环边界](../bmralph-suite-v5/scripts/bmad_loop.py:422)核验当前及后续任务的只读记忆绑定，变化时不启动调用或推进验证；不冻结获准修改的任务源码。相关资产为[输入反例](../bmralph-suite-v5/tests/test_context_inputs.py)和[记忆边界反例](../bmralph-suite-v5/tests/test_memory_batch.py)。本地证据不证明模型容量、自然语言经验正确、真实 Pi 读取、Token 计量或断开推进；P6-MEMORY 的这些未完成门禁保留，实际回执仅由平台任务记录引用。
-- [回执快照校验](../bmralph-suite-v5/scripts/bmad_pi_evidence.py:1)已实现第一版格式兼容；历史字节预算仅是旧格式校验边界，不是 Phase 6 运行授权或 Token 计量。合成快照校验不得登记真实断开、检查点、事故恢复或历史任务完成。
-- [事故现场模块](../bmralph-suite-v5/scripts/bmad_accident.py:1)与[本地事故反例](../bmralph-suite-v5/tests/test_accident_guards.py)已创建；仅保存显式非秘密白名单的源码字节、权限、新文件及缺失状态，绑定计划/运行/Task 身份、固定原因、预算计数和回执定位。未执行验证或未知计量保持空值；回执定位不解释业务裁决，不证明清理。现场独立保存，不改唯一任务进度；保存中断保留已写成果，不覆盖用户修改。
-- 工作区固定位置的事故阻断已接入[受管循环启动入口](../bmralph-suite-v5/scripts/bmad_loop.py:1)：先保存持久标记再写现场，存在未对账、残缺或伪成功标记时禁止新循环启动，不因更换运行目录绕过，不覆盖或自动解除旧标记。标记创建本身失败且未留下文件时不能保证该标记提供持久阻断，必须停止并保留失败回执；锁释放不证明清理安全。此门禁不取消在途进程、不阻断平台工具旁路，不提供同账号防篡改保证。路径过滤也不能证明任意源码正文没有秘密，调用方仍须核验白名单。自动事故捕获、实际取消清理、挂起及获准新实例恢复仍待接入和分别取证；本地禁启不证明真实后台事故恢复，实际回执仅由平台任务记录引用。
-- [检查点候选模块](../bmralph-suite-v5/scripts/bmad_checkpoint.py:1)已实现显式非秘密普通文件冻结和独立单测验收关联；绑定计划、运行、Task、接管源身份及验收输入，保留源码字节与权限，不扫描或推断修改所有权。关联前后核验候选、源码、快照、回执及计划身份；保存或同步失败、期间变化和重复关联均不得返回成功，保留现场供对账，残留关联文件不是可继承的通过证据。[检查点本地反例](../bmralph-suite-v5/tests/test_checkpoint_guards.py:1)覆盖这些边界，实际回执仅由平台任务记录引用。本原语不操作 Git、不写任务进度、不提交或恢复，尚未接入循环检查点事务；索引与分支所有权、持久事务准备、提交/tree 关联、原子完成写回、事故对账和选择性恢复仍未完成，不能用本地候选冻结或验收关联替代真实 Task 检查点证据。Jev 扩展是否必需先核验，不默认另建通用插件或提供方框架。
-- 本次允许按实际受影响契约修改相关 V5 实现、测试及必要的[计划模板](../bmralph-suite-v5/skills/bmad/references/templates/implementation-plan.template.md)、[能力导航](../bmralph-suite-v5/skills/bmad/references/capability-map.md)、[流程](../bmralph-suite-v5/skills/bmad/references/procedures/task-loop.md)与入口规则；不顺手重构，不扩大公共部署/V4范围。新增本地模块不表示已经接入真实闭环；验证资产必须实际创建和运行后再登记。
-- 依据为用户提供的[确定性内存笔记](../docs/Ralph-Wiggum-Loop/Ralph-Wiggum-Loop.md:49)、[笔记中的 Ralph 自动提交描述](../docs/Ralph-Wiggum-Loop/Ralph-Wiggum-Loop.md:84)及已读 V5 文件。笔记链接不是 Ralph 原始源码审计，底层机制、性能数字和四变体断言不是本次运行事实。Jev 一手资料与替代决策保存于同一 ADR，本计划不镜像研究流水。
+- 复用而不重建：[循环](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_loop.py:1)与[入口](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad-loop.py)、[后端](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_agent_backend.py:82)、[传输](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_pi_transport.py)、[网络预算](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_pi_budget.py:21)、[上下文预算](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_context.py:64)及[输入接入](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_context_inputs.py:49)。职责分别为生命周期/授权、协议与模型选择、流式恢复/诊断、真实计量及必要输入；不是此次可编辑白名单。
+- [共享网络预算](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_pi_budget.py:21)已添加显式启用的连续失败计数原语；失败尝试不返还累计请求或字节预算，跨传输会话及模型复用同一预算对象时不重置计数。达到门限后锁定阻断，[传输快照](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_pi_transport.py:340)聚合共享预算阻断并保留原失败诊断。HTTP 200、DONE 或心跳不能自动清零；有效回复确认仅核验当前请求归属与完整传输事实，仍依赖调用方先完成原生回复验收，尚未接入 Agent 原生验收路径或循环操作契约。会话结束的生命周期不能逐一关联会话内物理请求，因此[后端调用门禁](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_agent_backend.py:410)拒绝启用该未接通的连续失败运行策略，在环境复核、会话文件、转发和进程启动前停止；不改变既有未启用门限的固定模型路径，也不授予其新运行权限。相关资产为[预算反例](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_pi_budget.py)、[重试反例](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_pi_retry.py)、[传输诊断反例](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_pi_transport_diagnostics.py)及[后端禁启反例](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_pi_activation.py)。本地显式六次门限夹具不批准真实运行预算，不证明有效语义、续接去重、Token 计量、后台挂起或恢复；默认运行不暗启该门限，实际回执仅由平台任务记录引用。
+- [任务运行](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_task_run.py:96)、[计划适配](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_plan_adapter.py:100)、[状态](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_state.py:189)与[真实证据裁决](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_pi_evidence.py)承担清理、事务接管、唯一进度、卡片和真实运行验收。复用现有[来源绑定](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_suite_source.py)、[运行副本](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_run_copy.py)及[监督器](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_supervisor.py)，不降低冻结运行资产边界。
+- [模型路由模块](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_model_router.py:1)、[非秘密模型注册表](../../../../../_bmad-output/archive/bmralph-suite-v5/settings/model-registry.json)及[只读选择入口](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad-exec.py:125)已创建；仅核对完整模型选项、显式候选与固定策略，不发送请求、不读取凭据、不改变在途模型，不证明真实 Jev 接入或固定模型后台闭环。未知精确 ID、能力和容量保持空值，候选注册不授予调用权限。
+- [显式记忆接入](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_context_inputs.py:71)复用原输入组装：请求可显式指定非秘密索引，绑定计划/Task 身份、源字节与别名，完整装配必要流程、经验和导航；索引失效、冲突或累计字节超限失败关闭，不扫描历史、不裁剪必要条目。[批次接管](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_plan_adapter.py:49)与[循环边界](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_loop.py:422)核验当前及后续任务的只读记忆绑定，变化时不启动调用或推进验证；不冻结获准修改的任务源码。相关资产为[输入反例](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_context_inputs.py)和[记忆边界反例](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_memory_batch.py)。本地证据不证明模型容量、自然语言经验正确、真实 Pi 读取、Token 计量或断开推进；P6-MEMORY 的这些未完成门禁保留，实际回执仅由平台任务记录引用。
+- [回执快照校验](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_pi_evidence.py:1)已实现第一版格式兼容；历史字节预算仅是旧格式校验边界，不是 Phase 6 运行授权或 Token 计量。合成快照校验不得登记真实断开、检查点、事故恢复或历史任务完成。
+- [事故现场模块](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_accident.py:1)与[本地事故反例](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_accident_guards.py)已创建；仅保存显式非秘密白名单的源码字节、权限、新文件及缺失状态，绑定计划/运行/Task 身份、固定原因、预算计数和回执定位。未执行验证或未知计量保持空值；回执定位不解释业务裁决，不证明清理。现场独立保存，不改唯一任务进度；保存中断保留已写成果，不覆盖用户修改。
+- 工作区固定位置的事故阻断已接入[受管循环启动入口](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_loop.py:1)：先保存持久标记再写现场，存在未对账、残缺或伪成功标记时禁止新循环启动，不因更换运行目录绕过，不覆盖或自动解除旧标记。标记创建本身失败且未留下文件时不能保证该标记提供持久阻断，必须停止并保留失败回执；锁释放不证明清理安全。此门禁不取消在途进程、不阻断平台工具旁路，不提供同账号防篡改保证。路径过滤也不能证明任意源码正文没有秘密，调用方仍须核验白名单。自动事故捕获、实际取消清理、挂起及获准新实例恢复仍待接入和分别取证；本地禁启不证明真实后台事故恢复，实际回执仅由平台任务记录引用。
+- [检查点候选模块](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_checkpoint.py:1)已实现显式非秘密普通文件冻结和独立单测验收关联；绑定计划、运行、Task、接管源身份及验收输入，保留源码字节与权限，不扫描或推断修改所有权。关联前后核验候选、源码、快照、回执及计划身份；保存或同步失败、期间变化和重复关联均不得返回成功，保留现场供对账，残留关联文件不是可继承的通过证据。[检查点本地反例](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_checkpoint_guards.py:1)覆盖这些边界，实际回执仅由平台任务记录引用。本原语不操作 Git、不写任务进度、不提交或恢复，尚未接入循环检查点事务；索引与分支所有权、持久事务准备、提交/tree 关联、原子完成写回、事故对账和选择性恢复仍未完成，不能用本地候选冻结或验收关联替代真实 Task 检查点证据。Jev 扩展是否必需先核验，不默认另建通用插件或提供方框架。
+- 本次允许按实际受影响契约修改相关 V5 实现、测试及必要的[计划模板](../../../../../_bmad-output/archive/bmralph-suite-v5/skills/bmad/references/templates/implementation-plan.template.md)、[能力导航](../../../../../_bmad-output/archive/bmralph-suite-v5/skills/bmad/references/capability-map.md)、[流程](../../../../../_bmad-output/archive/bmralph-suite-v5/skills/bmad/references/procedures/task-loop.md)与入口规则；不顺手重构，不扩大公共部署/V4范围。新增本地模块不表示已经接入真实闭环；验证资产必须实际创建和运行后再登记。
+- 依据为用户提供的[确定性内存笔记](../../../../../_bmad-output/archive/docs/Ralph-Wiggum-Loop/Ralph-Wiggum-Loop.md:49)、[笔记中的 Ralph 自动提交描述](../../../../../_bmad-output/archive/docs/Ralph-Wiggum-Loop/Ralph-Wiggum-Loop.md:84)及已读 V5 文件。笔记链接不是 Ralph 原始源码审计，底层机制、性能数字和四变体断言不是本次运行事实。Jev 一手资料与替代决策保存于同一 ADR，本计划不镜像研究流水。
 
 ### 未决门禁及新会话交接
 
@@ -232,14 +232,14 @@ session_id: null
 
 ### 当前目标与 Gate #2
 
-- 采用 [`architecture-v5.md`](../docs/Ralph-Wiggum-Loop/architecture-v5.md:1)及[同一 ADR](adrs/ADR-20261012-bmad-solo-anti-bureaucracy-and-programmatic-guards.md)决策 11，不新建计划或提案。本轮仅两份文档修订和关键落点定义，不实施、不运行验证、不启动或自动交接工程。
+- 采用 [`architecture-v5.md`](../../../../../_bmad-output/archive/docs/Ralph-Wiggum-Loop/architecture-v5.md:1)及[同一 ADR](adrs/ADR-20261012-bmad-solo-anti-bureaucracy-and-programmatic-guards.md)决策 11，不新建计划或提案。本轮仅两份文档修订和关键落点定义，不实施、不运行验证、不启动或自动交接工程。
 - 人在 Antigravity IDE 审查计划与差异；规划/研究可以提出方案，但不能自动下发编码。未来必须由人类终端显式启动，绑定审核后的计划版本、任务集合、写入范围和预算；未满足前禁止编码模型调用。聊天批准、模式切换、看板重连、安装或保存文档均不是启动授权。
 - 实质性目标、ADR、验收或权限变化暂停受影响执行，经人审核后按新版本重新显式启动；已启动且范围不变的任务期内，普通修复和下一依赖任务自动推进，不要求逐 Task 再次批准。
 - 保留 Pi 编码、单写入链、真实验证、预算、候选冻结、检查点与事故资产；不重建控制平台，不继承历史绿灯或预算。计划保持 BLOCKED，ADR 保持 PROPOSED；历史条件归档授权不在本轮执行。
 
 ### 冻结资产与旧路线替代
 
-- 在文档中冻结 [`bmad_control_store.py`](../bmralph-suite-v5/scripts/bmad_control_store.py)以及相关 [`test_control_contract.py`](../bmralph-suite-v5/tests/test_control_contract.py)、[`test_control_store.py`](../bmralph-suite-v5/tests/test_control_store.py)扩张路线；相关决定查询不继续扩写，不作为新流水线必需依赖。源码、测试和历史回执原地保留，本轮不删除、不修改、不宣称导入或入口已经禁用。
+- 在文档中冻结 [`bmad_control_store.py`](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_control_store.py)以及相关 [`test_control_contract.py`](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_control_contract.py)、[`test_control_store.py`](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_control_store.py)扩张路线；相关决定查询不继续扩写，不作为新流水线必需依赖。源码、测试和历史回执原地保留，本轮不删除、不修改、不宣称导入或入口已经禁用。
 - 取消通用人工决定数据库、版本历史存储、持久消费中间件及 Cline TUI 统一总控的前置要求。Cline 保留 Slot-1 规划候选；其安装和安全探测证据保留在 ADR 决策 10，不再因外部槽位汇总接口未就绪阻塞独立看板方案。
 - 用户报告的 1728 行膨胀、上下文爆炸和 API 错误是纠偏线索，不是本轮重新测量的结果；不以旧局部单测通过证明原路线适合或独立执行已通过。
 - 旧 P7-INTAKE 的授权与接管边界纳入未来工程入口；P7-CLINE-PROBE 只保留规划适配必需的安全核验，取消全功能总控探测；P7-CONTROL-CONTRACT、P7-CONTROL-UI、P7-DECISIONS 的通用存储/统一聊天要求由 P7-1 和人工终端启动替代。旧 P7-ROLES-AUDIT 纳入 P7-4，P7-CHECKPOINT-LINK 纳入 P7-2/P7-4，P7-LIVE-INTEGRATED 纳入四组件组合验收，P7-CLOSEOUT 保留为全计划收尾条件，不新增第五个组件。
@@ -260,17 +260,17 @@ session_id: null
 
 | 组件 | 拟议落点 | 依赖与最小验收 |
 |---|---|---|
-| P7-1 状态总线与 TUI 看板 | [`state.json`](../.solo/state.json)、[`solo-board`](../bmralph-suite-v5/bin/solo-board) | 核心快照读写逻辑不超过 50 行，不建设独立存储模块；单编排器写、Rich 看板只读。展示计划/运行身份、当前 Task/轮次、四槽位状态、阻塞原因和证据定位；缺失、损坏或过期显示未知。快照完整替换，重连不写任务或启动模型；不另建队列、聊天历史或授权总账。Rich 依赖在未来获准环境准备阶段确认，测试/运行不隐式联网安装 |
-| P7-2 进度卡片与 Harness² 经验反射器 | [`solo-card-gen`](../bmralph-suite-v5/bin/solo-card-gen)、[`experience.md`](../.solo/experience.md)、[任务卡片目录](../.solo/cards/) | 复用既有差异/候选/检查点原语，生成当前 Task 受管文件与接口定位、真实验收及提交关联；不复制全历史、不遗漏关键依赖。Slot-4 在 Task 结束后提炼一条有证据和适用范围的教训，程序去重追加；无新教训不编造。下一新会话顶部注入有界相关规则，不覆盖目标、授权或验收；反射失败不伪造经验，提交/写回失败不推进任务 |
-| P7-3 Jev 语义拦截门禁 | [`solo-jev-gate`](../bmralph-suite-v5/bin/solo-jev-gate) | 对接经核验的 pi-jev，目标开启无 UI 阻断配置；精确配置键及固定 Pi 兼容性须核验，不能仅靠声明推定。真实工具执行前覆盖获准写入/命令范围；缺认证、超时、服务失败或非法结果阻断，不静默放行或以普通模型替代。不得出站凭据、完整日志或无关源码；语义门禁不替代硬权限、预算、测试和独立审核 |
-| P7-4 Tmux 四槽位外层编排器 | [`solo-orchestrator`](../bmralph-suite-v5/bin/solo-orchestrator) | 依赖 P7-1–3 及必要既有执行防护。人工显式启动后绑定计划版本/范围/预算，选择集合内依赖就绪任务；单 Task 新会话编码→外层真实验证→独立盲审→候选复核→获准检查点/写回→卡片与状态投影→下一 Task。最多三轮包括首次尝试，第三轮失败即挂起，禁止第四次编码调用；取消/预算停止确认受管清理，清理未知禁止重启 |
+| P7-1 状态总线与 TUI 看板 | [`state.json`](../../../../../_bmad-output/archive/.solo/state.json)、[`solo-board`](../../../../../_bmad-output/archive/bmralph-suite-v5/bin/solo-board) | 核心快照读写逻辑不超过 50 行，不建设独立存储模块；单编排器写、Rich 看板只读。展示计划/运行身份、当前 Task/轮次、四槽位状态、阻塞原因和证据定位；缺失、损坏或过期显示未知。快照完整替换，重连不写任务或启动模型；不另建队列、聊天历史或授权总账。Rich 依赖在未来获准环境准备阶段确认，测试/运行不隐式联网安装 |
+| P7-2 进度卡片与 Harness² 经验反射器 | [`solo-card-gen`](../../../../../_bmad-output/archive/bmralph-suite-v5/bin/solo-card-gen)、[`experience.md`](../../../../../_bmad-output/archive/.solo/experience.md)、[任务卡片目录](../../../../../_bmad-output/archive/.solo/cards/) | 复用既有差异/候选/检查点原语，生成当前 Task 受管文件与接口定位、真实验收及提交关联；不复制全历史、不遗漏关键依赖。Slot-4 在 Task 结束后提炼一条有证据和适用范围的教训，程序去重追加；无新教训不编造。下一新会话顶部注入有界相关规则，不覆盖目标、授权或验收；反射失败不伪造经验，提交/写回失败不推进任务 |
+| P7-3 Jev 语义拦截门禁 | [`solo-jev-gate`](../../../../../_bmad-output/archive/bmralph-suite-v5/bin/solo-jev-gate) | 对接经核验的 pi-jev，目标开启无 UI 阻断配置；精确配置键及固定 Pi 兼容性须核验，不能仅靠声明推定。真实工具执行前覆盖获准写入/命令范围；缺认证、超时、服务失败或非法结果阻断，不静默放行或以普通模型替代。不得出站凭据、完整日志或无关源码；语义门禁不替代硬权限、预算、测试和独立审核 |
+| P7-4 Tmux 四槽位外层编排器 | [`solo-orchestrator`](../../../../../_bmad-output/archive/bmralph-suite-v5/bin/solo-orchestrator) | 依赖 P7-1–3 及必要既有执行防护。人工显式启动后绑定计划版本/范围/预算，选择集合内依赖就绪任务；单 Task 新会话编码→外层真实验证→独立盲审→候选复核→获准检查点/写回→卡片与状态投影→下一 Task。最多三轮包括首次尝试，第三轮失败即挂起，禁止第四次编码调用；取消/预算停止确认受管清理，清理未知禁止重启 |
 
 ### 状态与经验的最小数据边界
 
-- 唯一任务进度继续来自本计划清单；[`state.json`](../.solo/state.json)只是可重建显示快照，不是执行权威。运行身份、当前阶段与证据定位可保留，完整任务/依赖回到本计划读取，不能从看板伪造完成或推断执行授权。
+- 唯一任务进度继续来自本计划清单；[`state.json`](../../../../../_bmad-output/archive/.solo/state.json)只是可重建显示快照，不是执行权威。运行身份、当前阶段与证据定位可保留，完整任务/依赖回到本计划读取，不能从看板伪造完成或推断执行授权。
 - 50 行约束仅适用于快照核心读写逻辑，不是 Rich 界面或既有执行器的总行数；不把复杂存储转移到其他模块规避目标。原子替换提供完整快照，不宣称跨文件事务、同账号防篡改或数据库可靠性。
 - 卡片保存当前任务的差异/接口定位和真实结果，不作为第二份进度；下一会话仍按需读取实际源码，不能仅凭导出摘要猜接口。完整失败现场留在既有授权运行目录，默认仅传当前有效反馈与定位。
-- [`experience.md`](../.solo/experience.md)只包含非秘密、去重、有适用边界的简短规则，不存日志、聊天、任务进度或授权。首个任务没有经验是正常状态；注入预算受模型容量与既有输入约束控制，经验不能挤掉必需目标、验收和源码。
+- [`experience.md`](../../../../../_bmad-output/archive/.solo/experience.md)只包含非秘密、去重、有适用边界的简短规则，不存日志、聊天、任务进度或授权。首个任务没有经验是正常状态；注入预算受模型容量与既有输入约束控制，经验不能挤掉必需目标、验收和源码。
 - 经验在 Task 边界追加并为下一会话重新绑定；本次明确替代将可演进经验永久冻结的旧解释，当前会话仍读取稳定快照。经验冲突不能自动放宽门禁；无需增加经验数据库、独立 Reflector 进程或自动训练循环。
 - Harness²／Improvement Harness／Experience Reflector 本轮尚无已核验的一手正文，文本机制是用户指定的设计选择，不登记“论文证明 Markdown 优于数据库”或保证免微调持续提升。保留来源核验未知，不用未经取证的引用编号制造证据。
 
@@ -640,7 +640,7 @@ session_id: null
 - [ ] **AC 9 (断开后自主推进)**：目标 VPS 上运行真实 Agent；关闭本地 IDE 后完成当前步骤并自主启动下一轮。仅循环进程存活、文件变化或清空界面不算通过。
 - [ ] **AC 10 (真实反馈与有界停止)**：实际验证失败不得推进任务；普通失败可在预算内自主修复。超时、取消、费用/轮次预算耗尽或持续无进展时明确停止并保留成果，不以完成口令决定成功。
 - [ ] **AC 11 (唯一任务进度)**：目标设计使用本计划任务清单作为任务进度唯一载体；状态卡只是程序生成的有界视图，验证回执保存事实，不再人工维护第二份进度。该设计须先在 V5 修订对应规则，不能视为已生效或要求改写 V4。
-- [ ] **AC 12 (版本隔离可审核)**：新增生产资产全部落在 [V5 套件](../bmralph-suite-v5/)，本任务不修改 [V4 套件](../bmad-suite-v4/)。V5 可独立采集、校验和部署，运行路径不依赖 V4；原待办按新落点保留，历史证据不移植为 V5 通过记录。
+- [ ] **AC 12 (版本隔离可审核)**：新增生产资产全部落在 [V5 套件](../../../../../_bmad-output/archive/bmralph-suite-v5/)，本任务不修改 [V4 套件](../../../../../_bmad-output/archive/bmad-suite-v4/)。V5 可独立采集、校验和部署，运行路径不依赖 V4；原待办按新落点保留，历史证据不移植为 V5 通过记录。
 - [ ] **AC 13 (显式版本与更新不串线)**：部署入口支持显式 V5；仓库更新与套件选择分离，更新后的新版入口保留用户指定版本。未指定版本的新安装兼容默认暂保留 V4；已有安装执行无版本更新时，保留受管来源记录中已核验的激活版本，记录缺失、损坏或无法唯一判断时阻塞并要求显式选择，不回退 V4。首次启用 V5 必须显式选择；改变默认须另作明确决定。所选源缺失、参数冲突或标签不含所选套件时停止，不回退到其他套件。
 - [ ] **AC 14 (部署与回切可追溯)**：来源清单和状态输出能区分套件身份、主版本、实际源路径、提交及源差异；同提交中的 V4/V5 标签缓存互不误复用。单一部署根默认仅激活一套受管规则，V4→V5→V4 回切保护第三方资产、用户修改和事务恢复证据；不宣称可同根同时激活。
 - [ ] **AC 15 (安装不暗启任务)**：安装入口、帮助与状态文案同步版本选择；安装、更新、部署及 IDE 重载均不启动 Ralph，不安装模型认证，不提交、推送或部署业务服务。工程测试仅在临时部署根运行；真实宿主激活与远程试跑另获授权。
@@ -655,12 +655,12 @@ session_id: null
 ### Epic 1: 消除冗余责任与规则去肥增瘦 (Pruning Redundancy & Lean Rules)
 
 #### Story 1.1: 废除高频微步绑定与多文档状态镜像
-- **任务 1.1.1**：只读参照 [V4 工程规则](../bmad-suite-v4/roo/rules-bmad-engineer/01-bmad-engineer-core.md:9)，在拟建 [V5 工程规则](../bmralph-suite-v5/roo/rules-bmad-engineer/01-bmad-engineer-core.md)及 V5 下层流程实现对齐；校验集中在接管、契约变化与阶段边界，不重新引入逐修改指纹。V4 已有条款不是 V5 已通过证据，不修改 V4 对照基线。
+- **任务 1.1.1**：只读参照 [V4 工程规则](../../../../../_bmad-output/archive/bmad-suite-v4/roo/rules-bmad-engineer/01-bmad-engineer-core.md:9)，在拟建 [V5 工程规则](../../../../../_bmad-output/archive/bmralph-suite-v5/roo/rules-bmad-engineer/01-bmad-engineer-core.md)及 V5 下层流程实现对齐；校验集中在接管、契约变化与阶段边界，不重新引入逐修改指纹。V4 已有条款不是 V5 已通过证据，不修改 V4 对照基线。
 - **任务 1.1.2**：取消逐轮流水与多文档镜像；将计划分为稳定的目标/验收与可调整的任务清单，任务清单保存唯一进度及必要发现。ADR 只保存决策及依据，程序回执保存真实验证结果。
 
 #### Story 1.2: 规则去肥增瘦与提示词减负
-- **任务 1.2.1**：在 V5 实现拟建 [模式配置](../bmralph-suite-v5/roo/settings/custom_modes.yaml)、[分析入口](../bmralph-suite-v5/skills/ana-solo/SKILL.md)与[工程入口](../bmralph-suite-v5/skills/bmad/SKILL.md)，保留双入口与三遍阅读，删除重复宣誓和固定角色会议；不把切换入口视为实施授权。
-- **任务 1.2.2**：同步拟建 [V5 Roo 核心规则](../bmralph-suite-v5/roo/rules/02-bmad-core.md)、[V5 原生核心规则](../bmralph-suite-v5/rules/bmad-core.md)与[V5 计划模板](../bmralph-suite-v5/skills/bmad/references/templates/implementation-plan.template.md)，清除固定进度路径、默认全过程持久化和对所有任务强制预检等冲突。新任务不默认搜索归档，不无条件覆盖未完成活动任务。V4 链路保持原语义。
+- **任务 1.2.1**：在 V5 实现拟建 [模式配置](../../../../../_bmad-output/archive/bmralph-suite-v5/roo/settings/custom_modes.yaml)、[分析入口](../../../../../_bmad-output/archive/bmralph-suite-v5/skills/ana-solo/SKILL.md)与[工程入口](../../../../../_bmad-output/archive/bmralph-suite-v5/skills/bmad/SKILL.md)，保留双入口与三遍阅读，删除重复宣誓和固定角色会议；不把切换入口视为实施授权。
+- **任务 1.2.2**：同步拟建 [V5 Roo 核心规则](../../../../../_bmad-output/archive/bmralph-suite-v5/roo/rules/02-bmad-core.md)、[V5 原生核心规则](../../../../../_bmad-output/archive/bmralph-suite-v5/rules/bmad-core.md)与[V5 计划模板](../../../../../_bmad-output/archive/bmralph-suite-v5/skills/bmad/references/templates/implementation-plan.template.md)，清除固定进度路径、默认全过程持久化和对所有任务强制预检等冲突。新任务不默认搜索归档，不无条件覆盖未完成活动任务。V4 链路保持原语义。
 
 ### Epic 2: 轻量执行控制器纵向闭环 (Lightweight Controller Pipeline)
 
@@ -669,17 +669,17 @@ session_id: null
 - **任务 2.1.2**：当 L1 缺少依赖时，程序直接报告“环境未就绪（BLOCKED）”，禁止在测试命令中隐式执行网络安装。
 
 #### Story 2.2: 受控操作入口与执行监督器
-- **任务 2.2.1**：实现拟建的 [V5 验证执行器](../bmralph-suite-v5/scripts/bmad-exec.py)，为单测、竞态检查和配置语法检查提供类型化操作；参数、可用目标及接口在工程阶段实现，不把拟议操作当成现有能力，不允许借复合命令掩盖失败。明确套件根与任务工作区，不能因脚本移动而把任务源码或日志误定位到套件目录。
+- **任务 2.2.1**：实现拟建的 [V5 验证执行器](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad-exec.py)，为单测、竞态检查和配置语法检查提供类型化操作；参数、可用目标及接口在工程阶段实现，不把拟议操作当成现有能力，不允许借复合命令掩盖失败。明确套件根与任务工作区，不能因脚本移动而把任务源码或日志误定位到套件目录。
 - **任务 2.2.2**：在控制器中落实单飞、分级超时（15s/30s/600s）、前台同步、标准输入封闭及容器退出清理。
 
 #### Story 2.3: 有界摘要提取与短状态卡生成
-- **任务 2.3.1**：在拟建的 [V5 验证执行器](../bmralph-suite-v5/scripts/bmad-exec.py)中实现完整日志保存及保留策略，日志和回执写入授权任务工作区而非套件分发源。向模型仅输出有界失败定位与真实退出结果。截断明确标注；日志辅助操作成功不能覆盖测试失败，截断本身也不应在完整必需结果已可判定时触发无意义重跑。
+- **任务 2.3.1**：在拟建的 [V5 验证执行器](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad-exec.py)中实现完整日志保存及保留策略，日志和回执写入授权任务工作区而非套件分发源。向模型仅输出有界失败定位与真实退出结果。截断明确标注；日志辅助操作成功不能覆盖测试失败，截断本身也不应在完整必需结果已可判定时触发无意义重跑。
 - **任务 2.3.2**：程序从任务清单与真实回执生成 <=80 行且受字节预算限制的只读视图，不另存人工状态账本。实际写权限隔离须验证；同账号可编辑文件不称“不可篡改”，模型声明不能替代验证。
 
 ### Epic 3: 行为防护反例断言与受控回滚 (Defensive Invariants & Rollback)
 
 #### Story 3.1: 反例测试套件
-- **任务 3.1.1**：编写拟建的 [V5 控制器反例测试](../bmralph-suite-v5/tests/test_controller_guards.py)，覆盖以下行为防护反例：
+- **任务 3.1.1**：编写拟建的 [V5 控制器反例测试](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_controller_guards.py)，覆盖以下行为防护反例：
   1. 超长单行、连续小文件以及日志截断时的显式标记检验；
   2. 测试失败但状态生成成功的“整体失败”判定；
   3. 未命中测试或必要项跳过时的阻断检验；
@@ -687,12 +687,12 @@ session_id: null
   5. 进程超时、中断或清理失败时的阻断推进断言。
 
 #### Story 3.2: 契约回归与受控回滚机制
-- **任务 3.2.1**：按任务 7.5 扩展 [静态契约校验器](../scripts/validate-roo-contracts.py)，显式选择套件后校验各版本自身规则、模式和模板；不能把 V5 精简断言施加到 V4。后续工程阶段分别验证 V5 契约与 V4 兼容，本次不声称通过。
-- **任务 3.2.2**：确立受控回滚策略：发生回滚时仅恢复本次受管修改，保留历史未提交改动并校验并发变更，拒绝盲目覆盖。本地反例资产见[受控回滚测试](../tests/roo_distribution/test_controlled_rollback.py)，复用公共事务，不新增 V5 跨套件运行依赖；资产存在不表示已通过。进程树补充资产见[孤儿与中断测试](../bmralph-suite-v5/tests/test_process_tree_guards.py)，证据边界按本轮阶段契约执行。
+- **任务 3.2.1**：按任务 7.5 扩展 [静态契约校验器](../../../../../_bmad-output/archive/scripts/validate-roo-contracts.py)，显式选择套件后校验各版本自身规则、模式和模板；不能把 V5 精简断言施加到 V4。后续工程阶段分别验证 V5 契约与 V4 兼容，本次不声称通过。
+- **任务 3.2.2**：确立受控回滚策略：发生回滚时仅恢复本次受管修改，保留历史未提交改动并校验并发变更，拒绝盲目覆盖。本地反例资产见[受控回滚测试](../../../../../_bmad-output/archive/tests/roo_distribution/test_controlled_rollback.py)，复用公共事务，不新增 V5 跨套件运行依赖；资产存在不表示已通过。进程树补充资产见[孤儿与中断测试](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/test_process_tree_guards.py)，证据边界按本轮阶段契约执行。
 
 ### Epic 4: 共享能力导航与上下文预算
 
-- **任务 4.1**：建立拟建 [V5 能力索引](../bmralph-suite-v5/skills/bmad/references/capability-map.md)，明确本地流程与遗留技能的区别、依赖及可用状态；先接通构建、审查、三遍阅读，不以整库接入为前置条件。V4 只作阅读参照，有价值的必要资产物理纳入 V5，不以软链接或跨版本运行引用替代自包含。
+- **任务 4.1**：建立拟建 [V5 能力索引](../../../../../_bmad-output/archive/bmralph-suite-v5/skills/bmad/references/capability-map.md)，明确本地流程与遗留技能的区别、依赖及可用状态；先接通构建、审查、三遍阅读，不以整库接入为前置条件。V4 只作阅读参照，有价值的必要资产物理纳入 V5，不以软链接或跨版本运行引用替代自包含。
 - **任务 4.2**：为相关模块建立最薄代码定位入口，指向实际源码、调用方和测试；优先复用现有搜索，不复制能从代码得知的项目事实，不新建大型索引数据库。
 - **任务 4.3**：实现本轮输入组装：唯一任务、相关方案约束、必要能力和索引、当前代码、最近有效反馈。Token 可计数时按 Token，否则披露字节近似；启动输入与累计工具结果分别设预算，并观察宿主自动加载部分。
 - **任务 4.4**：文档按决策、导航、状态、证据分层；草稿默认会话交付，获准才持续修订同一计划与 ADR。完整日志、临时脚本和历史不默认摄入；不顺带删除用户旧文件。
@@ -702,7 +702,7 @@ session_id: null
 当前目标以重写后的 Phase 7 和 ADR 决策 11 为准：人工终端启动、Tmux 四槽位、独立看板、Pi 编码、文本经验、独立审核与 Task 检查点。以下任务 5.1–5.6 保存历史落点与未完成验收；旧一次性交接、兼容引擎或预算不覆盖当前架构与仅文档授权，不作为可直接执行的旧许可。
 
 - **任务 5.1**：核验条件优先候选 Pi Coding Agent 的实际来源、固定版本、独立无头/JSON/RPC 入口、新进程及新会话、等待/取消/清理、独立认证、规则/技能加载、工具权限和用量接口。先定位公开安装资产与一手版本契约，不读凭据；VPS 安装、认证准备和项目外写入另获授权。Roo 独立适配不再新增，Claude Code 仅为待核验兼容候选；不从旧包名或社区文章猜命令，不静默换引擎。选型依据见[同一 ADR 的替代条款](adrs/ADR-20261012-bmad-solo-anti-bureaucracy-and-programmatic-guards.md)。
-- **任务 5.2**：复用已交付且冻结的 [V5 循环入口](../bmralph-suite-v5/scripts/bmad-loop.py:12)及独立验证器，不重建循环或永久服务。薄驱动实际已落入[现有后端](../bmralph-suite-v5/scripts/bmad_agent_backend.py:81)，本轮仅其本地交付及定向证据接管；真实运行仍需[循环门禁](../bmralph-suite-v5/scripts/bmad_loop.py:353)等最小解冻的独立授权，不承诺仅改后端即可接通。远程任务期进程及独立认证均在 VPS，客户端只提交和观察；安装、部署或 IDE 重载不启动任务。活动运行绑定已核验来源和隔离运行副本，升级先停止、确认清理、验证候选并获准启用，禁止热改后继续运行。
+- **任务 5.2**：复用已交付且冻结的 [V5 循环入口](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad-loop.py:12)及独立验证器，不重建循环或永久服务。薄驱动实际已落入[现有后端](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_agent_backend.py:81)，本轮仅其本地交付及定向证据接管；真实运行仍需[循环门禁](../../../../../_bmad-output/archive/bmralph-suite-v5/scripts/bmad_loop.py:353)等最小解冻的独立授权，不承诺仅改后端即可接通。远程任务期进程及独立认证均在 VPS，客户端只提交和观察；安装、部署或 IDE 重载不启动任务。活动运行绑定已核验来源和隔离运行副本，升级先停止、确认清理、验证候选并获准启用，禁止热改后继续运行。
 - **任务 5.3**：每次调用创建新 Pi 进程和新工程会话；失败后只转发必要约束、未提交成果和实际独立验证反馈，不恢复完整聊天。真实失败不推进，预算内修复后独立验证通过并保存唯一任务进度，由原程序从显式获准集合选择下一依赖就绪任务。原生 Pi/Claude Code 协议分别映射本地驱动契约，不将兼容方向写成已实现能力。
 - **任务 5.4**：复用时间、轮次、外层调用预算、无进展阈值和退避；核验 Pi 内部模型请求、工具、重试、用量和费用边界，未知项明确披露，不冒充已强制预算。保留既有 30 秒驱动、15/30/600 秒工具分级和 600 秒批次上限；无法完成时停下请求明确调整。API/网络失败与业务失败分开；认证/权限失败、取消或预算耗尽后停止新调用，保留成果，清理未知禁止重启。
 - **任务 5.5**：每个工作区一个活动写入者；同机生产服务与编码任务使用独立工作区、受限账号和验证环境。保留失败轮次的未提交修改，获准才提交本任务改动；推送和部署分别授权。
@@ -718,13 +718,13 @@ session_id: null
 
 本 Epic 的最小版本选择、目录与校验能力先于 V5 实施和验收；编号用于保留原任务，不表示排在所有功能之后。
 
-- **任务 7.1**：在获准工程阶段创建 [V5 套件](../bmralph-suite-v5/)，选择性继承必要 V4 资产后独立演进，包含插件描述、规则、模式、双入口、能力导航、引用、运行程序及专属测试。记录迁移映射与必要差异，不复制历史验证绿灯或新增事实镜像；本任务不修改 [V4 套件](../bmad-suite-v4/)。
-- **任务 7.2**：扩展 [部署入口](../bs.sh:95)，集中映射主版本与来源目录，新增显式 V5 选择；未指定版本的新安装兼容默认暂保留 V4。已有安装执行无版本更新时，从已核验的受管来源记录解析激活版本；记录缺失、损坏或身份不明时阻塞并要求显式选择，不按默认回切 V4。将主分支更新、标签提交选择与套件选择分开，在更新或切换主分支前确定有效版本意图，新版移交须保留该意图。拒绝多个不同版本、版本与标签契约冲突；选定套件缺失必须停止，V5 禁用 [现有通用套件回退](../bs.sh:324)。帮助不再把 main 无条件描述为最新 V4。
-- **任务 7.3**：扩展 [标签缓存](../scripts/tag-cache.py:38)和[来源清单](../scripts/deployment_provenance.py:67)，以实际提交与套件身份联合核验缓存；V4 已有缓存保留兼容，V5 使用独立缓存命名空间，不改写旧缓存标记。标签名只作版本线索，最终验证所选提交内的套件目录与身份；不含 V5 时拒绝，不回退 V4。清单拟增加套件身份、主版本及仓库内源路径；字段与 schema 兼容策略在工程阶段落实，不把仓库提交号当作唯一架构版本。
-- **任务 7.4**：复用 [受管源采集](../scripts/deployment_source.py:28)、[部署协调器](../scripts/deploy_managed.py:55)、预检、备份和事务保护。建议首轮保留单一活动插件槽位及现有模式标识以降低迁移风险，V5 展示名称与来源元数据必须明确；同一部署根只激活一套共享规则。换成另一个插件目录本身不能隔离全局规则或模式，不建设同根双活。独立试用使用显式测试部署根，真实宿主隔离与加载仍须核验。回切清理仅涉及所有权已确认且未被用户修改的退役资产，不删除整个插件／规则目录。
-- **任务 7.5**：将 [静态契约校验器](../scripts/validate-roo-contracts.py:41)改为显式套件选择，分别校验 V4 与 V5，不因 V5 状态职责调整覆盖 V4 断言。新增接口前不编造可执行参数；V5 接口及专属验证资产完成后，同步本计划头部命令、AC 6 和下方 P0。扩展 [部署状态诊断](../scripts/deployment-status.py:91)，输出已核验来源的套件身份、主版本、源路径、提交与差异，不把默认版本或当前仓库 HEAD 当作已部署版本；旧清单无法唯一判断时报告未知。
-- **任务 7.6**：同步 [安装入口](../install.sh:17)与[说明文档](../README.md)，安装和更新传递显式版本，不暗改已有激活版本；未指定版本的新安装按兼容默认 V4。部署只物化资产，不准备模型认证、不自动启动 Ralph、不运行业务部署。
-- **任务 7.7**：扩展 [部署兼容测试](../tests/roo_distribution/)，覆盖新安装默认 V4、显式 V5、已激活 V5 的无版本更新及新版移交仍保留 V5、来源身份不明时阻塞、冲突与缺源失败关闭、同提交双套件缓存、旧 V4 标签／清单兼容、V4→V5→V4 回切、第三方及修改资产保护、无副作用预检和事务失败恢复。V5 专属测试置于 [V5 测试目录](../bmralph-suite-v5/tests/)，公共部署测试留在根目录。测试只在临时根操作，不把文件分发通过外推为宿主加载、权限或断开自主执行通过。
+- **任务 7.1**：在获准工程阶段创建 [V5 套件](../../../../../_bmad-output/archive/bmralph-suite-v5/)，选择性继承必要 V4 资产后独立演进，包含插件描述、规则、模式、双入口、能力导航、引用、运行程序及专属测试。记录迁移映射与必要差异，不复制历史验证绿灯或新增事实镜像；本任务不修改 [V4 套件](../../../../../_bmad-output/archive/bmad-suite-v4/)。
+- **任务 7.2**：扩展 [部署入口](../../../../../_bmad-output/archive/bs.sh:95)，集中映射主版本与来源目录，新增显式 V5 选择；未指定版本的新安装兼容默认暂保留 V4。已有安装执行无版本更新时，从已核验的受管来源记录解析激活版本；记录缺失、损坏或身份不明时阻塞并要求显式选择，不按默认回切 V4。将主分支更新、标签提交选择与套件选择分开，在更新或切换主分支前确定有效版本意图，新版移交须保留该意图。拒绝多个不同版本、版本与标签契约冲突；选定套件缺失必须停止，V5 禁用 [现有通用套件回退](../../../../../_bmad-output/archive/bs.sh:324)。帮助不再把 main 无条件描述为最新 V4。
+- **任务 7.3**：扩展 [标签缓存](../../../../../_bmad-output/archive/scripts/tag-cache.py:38)和[来源清单](../../../../../_bmad-output/archive/scripts/deployment_provenance.py:67)，以实际提交与套件身份联合核验缓存；V4 已有缓存保留兼容，V5 使用独立缓存命名空间，不改写旧缓存标记。标签名只作版本线索，最终验证所选提交内的套件目录与身份；不含 V5 时拒绝，不回退 V4。清单拟增加套件身份、主版本及仓库内源路径；字段与 schema 兼容策略在工程阶段落实，不把仓库提交号当作唯一架构版本。
+- **任务 7.4**：复用 [受管源采集](../../../../../_bmad-output/archive/scripts/deployment_source.py:28)、[部署协调器](../../../../../_bmad-output/archive/scripts/deploy_managed.py:55)、预检、备份和事务保护。建议首轮保留单一活动插件槽位及现有模式标识以降低迁移风险，V5 展示名称与来源元数据必须明确；同一部署根只激活一套共享规则。换成另一个插件目录本身不能隔离全局规则或模式，不建设同根双活。独立试用使用显式测试部署根，真实宿主隔离与加载仍须核验。回切清理仅涉及所有权已确认且未被用户修改的退役资产，不删除整个插件／规则目录。
+- **任务 7.5**：将 [静态契约校验器](../../../../../_bmad-output/archive/scripts/validate-roo-contracts.py:41)改为显式套件选择，分别校验 V4 与 V5，不因 V5 状态职责调整覆盖 V4 断言。新增接口前不编造可执行参数；V5 接口及专属验证资产完成后，同步本计划头部命令、AC 6 和下方 P0。扩展 [部署状态诊断](../../../../../_bmad-output/archive/scripts/deployment-status.py:91)，输出已核验来源的套件身份、主版本、源路径、提交与差异，不把默认版本或当前仓库 HEAD 当作已部署版本；旧清单无法唯一判断时报告未知。
+- **任务 7.6**：同步 [安装入口](../../../../../_bmad-output/archive/install.sh:17)与[说明文档](../../../../../_bmad-output/archive/README.md)，安装和更新传递显式版本，不暗改已有激活版本；未指定版本的新安装按兼容默认 V4。部署只物化资产，不准备模型认证、不自动启动 Ralph、不运行业务部署。
+- **任务 7.7**：扩展 [部署兼容测试](../../../../../_bmad-output/archive/tests/roo_distribution/)，覆盖新安装默认 V4、显式 V5、已激活 V5 的无版本更新及新版移交仍保留 V5、来源身份不明时阻塞、冲突与缺源失败关闭、同提交双套件缓存、旧 V4 标签／清单兼容、V4→V5→V4 回切、第三方及修改资产保护、无副作用预检和事务失败恢复。V5 专属测试置于 [V5 测试目录](../../../../../_bmad-output/archive/bmralph-suite-v5/tests/)，公共部署测试留在根目录。测试只在临时根操作，不把文件分发通过外推为宿主加载、权限或断开自主执行通过。
 
 ## 5. 验证矩阵 (Validation Matrix)
 
@@ -740,15 +740,15 @@ session_id: null
 | P5 | Pi 真实独立两轮、失败修复及依赖推进 | 任务 5.1 核验固定版本和确切生命周期命令；另获授权后采集客户端关闭后的新步骤 | 前序报告官方 Pi 1.3.0 已安装；现有后端薄驱动与本地反例已存在，当前接管其证据；真实接入冻结，未来回执裁决资产待创建，单测不替代试跑 | 实际独立验证失败→新会话真实反馈修复→业务通过→程序选集合内下一就绪任务；客户端关闭后有新模型/工具步骤；取消/预算停止无新调用并确认清理；全部绑定、范围与预算证据完整 |
 | P6 | V5 分发与 V4 兼容 | 任务 7.7 的临时根版本、缓存、回切与保护测试；下方列出套件选择、部署租约、来源绑定、继承锁及版本操作守卫反例命令 | 本地版本选择、运行资产分发、协作租约、V5 来源绑定及同一部署根的版本操作守卫反例资产 AVAILABLE；活动任务与任务期循环接入仍待实现 | 显式版本全链路一致、错误不写入、V4 兼容与用户资产保护；已有部署的版本操作须在共享租约期间失败关闭，并在操作、新版移交及最终部署期间持续持有排他锁。来源绑定须核验 V5 身份、受管物理资产与分发映射，边界变化停止对账，不恢复旧文件。原语验证不替代活动任务接入、事务完成诊断、宿主模式语义、跨部署根保护、在途进程清理或真实宿主加载 |
 
-本地验证接口与历史说明见[类型化验证契约](../bmralph-suite-v5/skills/bmad/references/procedures/verification.md)，实际能力以当前源码为准；其中历史“没有完成写回”等陈述不覆盖现有适配接口。同一活动计划具有唯一结构化清单，六项历史完成源记录保留；状态卡只投影，不在平台记录、ADR 或散文维护第二份任务进度。P5-PI-DRIVER 仅按本轮窄恢复及精确协议证据登记本地完成，P5-PI-HEADLESS 保持 SUSPENDED/空回执，真实门禁未通过。配置语法、专项竞态、固定镜像、容器及真实运行承诺保留，不虚构子命令。静态校验器不检查完整任务块；结构、依赖和完成证据须由状态及适配原语另行核验，其 PASS 也不是全阶段验收。
+本地验证接口与历史说明见[类型化验证契约](../../../../../_bmad-output/archive/bmralph-suite-v5/skills/bmad/references/procedures/verification.md)，实际能力以当前源码为准；其中历史“没有完成写回”等陈述不覆盖现有适配接口。同一活动计划具有唯一结构化清单，六项历史完成源记录保留；状态卡只投影，不在平台记录、ADR 或散文维护第二份任务进度。P5-PI-DRIVER 仅按本轮窄恢复及精确协议证据登记本地完成，P5-PI-HEADLESS 保持 SUSPENDED/空回执，真实门禁未通过。配置语法、专项竞态、固定镜像、容器及真实运行承诺保留，不虚构子命令。静态校验器不检查完整任务块；结构、依赖和完成证据须由状态及适配原语另行核验，其 PASS 也不是全阶段验收。
 
 以下为保留的历史工程命令契约，不默认全部执行。本轮五组类型化单测完整取自对应任务验证对象，四组用于六项完成证据刷新、一组用于 P5 本地交付；各次前台验证分别限时 30 秒，探测 15 秒、stdin 封闭，不隐式安装。只有精确匹配当前证据才能复用，旧回执保留不改；不得以同文件曾全部通过替代契约匹配。全部宏观验收和真实运行授权门禁保留。
 
 拟执行技术命令：
 
 ```bash
-timeout 30s python3 -B scripts/validate-roo-contracts.py --suite v4 --plan _bmad-output/pending_implementation_plan.md < /dev/null
-timeout 30s python3 -B scripts/validate-roo-contracts.py --suite v5 --plan _bmad-output/pending_implementation_plan.md < /dev/null
+timeout 30s python3 -B scripts/validate-roo-contracts.py --suite v4 --plan specs/tasks/archive/20261102T120208Z-BMAD-V4-ATTENDED-CLEANUP-20261021-01/pending_implementation_plan.md < /dev/null
+timeout 30s python3 -B scripts/validate-roo-contracts.py --suite v5 --plan specs/tasks/archive/20261102T120208Z-BMAD-V4-ATTENDED-CLEANUP-20261021-01/pending_implementation_plan.md < /dev/null
 timeout 30s python3 -B -m unittest discover -s tests/roo_contracts -p 'test*contracts.py' < /dev/null
 timeout -k 2s 30s python3 -B -m unittest discover -s bmralph-suite-v5/tests -p 'test_environment_guards.py' < /dev/null
 timeout -k 2s 30s python3 -B -m unittest discover -s bmralph-suite-v5/tests -p 'test_supervisor_guards.py' < /dev/null
@@ -773,7 +773,7 @@ timeout -k 2s 30s python3 -B -m unittest discover -s tests/roo_distribution -p '
 ## 6. 受控回滚方案 (Controlled Rollback Plan)
 
 若后续获准 Pi 接入出现工具适配异常，先停止并保留成果；以下是历史受控恢复范围，不扩大当前冻结与授权：
-1. 仅恢复 [V5 套件](../bmralph-suite-v5/)、[公共部署脚本](../scripts/)、[部署入口](../bs.sh)和[安装入口](../install.sh)中本任务获准且经差异核对允许恢复的修改；V4 源目录不在本任务修改范围内。已部署 V5 回切 V4 须另按显式版本选择和受管事务执行，不把源码恢复当作宿主回切完成；
+1. 仅恢复 [V5 套件](../../../../../_bmad-output/archive/bmralph-suite-v5/)、[公共部署脚本](../../../../../_bmad-output/archive/scripts/)、[部署入口](../../../../../_bmad-output/archive/bs.sh)和[安装入口](../../../../../_bmad-output/archive/install.sh)中本任务获准且经差异核对允许恢复的修改；V4 源目录不在本任务修改范围内。已部署 V5 回切 V4 须另按显式版本选择和受管事务执行，不把源码恢复当作宿主回切完成；
 2. 保持用户既有未提交改动与[项目事实基线](project-context.md)不变；
 3. 回滚前检查工作树并发修改，确保第三方非受管资产零破坏。
 4. 停止远程任务须先取消并确认在途 Agent 与验证进程结束；不得用全目录恢复或自动清理覆盖失败轮次和用户修改。

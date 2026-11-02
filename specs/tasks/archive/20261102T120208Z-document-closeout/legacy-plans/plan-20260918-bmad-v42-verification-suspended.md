@@ -2,7 +2,7 @@
 scenario: structural
 impact_tier: M
 requires_adr: true
-adr_file: "_bmad-output/adrs/ADR-20260918-bmad-v42-adaptive-backpressure-and-adr-governance.md"
+adr_file: "docs/adrs/ADR-20260918-bmad-v42-adaptive-backpressure-and-adr-governance.md"
 verification_type: unit_test
 verification_command: "timeout 30s python3 bmad-suite-v4/skills/bmad/scripts/validate-solo-package.py < /dev/null"
 session_id: "892c0a41-bc8b-4af4-a8c6-e2dd0a979660"

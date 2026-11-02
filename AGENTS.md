@@ -5,7 +5,7 @@
 - 治理入口：[治理索引](specs/governance/00-governance-index.md)。按当前职责冷加载五个模块，不常驻全部历史。
 - 任务入口：[单焦点指针](specs/tasks/_active.md)。显式指定任务优先；空闲指针不恢复任何归档任务，不复制进度账本。
 - 架构决策：[自适应背压与无损蒸馏 ADR](docs/adrs/ADR-20261028-adaptive-backpressure-and-lossless-distillation.md)。先保真后压缩，默认预算为规划目标，纯软超限仅提醒；真实权限、来源、硬能力与传输故障保护不取消。
-- 事实基线：[项目上下文](_bmad-output/project-context.md)。读取基线不授予写入、实施或恢复权限。
+- 事实基线：[项目上下文](docs/project-context.md)。读取基线不授予写入、实施或恢复权限。
 
 当前用户授权与客户端实际权限决定操作边界；规范、模式与路径可读不增加授权。只读任务不写文件、不运行验证；文档治理运维按获准差异审查交付，不启动业务测试。
 

@@ -2,8 +2,8 @@
 
 - 日期：2026-10-21。
 - 关联决策：[V4 人值守返修 ADR](../adrs/ADR-20261021-v4-attended-repair-and-repository-cleanup.md)，保持 PROPOSED。
-- 关联契约：[V4 分阶段计划](../pending_implementation_plan.md)，计划标识 BMAD-V4-ATTENDED-CLEANUP-20261021-01；本次工程范围为阶段 0/1。
-- 被审校材料：[原 DR/DM 报告](../../docs/Ralph-Wiggum-Loop/dr_dm_v4_backpressure_optimization.md)。原文保留作为问题来源，不作为已接受决策、性能基线或验收证据。
+- 关联契约：[V4 分阶段计划](../../specs/tasks/archive/20261102T120208Z-BMAD-V4-ATTENDED-CLEANUP-20261021-01/pending_implementation_plan.md)，计划标识 BMAD-V4-ATTENDED-CLEANUP-20261021-01；本次工程范围为阶段 0/1。
+- 被审校材料：[原 DR/DM 报告](../Ralph-Wiggum-Loop/dr_dm_v4_backpressure_optimization.md)。原文保留作为问题来源，不作为已接受决策、性能基线或验收证据。
 - 证据范围：客户端返回的仓库文件、差异及修改回执。静态文本修订不证明宿主加载、权限执行或效率提升；本报告不替代验证回执或唯一任务进度入口。
 
 ## 1. 审校结论
@@ -27,7 +27,7 @@
 | 每阶段一次确认、探针免审批 | 入口文本不能取消客户端审批或改变真实权限 | 操作按实际工具权限与当前用户授权进行，不承诺审批次数 |
 | 两份文本已改即彻底解决死锁 | 缺少相关回归、受管分发及宿主有效加载证据 | 区分文字修改、静态验证、隔离分发与实际加载，不由前者外推后者 |
 
-原问题定位见[原报告的根因论断](../../docs/Ralph-Wiggum-Loop/dr_dm_v4_backpressure_optimization.md:14)、[长度与效果断言](../../docs/Ralph-Wiggum-Loop/dr_dm_v4_backpressure_optimization.md:30)、[风险防线](../../docs/Ralph-Wiggum-Loop/dr_dm_v4_backpressure_optimization.md:90)及[落地声明](../../docs/Ralph-Wiggum-Loop/dr_dm_v4_backpressure_optimization.md:149)。
+原问题定位见[原报告的根因论断](../Ralph-Wiggum-Loop/dr_dm_v4_backpressure_optimization.md:14)、[长度与效果断言](../Ralph-Wiggum-Loop/dr_dm_v4_backpressure_optimization.md:30)、[风险防线](../Ralph-Wiggum-Loop/dr_dm_v4_backpressure_optimization.md:90)及[落地声明](../Ralph-Wiggum-Loop/dr_dm_v4_backpressure_optimization.md:149)。
 
 ## 3. 两入口的真实契约
 
@@ -50,9 +50,9 @@
 
 ## 4. 决策矩阵的审校
 
-原矩阵没有定位评分证据、明确评分标尺或权重来源，且将“分析必须执行探针”设为硬门禁，预先排除了不扩大权限的替代方案。它不能证明推荐方案唯一胜出。[原硬门禁与评分表](../../docs/Ralph-Wiggum-Loop/dr_dm_v4_backpressure_optimization.md:121)
+原矩阵没有定位评分证据、明确评分标尺或权重来源，且将“分析必须执行探针”设为硬门禁，预先排除了不扩大权限的替代方案。它不能证明推荐方案唯一胜出。[原硬门禁与评分表](../Ralph-Wiggum-Loop/dr_dm_v4_backpressure_optimization.md:121)
 
-评分还存在算术错误：按原权重和分项，方案 B 的总分应为 71.0，而不是表中的 55.0。即使修正算术，评分依据与候选定义问题仍然存在，不能靠重新排序挽救裁决。[原分项与公式](../../docs/Ralph-Wiggum-Loop/dr_dm_v4_backpressure_optimization.md:133)
+评分还存在算术错误：按原权重和分项，方案 B 的总分应为 71.0，而不是表中的 55.0。即使修正算术，评分依据与候选定义问题仍然存在，不能靠重新排序挽救裁决。[原分项与公式](../Ralph-Wiggum-Loop/dr_dm_v4_backpressure_optimization.md:133)
 
 本次采用定性比较，不另造分数：
 
@@ -72,4 +72,4 @@
 - 进度复制到分析或 ADR：本报告保存审校依据，ADR 保存决策，计划保存契约；当前执行进度与真实回执仍只使用已选定的平台任务记录，未证明控制器覆盖时不宣称程序防篡改保证。
 - 分发成功被当成有效加载：本地静态契约、项目内隔离分发及真实宿主加载是不同证据层，后续阶段不能跳过对应验收。
 
-本报告不登记测试通过；旧位置已明确标注退役并保留原正文与导航，但这不证明运行绑定或在途进程已经结束。阶段验收、相关回归的真实结果及未完成事项仅在唯一任务入口中记录；宿主切换须另获明确目标与权限并核验在途进程，按[关联计划](../pending_implementation_plan.md)推进，不提前开展旧版本清理、不恢复 V5、不自动转正或归档。
+本报告不登记测试通过；旧位置已明确标注退役并保留原正文与导航，但这不证明运行绑定或在途进程已经结束。阶段验收、相关回归的真实结果及未完成事项仅在唯一任务入口中记录；宿主切换须另获明确目标与权限并核验在途进程，按[关联计划](../../specs/tasks/archive/20261102T120208Z-BMAD-V4-ATTENDED-CLEANUP-20261021-01/pending_implementation_plan.md)推进，不提前开展旧版本清理、不恢复 V5、不自动转正或归档。

@@ -2,7 +2,7 @@
 proposal_id: "BMAD-FASTCODE-KNOWLEDGE-DISTILLATION-20261023-01"
 status: PROPOSED
 candidate_repository: "/home/ecs-user/project/FastCode"
-remediation_plan: "PLAN-20261025-solo-distill-v2-risk-remediation-01.md"
+remediation_plan: "specs/tasks/archive/20261102T120208Z-document-closeout/PLAN-20261025-solo-distill-v2-risk-remediation-01.md"
 authorization: "2026-10-25 用户明确授权新建 solo-distill V2 风险修复独立计划并刷新本提案，现有治理计划和默认活动计划不修改。本轮仅在当前工作区保存独立计划、精确修订本提案并原生复读；保持提案 PROPOSED、计划 DRAFT，不实施服务，不运行终端、测试、探针、验收或模型请求，不访问或修改外部仓库、网关、宿主或事实基线，不修改关联评审文档，不创建或接受 ADR，不提交、推送或归档。后续代码、回归、外发及宿主操作须按 Epic 另获明确授权；旧 K1 重依赖安装继续暂停。"
 session_id: null
 ---
@@ -25,10 +25,10 @@ Rust/Go 的低开销可作为远期方向，但微秒级仅能作为特定本地
 
 ## 2. 本轮授权与任务独立性
 
-本轮直接消费既有五风险优化及 DR／DM 会话审计，推荐分层最小修正版，补齐公共引用闭包、真实发送边界和封存核心形成／复用条件。用户已明确授权新建[solo-distill V2 独立计划](PLAN-20261025-solo-distill-v2-risk-remediation-01.md)并刷新本提案；该授权仅覆盖文档结晶和原生复读，不批准生产实施、测试、外发或提案转正。既有[关联 DR／DM 规范](docs/analysis/ANALYSIS-20261025-solo-distill-rag-dag-cag-dr-dm.md)保留早先固定管道候选，本轮不修改它；V2 推荐契约以本提案第 5.3／5.4、6.6 和 10.4 节为准，独立计划仅实例化阶段、依赖与验收，不镜像执行流水。
+本轮直接消费既有五风险优化及 DR／DM 会话审计，推荐分层最小修正版，补齐公共引用闭包、真实发送边界和封存核心形成／复用条件。用户已明确授权新建[solo-distill V2 独立计划](PLAN-20261025-solo-distill-v2-risk-remediation-01.md)并刷新本提案；该授权仅覆盖文档结晶和原生复读，不批准生产实施、测试、外发或提案转正。既有[关联 DR／DM 规范](../../../../docs/analysis/ANALYSIS-20261025-solo-distill-rag-dag-cag-dr-dm.md)保留早先固定管道候选，本轮不修改它；V2 推荐契约以本提案第 5.3／5.4、6.6 和 10.4 节为准，独立计划仅实例化阶段、依赖与验收，不镜像执行流水。
 
-- FastCode 已有轻量工程验收驱动与样本绑定，见[请求契约](../project/solo-distill-mcp/tests/run_live_integration.py:24)；工程 stdio 客户端不等于 Roo 运行时。主模型与网关不重选，既有授权配置不因文档刷新被改写；后续接管仍须核验目标、范围、外发、环境／产物、预算及宿主条件。
-- 本轮写入仅限本提案及新建的 solo-distill V2 独立计划；[默认活动计划](_bmad-output/pending_implementation_plan.md)、[文档治理计划](PLAN-20261022-document-test-governance-01.md)、关联评审及其 ADR 均不修改、不替换、不腾空、不归档。不修改生产代码、宿主模式、MCP 配置或事实基线，不提交、推送。
+- FastCode 已有轻量工程验收驱动与样本绑定，见[请求契约](../../../../../project/solo-distill-mcp/tests/run_live_integration.py:24)；工程 stdio 客户端不等于 Roo 运行时。主模型与网关不重选，既有授权配置不因文档刷新被改写；后续接管仍须核验目标、范围、外发、环境／产物、预算及宿主条件。
+- 本轮写入仅限本提案及新建的 solo-distill V2 独立计划；[默认活动计划](../20261102T120208Z-BMAD-V4-ATTENDED-CLEANUP-20261021-01/pending_implementation_plan.md)、[文档治理计划](PLAN-20261022-document-test-governance-01.md)、关联评审及其 ADR 均不修改、不替换、不腾空、不归档。不修改生产代码、宿主模式、MCP 配置或事实基线，不提交、推送。
 - 原提案承接[治理计划的 F3 收敛边界](PLAN-20261022-document-test-governance-01.md:160)；保留历史来源导航，不接管该计划，也不继承其授权或通过记录。
 - 旧 Phase 1／K1 的重依赖安装在步骤 4/11 暂停，保持原现场与未完成事项。方案 3 改变实现契约；本次文档刷新不是旧安装恢复、旧 K1 完成或历史计划重放，后续实施须另行授权。
 - 历史七模型请求仅连接已授权的本机回环 8080，无认证头，未启动或重启网关；该历史条件不自动成为未来认证配置。回环连接不等于内容不离开本机，上游外发与凭据边界须分别确认。
@@ -38,14 +38,14 @@ Rust/Go 的低开销可作为远期方向，但微秒级仅能作为特定本地
 
 以下“已定位”表示初始勘测及既有原生读取获得的静态源码事实，不等于完整 FastCode 已运行、宿主已加载或能力已验收。现有重引擎作为历史候选基线保留；轻量分支不要求继承其依赖、单例或副作用。
 
-- 已有标准 MCP 接入基础：[服务入口](../project/FastCode/mcp_server.py:38)使用 FastMCP，[传输入口](../project/FastCode/mcp_server.py:742)默认 stdio，另有 SSE 分支。PoC 不依赖 SSE，也不为了服务化再包一层 HTTP。
-- 已有完整问答路径：[问答工具](../project/FastCode/mcp_server.py:213)将仓库准备、索引加载和引擎查询串起来；[查询路径](../project/FastCode/mcp_server.py:256)传入仓库过滤，但最终返回的是文本，不是本提案要求的结构化知识包。
-- Python 引擎已有[组件装配](../project/FastCode/fastcode/main.py:88)、[索引编排](../project/FastCode/fastcode/main.py:185)和[检索到生成路径](../project/FastCode/fastcode/main.py:400)。因此 MCP 方案不是从零造协议、从零造检索。
-- 已有[仓库结构工具](../project/FastCode/mcp_server.py:490)、[符号检索](../project/FastCode/mcp_server.py:422)、[文件摘要](../project/FastCode/mcp_server.py:532)和[调用链工具](../project/FastCode/mcp_server.py:630)。但调用链按名称选取首个匹配且最多限制到五跳，不能据此宣称获得所有同名符号或完整运行时调用图。
-- 当前[仓库概览生成器](../project/FastCode/fastcode/repo_overview.py:62)主要依赖说明文档和目录结构；它不是场景 A 所需的多模块、多维调用关系蒸馏。全库索引基础和全库架构认知必须分开判断。
-- 当前[生成配置](../project/FastCode/config/config.yaml:143)允许较大上下文和输出；[迭代检索配置](../project/FastCode/config/config.yaml:170)已有多轮参数。不能把这些配置值当成真实模型容量、端到端耗时或质量证据。
-- 当前[依赖声明](../project/FastCode/requirements.txt:1)包含解析、向量、模型、Web 和 MCP 等依赖，多数未固定版本。已读[说明文档](../project/FastCode/README.md:175)声明 Python 3.12 以上；任务现场报告旧专用环境为 Python 3.12.3、已装包数 0，不能据此宣布环境就绪。轻量环境、依赖闭包及完整许可证门禁仍待后续核验。
-- 当前[Roo 模式配置](bmad-suite-v4/roo/settings/custom_modes.yaml:5)没有列出 MCP 工具组。需核查目标宿主版本实际的工具可见性与配置加载；不得假设注册服务器就能在当前自定义模式中调用。此缺口影响宿主联调，不否定 MCP 的主方案选择。
+- 已有标准 MCP 接入基础：[服务入口](../../../../../project/FastCode/mcp_server.py:38)使用 FastMCP，[传输入口](../../../../../project/FastCode/mcp_server.py:742)默认 stdio，另有 SSE 分支。PoC 不依赖 SSE，也不为了服务化再包一层 HTTP。
+- 已有完整问答路径：[问答工具](../../../../../project/FastCode/mcp_server.py:213)将仓库准备、索引加载和引擎查询串起来；[查询路径](../../../../../project/FastCode/mcp_server.py:256)传入仓库过滤，但最终返回的是文本，不是本提案要求的结构化知识包。
+- Python 引擎已有[组件装配](../../../../../project/FastCode/fastcode/main.py:88)、[索引编排](../../../../../project/FastCode/fastcode/main.py:185)和[检索到生成路径](../../../../../project/FastCode/fastcode/main.py:400)。因此 MCP 方案不是从零造协议、从零造检索。
+- 已有[仓库结构工具](../../../../../project/FastCode/mcp_server.py:490)、[符号检索](../../../../../project/FastCode/mcp_server.py:422)、[文件摘要](../../../../../project/FastCode/mcp_server.py:532)和[调用链工具](../../../../../project/FastCode/mcp_server.py:630)。但调用链按名称选取首个匹配且最多限制到五跳，不能据此宣称获得所有同名符号或完整运行时调用图。
+- 当前[仓库概览生成器](../../../../../project/FastCode/fastcode/repo_overview.py:62)主要依赖说明文档和目录结构；它不是场景 A 所需的多模块、多维调用关系蒸馏。全库索引基础和全库架构认知必须分开判断。
+- 当前[生成配置](../../../../../project/FastCode/config/config.yaml:143)允许较大上下文和输出；[迭代检索配置](../../../../../project/FastCode/config/config.yaml:170)已有多轮参数。不能把这些配置值当成真实模型容量、端到端耗时或质量证据。
+- 当前[依赖声明](../../../../../project/FastCode/requirements.txt:1)包含解析、向量、模型、Web 和 MCP 等依赖，多数未固定版本。已读[说明文档](../../../../../project/FastCode/README.md:175)声明 Python 3.12 以上；任务现场报告旧专用环境为 Python 3.12.3、已装包数 0，不能据此宣布环境就绪。轻量环境、依赖闭包及完整许可证门禁仍待后续核验。
+- 当前[Roo 模式配置](../../../../bmad-suite-v4/roo/settings/custom_modes.yaml:5)没有列出 MCP 工具组。需核查目标宿主版本实际的工具可见性与配置加载；不得假设注册服务器就能在当前自定义模式中调用。此缺口影响宿主联调，不否定 MCP 的主方案选择。
 
 对于“完整 FastCode 本机已可运行”“Roo 已能调用”“场景 A/B 已在 2–3 分钟达标”“许可证已核验”，当前仍为证据不足；骨架请求单次成功不解除这些门禁。
 
@@ -63,31 +63,31 @@ Rust/Go 的低开销可作为远期方向，但微秒级仅能作为特定本地
 
 | 优先级 | 模型／原始回执 | HTTP／退出码／结束 | TTFT 秒 | 总耗时秒 | 离线结构证据核验 |
 | --- | --- | --- | --- | --- | --- |
-| 1，锁定主模型 | [gpt-6-sol](_bmad-output/scratch/gateway_probe-benchmark-afda21005d4a44d58192cb110dad8705.json) | 200／0／正常完成 | 15.1586 | 29.5883 | 39/39 条导入匹配，46/46 个定义引用可定位；10 项数据流，另有外部库引用 |
-| 2 | [glm-5.3](_bmad-output/scratch/gateway_probe-benchmark-b5e446a7e8b04155a60766f3f2b77340.json) | 200／0／正常完成 | 13.5365 | 40.1053 | 39/39 条导入匹配；89 个定义严格匹配、2 个省略类名可定位、3 个真实字段；14 项数据流 |
-| 3 | [grok-4.7](_bmad-output/scratch/gateway_probe-benchmark-c7049d4ccd1c46dd9ba133171fa6b19f.json) | 200／0／正常完成 | 34.1396 | 41.5378 | 39/39 条导入匹配，54/54 个定义引用可定位；9 项数据流 |
-| 4 | [deepseek-v4.1-flash](_bmad-output/scratch/gateway_probe-benchmark-7978d7842b8b4cbab734469827b5c72e.json) | 200／0／正常完成 | 37.7968 | 52.2908 | 39/39 条导入匹配；52 个定义严格匹配，另 8 个省略类名可唯一定位；7 项数据流 |
-| 5 | [claude-sonnet-5.5](_bmad-output/scratch/gateway_probe-benchmark-c472d7d58f644c6da260524aa6cda07a.json) | 200／0／正常完成 | 49.6283 | 139.9574 | 39/39 条导入匹配，145/145 个定义引用可定位；18 项数据流，覆盖较细但耗时高 |
-| 当前排除 | [gpt-6.1-sol](_bmad-output/scratch/gateway_probe-benchmark-91723da59f9f4fe598c6f1a54a27713f.json) | 200／2／上游流错误 | 无答案 | 2.0697，失败终止 | 102 字节错误事件，无正常结束标记；不能计为快速成功 |
-| 当前排除 | [qwen-3.8-max](_bmad-output/scratch/gateway_probe-benchmark-67240fcf98534151a8986f091619b879.json) | 200／2／上游流错误 | 无答案 | 2.0642，失败终止 | 102 字节错误事件，无正常结束标记；不能计为快速成功 |
-| 历史对照，备选 | [gemini-3.8-flash](_bmad-output/scratch/gateway_probe-gemini-8ba12d0609034815912f401b909636b0.json) | 200／0／正常完成 | 33.5440 | 34.9360 | 39/39 条导入匹配，63/63 个定义引用可定位；16 项数据流；非本轮重测 |
+| 1，锁定主模型 | [gpt-6-sol](../../../../.scratch/legacy-bmad-output-20261102T120208Z/gateway_probe-benchmark-afda21005d4a44d58192cb110dad8705.json) | 200／0／正常完成 | 15.1586 | 29.5883 | 39/39 条导入匹配，46/46 个定义引用可定位；10 项数据流，另有外部库引用 |
+| 2 | [glm-5.3](../../../../.scratch/legacy-bmad-output-20261102T120208Z/gateway_probe-benchmark-b5e446a7e8b04155a60766f3f2b77340.json) | 200／0／正常完成 | 13.5365 | 40.1053 | 39/39 条导入匹配；89 个定义严格匹配、2 个省略类名可定位、3 个真实字段；14 项数据流 |
+| 3 | [grok-4.7](../../../../.scratch/legacy-bmad-output-20261102T120208Z/gateway_probe-benchmark-c7049d4ccd1c46dd9ba133171fa6b19f.json) | 200／0／正常完成 | 34.1396 | 41.5378 | 39/39 条导入匹配，54/54 个定义引用可定位；9 项数据流 |
+| 4 | [deepseek-v4.1-flash](../../../../.scratch/legacy-bmad-output-20261102T120208Z/gateway_probe-benchmark-7978d7842b8b4cbab734469827b5c72e.json) | 200／0／正常完成 | 37.7968 | 52.2908 | 39/39 条导入匹配；52 个定义严格匹配，另 8 个省略类名可唯一定位；7 项数据流 |
+| 5 | [claude-sonnet-5.5](../../../../.scratch/legacy-bmad-output-20261102T120208Z/gateway_probe-benchmark-c472d7d58f644c6da260524aa6cda07a.json) | 200／0／正常完成 | 49.6283 | 139.9574 | 39/39 条导入匹配，145/145 个定义引用可定位；18 项数据流，覆盖较细但耗时高 |
+| 当前排除 | [gpt-6.1-sol](../../../../.scratch/legacy-bmad-output-20261102T120208Z/gateway_probe-benchmark-91723da59f9f4fe598c6f1a54a27713f.json) | 200／2／上游流错误 | 无答案 | 2.0697，失败终止 | 102 字节错误事件，无正常结束标记；不能计为快速成功 |
+| 当前排除 | [qwen-3.8-max](../../../../.scratch/legacy-bmad-output-20261102T120208Z/gateway_probe-benchmark-67240fcf98534151a8986f091619b879.json) | 200／2／上游流错误 | 无答案 | 2.0642，失败终止 | 102 字节错误事件，无正常结束标记；不能计为快速成功 |
+| 历史对照，备选 | [gemini-3.8-flash](../../../../.scratch/legacy-bmad-output-20261102T120208Z/gateway_probe-gemini-8ba12d0609034815912f401b909636b0.json) | 200／0／正常完成 | 33.5440 | 34.9360 | 39/39 条导入匹配，63/63 个定义引用可定位；16 项数据流；非本轮重测 |
 
-- 初始检查器不完整支持展示围栏、证据对象及符号表示；剥离完整围栏、兼容对象、统一符号写法及嵌套项目导入参考后，六份有效答案均可解析，各 39 条导入声明可匹配，没有修补模型 JSON 正文。不能把初始零匹配或解析失败直接写成幻觉率。离线方法见 [复核脚本](_bmad-output/scratch/benchmark_review.py)；最近汇总命令客户端回执退出 0，输出工件标识为 cmd-1792818674665.txt，不假定它存在工作区同名路径。
-- 字段与定义分层处理：GLM 引用的三个字段在[解析结果定义](../project/FastCode/fastcode/parser.py:67)中真实存在；省略类名的引用需要消歧。导入匹配、符号存在和条目数量不等于完整调用链准确率或全库关系覆盖率。
-- [标准问答源码](../project/FastCode/fastcode/main.py:375)支持查询处理、检索与生成路径，但代理分支可跳过查询增强。骨架不能证明所有运行时顺序、异常、共享状态与副作用。
+- 初始检查器不完整支持展示围栏、证据对象及符号表示；剥离完整围栏、兼容对象、统一符号写法及嵌套项目导入参考后，六份有效答案均可解析，各 39 条导入声明可匹配，没有修补模型 JSON 正文。不能把初始零匹配或解析失败直接写成幻觉率。离线方法见 [复核脚本](../../../../.scratch/legacy-bmad-output-20261102T120208Z/benchmark_review.py)；最近汇总命令客户端回执退出 0，输出工件标识为 cmd-1792818674665.txt，不假定它存在工作区同名路径。
+- 字段与定义分层处理：GLM 引用的三个字段在[解析结果定义](../../../../../project/FastCode/fastcode/parser.py:67)中真实存在；省略类名的引用需要消歧。导入匹配、符号存在和条目数量不等于完整调用链准确率或全库关系覆盖率。
+- [标准问答源码](../../../../../project/FastCode/fastcode/main.py:375)支持查询处理、检索与生成路径，但代理分支可跳过查询增强。骨架不能证明所有运行时顺序、异常、共享状态与副作用。
 - 两个失败候选均在 HTTP 200 后返回上游提前结束错误；仅凭这些错误无法归因于配额、上下文限制或代理超时。本轮最快完整骨架结果仍高于 20 秒，完整 120～180 秒业务目标尚待验收。
 
 据此锁定 gpt-6-sol 为 Phase 1／K1 主模型，Gemini 仅保留备选，不自动切换或并发赛马。历史探针未进行客户端重试，不据此推断网关内部发送次数；后续复用第 6.5 节网关已有有界恢复，不额外重放网关请求。锁定依据是当前单样本可用性、耗时与用户选择，不是已证明其语义质量最优；后续以独立事实锚点验主模型，不重复七模型赛马。正式采纳轻量方向不将单样本结果升级为长期稳定性保证，也不触发生产模型配置写入。
 
 ### 3.3 轻量服务已落地资产与场景 A 覆盖阻塞
 
-[独立轻量项目](../project/solo-distill-mcp/pyproject.toml:5)已经存在；[当前编排](../project/solo-distill-mcp/src/solo_distill/distillation.py:470)已有扫描、场景导航、正文读取、固定网关压缩及源码复核。后文的“拟实施”保留目标契约语境，不再表示所有最小服务职责都尚未编写；源码存在仍不证明当前环境、宿主、全阶段或语义验收通过。
+[独立轻量项目](../../../../../project/solo-distill-mcp/pyproject.toml:5)已经存在；[当前编排](../../../../../project/solo-distill-mcp/src/solo_distill/distillation.py:470)已有扫描、场景导航、正文读取、固定网关压缩及源码复核。后文的“拟实施”保留目标契约语境，不再表示所有最小服务职责都尚未编写；源码存在仍不证明当前环境、宿主、全阶段或语义验收通过。
 
-用户提供的场景 A 历史现场为 39.76 秒、24,550 字节、6/13 锚点，32 块集中于 13 文件，三类辅助区域占 18 块。与 24,576 字节硬上限相差仅 26 字节，不能只通过增加主干候选解决。定位见[历史 A 完整追踪](../project/solo-distill-mcp/verification/.scratch/live-a-1792848920042.full.json)；本轮未重新执行或完整复核该追踪，数字作为用户提供基准，不冒充当前源码版本的独立测量。
+用户提供的场景 A 历史现场为 39.76 秒、24,550 字节、6/13 锚点，32 块集中于 13 文件，三类辅助区域占 18 块。与 24,576 字节硬上限相差仅 26 字节，不能只通过增加主干候选解决。定位见[历史 A 完整追踪](../../../../../project/solo-distill-mcp/verification/.scratch/live-a-1792848920042.full.json)；本轮未重新执行或完整复核该追踪，数字作为用户提供基准，不冒充当前源码版本的独立测量。
 
-当前源码不是全局度数贪心：[场景 A](../project/solo-distill-mcp/src/solo_distill/distillation.py:501)使用必需静态定义预留加模型导航；[候选域](../project/solo-distill-mcp/src/solo_distill/evidence.py:55)只有定义，缺模块顶层正文单元及本地生命周期配额；[调用表达式](../project/solo-distill-mcp/src/solo_distill/extractor.py:211)也不等于已消歧调用边。历史候选拒绝与当前 32 项预检查的差异，须绑定历史源码及工程回执后再归因。
+当前源码不是全局度数贪心：[场景 A](../../../../../project/solo-distill-mcp/src/solo_distill/distillation.py:501)使用必需静态定义预留加模型导航；[候选域](../../../../../project/solo-distill-mcp/src/solo_distill/evidence.py:55)只有定义，缺模块顶层正文单元及本地生命周期配额；[调用表达式](../../../../../project/solo-distill-mcp/src/solo_distill/extractor.py:211)也不等于已消歧调用边。历史候选拒绝与当前 32 项预检查的差异，须绑定历史源码及工程回执后再归因。
 
-K1 的场景 A 覆盖门禁仍为 BLOCKED，后续修复与重跑等待评审及阶段授权；场景 B、独立三轮、语义、真实 Roo、取消／清理、K2 和全计划完成均不由本次设计继承绿灯。旧重依赖安装继续暂停。详细证据与推荐方案见[关联评审第 1–4 节](docs/analysis/ANALYSIS-20261025-solo-distill-rag-dag-cag-dr-dm.md)。
+K1 的场景 A 覆盖门禁仍为 BLOCKED，后续修复与重跑等待评审及阶段授权；场景 B、独立三轮、语义、真实 Roo、取消／清理、K2 和全计划完成均不由本次设计继承绿灯。旧重依赖安装继续暂停。详细证据与推荐方案见[关联评审第 1–4 节](../../../../docs/analysis/ANALYSIS-20261025-solo-distill-rag-dag-cag-dr-dm.md)。
 
 ## 4. 四种接入形态攻防与唯一主入口裁决
 
@@ -104,7 +104,7 @@ K1 的场景 A 覆盖门禁仍为 BLOCKED，后续修复与重跑等待评审及
 
 原生 SDK 不等于上下文污染，CLI 和 REST 也能隔离内部过程。MCP 的优势不是独占进程隔离，而是已有协议与工具职责可参考，且版本化契约适合作为长期调用边界；方案 3 必须隔离旧重引擎装配，轻量适配工作不能按“已有服务器”省略。
 
-已有[CLI 查询](../project/FastCode/main.py:41)每次创建引擎并输出多种过程文本；已有[REST API](../project/FastCode/api.py:100)提供另一套服务入口。当前再选 REST，再加 MCP 桥，等于多维护一层而没有当前需求收益。
+已有[CLI 查询](../../../../../project/FastCode/main.py:41)每次创建引擎并输出多种过程文本；已有[REST API](../../../../../project/FastCode/api.py:100)提供另一套服务入口。当前再选 REST，再加 MCP 桥，等于多维护一层而没有当前需求收益。
 
 ### 反方质询与回应
 
@@ -152,7 +152,7 @@ K1 的场景 A 覆盖门禁仍为 BLOCKED，后续修复与重跑等待评审及
 
 ### 5.3 当前阻塞的候选修复契约：骨架、局部与缓存布局
 
-本节是第 3.3 节缺口的待评审增量，不静默替代已存在版本 1。早先固定管道候选见[关联 DR／DM 规范第 5–7 节](docs/analysis/ANALYSIS-20261025-solo-distill-rag-dag-cag-dr-dm.md)；经本次反向审计，V2 推荐改为受保护预留下的单向借槽及分层最小修正版。下列变化仅形成候选契约，后续实施须按[独立计划](PLAN-20261025-solo-distill-v2-risk-remediation-01.md)获准接管。
+本节是第 3.3 节缺口的待评审增量，不静默替代已存在版本 1。早先固定管道候选见[关联 DR／DM 规范第 5–7 节](../../../../docs/analysis/ANALYSIS-20261025-solo-distill-rag-dag-cag-dr-dm.md)；经本次反向审计，V2 推荐改为受保护预留下的单向借槽及分层最小修正版。下列变化仅形成候选契约，后续实施须按[独立计划](PLAN-20261025-solo-distill-v2-risk-remediation-01.md)获准接管。
 
 - High-Level：入口、装配、状态编排、持久化多标签角色；请求必需证据组优先，再轮转补角色与组件。基于保守绑定的 SCC 凝聚图只表示静态依赖，不宣称运行时执行顺序。辅助节点不因高入度取得骨架资格。
 - Low-Level：固定骨架后一次 1-Hop，新增上下文不递归成为种子；完整函数／方法、装饰器、模块顶层语句与必要条件均可定位。父子来源别名须关联真实已读正文，不把整个模块伪装成一块。
@@ -177,7 +177,7 @@ K1 的场景 A 覆盖门禁仍为 BLOCKED，后续修复与重跑等待评审及
 
 ## 6. 版本化输入输出契约
 
-本节保留目标规范；[版本 1 工具契约](../project/solo-distill-mcp/src/solo_distill/distillation.py:22)与[服务适配](../project/solo-distill-mcp/src/solo_distill/server.py:122)已存在，是否运行通过仍以实际回执为准。新增语法单元、来源索引、默认配额或错误含义变化推荐显式版本 2／版本化入口，连同独立校验器适配一起评审；不得仅改生产输出后降低冻结断言。不向尚未实现的新版本发请求。
+本节保留目标规范；[版本 1 工具契约](../../../../../project/solo-distill-mcp/src/solo_distill/distillation.py:22)与[服务适配](../../../../../project/solo-distill-mcp/src/solo_distill/server.py:122)已存在，是否运行通过仍以实际回执为准。新增语法单元、来源索引、默认配额或错误含义变化推荐显式版本 2／版本化入口，连同独立校验器适配一起评审；不得仅改生产输出后降低冻结断言。不向尚未实现的新版本发请求。
 
 ### 6.1 单一业务入口
 
@@ -223,7 +223,7 @@ K1 的场景 A 覆盖门禁仍为 BLOCKED，后续修复与重跑等待评审及
 
 待评审发布目标为 A 完整帧最多 22,016 字节（21.5 KiB），为 24 KiB 硬上限保留 2.5 KiB；22 KiB 只能保留 2 KiB，不能写成 2.5 KiB。默认不隐式降低裕度交付；是否允许在发布目标与硬上限间降级须单独裁决。该目标尚未生效，不把历史 24,550 字节按新政策重判为历史违规。
 
-先装身份、全部必需义务、必要事实及完整来源／条件闭包，再压重复与可选描述；最小必要包放不下则返回已测量的类型化错误或明确阻塞，不以追踪指针、遗漏计数和完整状态替代自包含交付。每次试装测实际帧，最终发送同一字节串，不硬切 UTF-8、静默删除义务或降低证据等级。详见[关联评审第 6 节](docs/analysis/ANALYSIS-20261025-solo-distill-rag-dag-cag-dr-dm.md)。
+先装身份、全部必需义务、必要事实及完整来源／条件闭包，再压重复与可选描述；最小必要包放不下则返回已测量的类型化错误或明确阻塞，不以追踪指针、遗漏计数和完整状态替代自包含交付。每次试装测实际帧，最终发送同一字节串，不硬切 UTF-8、静默删除义务或降低证据等级。详见[关联评审第 6 节](../../../../docs/analysis/ANALYSIS-20261025-solo-distill-rag-dag-cag-dr-dm.md)。
 
 ### 6.3 错误、生命周期与兼容性
 
@@ -258,20 +258,20 @@ K1 的场景 A 覆盖门禁仍为 BLOCKED，后续修复与重跑等待评审及
 #### 三层请求与发送预算
 
 - 一次蒸馏业务请求包含可选导航和必要压缩，至多两次串行网关请求；同一阶段不因失败自动重新请求。两阶段共用业务身份、源快照、总截止和累计费用预算。
-- 网关单个逻辑请求的上游发送上限为三次，包含首次；认证／配额切换、瞬态重试和协议纠偏共享同一预算，发送失败不退还额度。来源：[`budget.go`](../project/aurora2api/internal/toolcall/budget.go:19)、[`budget.go`](../project/aurora2api/internal/toolcall/budget.go:30)。这不是首次失败后再重试三次。
-- 当前发送错误处理循环最多两次尝试，瞬态分支仅允许一次额外发送、固定等待 800 毫秒，且受共享预算和取消约束；不能将三次总发送上限解释为三次瞬态重试。来源：[`chat.go`](../project/aurora2api/internal/api/chat.go:715)、[`chat.go`](../project/aurora2api/internal/api/chat.go:813)。代码在退避前释放租约、下一轮重新获取，不因“同租约”注释承诺始终使用同一账号。
+- 网关单个逻辑请求的上游发送上限为三次，包含首次；认证／配额切换、瞬态重试和协议纠偏共享同一预算，发送失败不退还额度。来源：[`budget.go`](../../../../../project/aurora2api/internal/toolcall/budget.go:19)、[`budget.go`](../../../../../project/aurora2api/internal/toolcall/budget.go:30)。这不是首次失败后再重试三次。
+- 当前发送错误处理循环最多两次尝试，瞬态分支仅允许一次额外发送、固定等待 800 毫秒，且受共享预算和取消约束；不能将三次总发送上限解释为三次瞬态重试。来源：[`chat.go`](../../../../../project/aurora2api/internal/api/chat.go:715)、[`chat.go`](../../../../../project/aurora2api/internal/api/chat.go:813)。代码在退避前释放租约、下一轮重新获取，不因“同租约”注释承诺始终使用同一账号。
 - 蒸馏端不另建三次重试循环，并显式关闭客户端／SDK 默认自动重试。新的网关请求会建立新的网关级预算，不能用外层重放规避单请求限额；无法确认运行实例的发送策略时，内部次数保持未知，不宣称三次上限已生效。
 
 #### 失败覆盖与停止边界
 
-- 发送阶段瞬态故障交由网关已有机制处理；内部可恢复的中间失败不提前登记业务终止。最终返回错误后，蒸馏端按第 6.3 节映射失败／阻塞／有效局部结果，不额外换模型或重放。认证／配额切换属于网关已有账号管理，不授权蒸馏端读取凭据或扩大已批准的供应商／外发集合。来源：[`chat.go`](../project/aurora2api/internal/api/chat.go:663)、[`chat.go`](../project/aurora2api/internal/api/chat.go:786)。
-- 确定性请求错误不重试；权限不足、源版本冲突、越界、证据缺失、输出预算不足和语义不合格不通过重复模型请求解决。网关对确定性上游请求错误立即返回；工具协议纠偏仅在声明工具且满足纠偏条件时可用，不等于本蒸馏知识包的结构或语义修复。来源：[`chat.go`](../project/aurora2api/internal/api/chat.go:805)、[`chat.go`](../project/aurora2api/internal/api/chat.go:1344)。
-- 已收到响应后的提前断流不是上述发送阶段瞬态重试：已读完成守卫会返回流错误；不将 HTTP 200、部分正文或可解析片段认定为正常完成。来源：[`chat.go`](../project/aurora2api/internal/api/chat.go:1305)。网关即使另有部分交付能力，也不证明结构化知识包满足本提案的完成门禁。
-- 已提交业务输出后网关发送预算封闭，后续写入失败也不得重放。来源：[`budget.go`](../project/aurora2api/internal/toolcall/budget.go:109)。蒸馏端不拼接不同尝试的知识包碎片，不自动续答；必要外层断流恢复仍为未批准的独立契约，须先明确问题、次数、累计截止／费用、源身份及旧请求取消和清理证据。
+- 发送阶段瞬态故障交由网关已有机制处理；内部可恢复的中间失败不提前登记业务终止。最终返回错误后，蒸馏端按第 6.3 节映射失败／阻塞／有效局部结果，不额外换模型或重放。认证／配额切换属于网关已有账号管理，不授权蒸馏端读取凭据或扩大已批准的供应商／外发集合。来源：[`chat.go`](../../../../../project/aurora2api/internal/api/chat.go:663)、[`chat.go`](../../../../../project/aurora2api/internal/api/chat.go:786)。
+- 确定性请求错误不重试；权限不足、源版本冲突、越界、证据缺失、输出预算不足和语义不合格不通过重复模型请求解决。网关对确定性上游请求错误立即返回；工具协议纠偏仅在声明工具且满足纠偏条件时可用，不等于本蒸馏知识包的结构或语义修复。来源：[`chat.go`](../../../../../project/aurora2api/internal/api/chat.go:805)、[`chat.go`](../../../../../project/aurora2api/internal/api/chat.go:1344)。
+- 已收到响应后的提前断流不是上述发送阶段瞬态重试：已读完成守卫会返回流错误；不将 HTTP 200、部分正文或可解析片段认定为正常完成。来源：[`chat.go`](../../../../../project/aurora2api/internal/api/chat.go:1305)。网关即使另有部分交付能力，也不证明结构化知识包满足本提案的完成门禁。
+- 已提交业务输出后网关发送预算封闭，后续写入失败也不得重放。来源：[`budget.go`](../../../../../project/aurora2api/internal/toolcall/budget.go:109)。蒸馏端不拼接不同尝试的知识包碎片，不自动续答；必要外层断流恢复仍为未批准的独立契约，须先明确问题、次数、累计截止／费用、源身份及旧请求取消和清理证据。
 
 #### 有效策略与分层截止
 
-源码默认策略如下；这些默认值也是对应配置的上限，管理员配置可以收窄，不能推定运行实例使用默认值。来源：[`registry_execution_policy.go`](../project/aurora2api/internal/upstream/studioglobal/registry_execution_policy.go:28)、[`registry_execution_policy.go`](../project/aurora2api/internal/upstream/studioglobal/registry_execution_policy.go:117)。
+源码默认策略如下；这些默认值也是对应配置的上限，管理员配置可以收窄，不能推定运行实例使用默认值。来源：[`registry_execution_policy.go`](../../../../../project/aurora2api/internal/upstream/studioglobal/registry_execution_policy.go:28)、[`registry_execution_policy.go`](../../../../../project/aurora2api/internal/upstream/studioglobal/registry_execution_policy.go:117)。
 
 | 策略 | 请求总时限 | 上游空闲时限 | 无答案进展时限 |
 | --- | --- | --- | --- |
@@ -279,11 +279,11 @@ K1 的场景 A 覆盖门禁仍为 BLOCKED，后续修复与重跑等待评审及
 | 研究 | 1800 秒 | 180 秒 | 600 秒 |
 | 代码长任务 | 1800 秒 | 600 秒 | 600 秒 |
 
-数值来源：[`registry_execution_policy.go`](../project/aurora2api/internal/upstream/studioglobal/registry_execution_policy.go:30)。总时限不是每次尝试的独立额度，其他分层时限也可能更早终止请求。
+数值来源：[`registry_execution_policy.go`](../../../../../project/aurora2api/internal/upstream/studioglobal/registry_execution_policy.go:30)。总时限不是每次尝试的独立额度，其他分层时限也可能更早终止请求。
 
-- 未显式选择预设时，模型路由默认普通代码；代码长任务要求配置契约版本 2。来源：[`registry_routing.go`](../project/aurora2api/internal/upstream/studioglobal/registry_routing.go:115)。已读取的磁盘配置为版本 1，仅列普通代码及两类研究预设，没有代码长任务。来源：[`studioglobal.json`](../project/aurora2api/config/studioglobal.json:2)、[`studioglobal.json`](../project/aurora2api/config/studioglobal.json:17)。因此当前普通 gpt-6-sol 请求不因源码存在长策略而自动获得 1800 秒。
-- 启动入口允许环境变量指定其他配置路径；本轮未取得运行实例实际配置路径、加载版本及有效预设的运行回执。来源：已读[`main.go 检索定位`](../project/aurora2api/main.go:21)。K0 必须另获准核实相关有效事实，不读取凭据正文，不自动修改配置、启用研究预设、迁移版本或重启网关。
-- 网关总截止从准入起算，并受更早父级截止约束；蒸馏契约要求重试／账号切换不得重新获得一整段业务时间。来源：[`chat_execution.go`](../project/aurora2api/internal/api/chat_execution.go:62)。蒸馏端从宿主发起起固定业务绝对截止，各阶段在扣除已耗时间、必要后续工作和至少 15 秒校核／返回预留后分配请求额度；排队、退避及内部重试耗时全部计入。
+- 未显式选择预设时，模型路由默认普通代码；代码长任务要求配置契约版本 2。来源：[`registry_routing.go`](../../../../../project/aurora2api/internal/upstream/studioglobal/registry_routing.go:115)。已读取的磁盘配置为版本 1，仅列普通代码及两类研究预设，没有代码长任务。来源：[`studioglobal.json`](../../../../../project/aurora2api/config/studioglobal.json:2)、[`studioglobal.json`](../../../../../project/aurora2api/config/studioglobal.json:17)。因此当前普通 gpt-6-sol 请求不因源码存在长策略而自动获得 1800 秒。
+- 启动入口允许环境变量指定其他配置路径；本轮未取得运行实例实际配置路径、加载版本及有效预设的运行回执。来源：已读[`main.go 检索定位`](../../../../../project/aurora2api/main.go:21)。K0 必须另获准核实相关有效事实，不读取凭据正文，不自动修改配置、启用研究预设、迁移版本或重启网关。
+- 网关总截止从准入起算，并受更早父级截止约束；蒸馏契约要求重试／账号切换不得重新获得一整段业务时间。来源：[`chat_execution.go`](../../../../../project/aurora2api/internal/api/chat_execution.go:62)。蒸馏端从宿主发起起固定业务绝对截止，各阶段在扣除已耗时间、必要后续工作和至少 15 秒校核／返回预留后分配请求额度；排队、退避及内部重试耗时全部计入。
 - 有效执行窗口受业务剩余额度、宿主／客户端截止及网关策略共同约束，连接、响应头、上游空闲和无进展超时分别核验，不能把总超时当成所有读取操作的超时。心跳只按已核验协议处理，不作为答案完成或自动重置业务截止的证据。
 - 更长恢复窗口须另获授权并确认有效预设、宿主支持和费用边界；首个 PoC 默认硬截止仍为 180 秒。获准长窗口中恢复成功且质量合格可单独报告恢复结果，但超过 180 秒仍不满足原性能门禁，不能自动推进依赖该门禁的阶段。取消、截止耗尽或清理未知时停止，不以后台任务或重放继续。
 
@@ -376,41 +376,41 @@ K1 的场景 A 覆盖门禁仍为 BLOCKED，后续修复与重跑等待评审及
 
 ### 9.1 轻量入口意外加载旧重依赖
 
-历史[服务单例](../project/FastCode/mcp_server.py:59)延迟创建重引擎，随后[加载嵌入模型](../project/FastCode/fastcode/embedder.py:31)并初始化客户端；这说明照搬旧入口可能重新引入重依赖，不是轻量分支必须经历的阶段。
+历史[服务单例](../../../../../project/FastCode/mcp_server.py:59)延迟创建重引擎，随后[加载嵌入模型](../../../../../project/FastCode/fastcode/embedder.py:31)并初始化客户端；这说明照搬旧入口可能重新引入重依赖，不是轻量分支必须经历的阶段。
 
 最简处理：固定轻量解释器与协议依赖，隔离旧包入口及传递导入；另获授权后分别核验握手、结构提取、主模型完整响应与首个知识包。不恢复完整依赖安装，不用 CPU 轮子预检代替零 ML 环境验收。
 
-历史[入口示例](../project/FastCode/mcp_server.py:15)与[生成器凭据读取](../project/FastCode/fastcode/answer_generator.py:43)仅作为复用风险保留；轻量分支按固定网关的真实认证要求适配，不继承旧变量约定。凭据不进入工具参数、日志或知识包；模型名与 HTTP 200 不证明供应商身份或业务成功。
+历史[入口示例](../../../../../project/FastCode/mcp_server.py:15)与[生成器凭据读取](../../../../../project/FastCode/fastcode/answer_generator.py:43)仅作为复用风险保留；轻量分支按固定网关的真实认证要求适配，不继承旧变量约定。凭据不进入工具参数、日志或知识包；模型名与 HTTP 200 不证明供应商身份或业务成功。
 
 ### 9.2 stdout 污染与返回文本过长
 
-[服务日志配置](../project/FastCode/mcp_server.py:41)声明为 stdio 留出 stdout，但[查询处理器](../project/FastCode/fastcode/query_processor.py:536)、[检索器](../project/FastCode/fastcode/retriever.py:504)及[向量存储](../project/FastCode/fastcode/vector_store.py:339)仍有直接打印路径。因此首次带外推理可能污染协议通道；静态定位说明风险存在，尚未复现实际连接故障。
+[服务日志配置](../../../../../project/FastCode/mcp_server.py:41)声明为 stdio 留出 stdout，但[查询处理器](../../../../../project/FastCode/fastcode/query_processor.py:536)、[检索器](../../../../../project/FastCode/fastcode/retriever.py:504)及[向量存储](../../../../../project/FastCode/fastcode/vector_store.py:339)仍有直接打印路径。因此首次带外推理可能污染协议通道；静态定位说明风险存在，尚未复现实际连接故障。
 
 最简处理：轻量入口 stdout 仅承载 MCP 协议，诊断走 stderr 或获准日志；联调核验真实传输纯净。旧未使用组件不顺手修改，必要复用若带直接打印则限定范围另获准适配；不能全局重定向 stdout，连协议消息一起吞掉。
 
-当前[问答返回](../project/FastCode/mcp_server.py:268)拼接答案、来源和会话标识，无字节预算；最简适配返回结构化有界知识包，而不是依赖提示词“请简短”。
+当前[问答返回](../../../../../project/FastCode/mcp_server.py:268)拼接答案、来源和会话标识，无字节预算；最简适配返回结构化有界知识包，而不是依赖提示词“请简短”。
 
 ### 9.3 看似只读查询，实际复制、写索引与历史
 
-[本地加载](../project/FastCode/fastcode/loader.py:121)会复制整个工作树，包括未跟踪文件，并保留软链接；扫描排除不等于复制前排除敏感文件。[查询](../project/FastCode/fastcode/main.py:424)只要有会话标识，即便关闭多轮，也会持久化对话。
+[本地加载](../../../../../project/FastCode/fastcode/loader.py:121)会复制整个工作树，包括未跟踪文件，并保留软链接；扫描排除不等于复制前排除敏感文件。[查询](../../../../../project/FastCode/fastcode/main.py:424)只要有会话标识，即便关闭多轮，也会持久化对话。
 
 最简处理：轻量分支绑定一个项目，按获准集合生成不可变结构快照，不使用旧全树加载、不追随越界软链接、不读取秘密配置或自动保存历史。必要快照、缓存与日志仅写入另行确认的产物范围；无持久化授权则仅内存处理与会话返回。
 
 ### 9.4 “索引就绪”可能掩盖过期或不完整
 
-[准备仓库路径](../project/FastCode/mcp_server.py:147)捕获增量异常后仍可加入就绪列表；[增量更新](../project/FastCode/fastcode/main.py:1431)也有缺少清单等非成功返回。[文件变更检测](../project/FastCode/fastcode/main.py:1281)主要使用时间戳和大小，不是完整内容身份。
+[准备仓库路径](../../../../../project/FastCode/mcp_server.py:147)捕获增量异常后仍可加入就绪列表；[增量更新](../../../../../project/FastCode/fastcode/main.py:1431)也有缺少清单等非成功返回。[文件变更检测](../../../../../project/FastCode/fastcode/main.py:1281)主要使用时间戳和大小，不是完整内容身份。
 
 最简处理：轻量分支区分快照存在、结构提取成功、新鲜度已证实和覆盖完整；内容变化、增量失败或缺清单不得当作当前。无需建设向量库或加载旧缓存，但源身份与关键来源复核必须成立。
 
 ### 9.5 并行提速与可变单例冲突
 
-[单例](../project/FastCode/mcp_server.py:56)、[索引准备](../project/FastCode/mcp_server.py:130)和[多库加载条件](../project/FastCode/mcp_server.py:189)共享可变状态。现有代码不是本提案的并行蒸馏执行器。
+[单例](../../../../../project/FastCode/mcp_server.py:56)、[索引准备](../../../../../project/FastCode/mcp_server.py:130)和[多库加载条件](../../../../../project/FastCode/mcp_server.py:189)共享可变状态。现有代码不是本提案的并行蒸馏执行器。
 
 最简处理：轻量分支不实例化该重引擎单例，K1 固定不可变结构快照并串行请求主模型。未来另获准并行时，先核验请求隔离、取消、资源与证据一致性，不并发仓库切换，不因速度目标牺牲来源正确性。
 
 ### 9.6 来源列表不等于结论证明，错误文本不等于成功
 
-[来源提取](../project/FastCode/fastcode/answer_generator.py:845)返回被检索元素列表，未提供逐结论证据绑定；[异常处理](../project/FastCode/fastcode/answer_generator.py:184)可能把生成失败编码为答案文本。当前[上下文处理](../project/FastCode/fastcode/answer_generator.py:108)还可能截断输入。
+[来源提取](../../../../../project/FastCode/fastcode/answer_generator.py:845)返回被检索元素列表，未提供逐结论证据绑定；[异常处理](../../../../../project/FastCode/fastcode/answer_generator.py:184)可能把生成失败编码为答案文本。当前[上下文处理](../../../../../project/FastCode/fastcode/answer_generator.py:108)还可能截断输入。
 
 最简处理：轻量适配自行实现逐结论来源与真实状态，不依赖旧生成器文本错误约定。允许显式剥离完整展示围栏，不静默修补 JSON 或补造符号；传输、结构、语义分别判定。HTTP 200 后流错误、缺正常结束或必要证据缺失均不返回完整，不以 JSON 排版代替来源核对。
 
@@ -420,10 +420,10 @@ K1 的场景 A 覆盖门禁仍为 BLOCKED，后续修复与重跑等待评审及
 
 | 主检查点 | 必须核查的关键问题 | 本轮静态发现与 K0 出口 |
 | --- | --- | --- |
-| 1. [MCP 服务](../project/FastCode/mcp_server.py:213) | stdio 启动、工具 schema、索引副作用、错误映射、输出预算、会话及可变单例；对照目标 Roo 的 MCP 工具可见性 | 标准服务已存在，问答返回文本且默认多轮；输出预算与业务知识包缺失。出口为最小适配清单、真实宿主配置接口及待批准激活范围 |
-| 2. [核心编排](../project/FastCode/fastcode/main.py:185) | 首次索引、暖加载、增量新鲜度、检索到生成和缓存边界；沿调用检查[加载器](../project/FastCode/fastcode/loader.py:121) | 索引与增量基础存在；复制全树、缺清单返回、时间戳身份及共享状态需处理。出口为获准输入／写入集合和不静默过期的规则 |
-| 3. [配置](../project/FastCode/config/config.yaml:59) | 模型、提供方、上下文、图与迭代设置、数据根；对照[依赖声明](../project/FastCode/requirements.txt:1) | 允许较大模型预算，但环境与依赖版本未核验；默认持久化位置存在。出口为实际解释器、版本、凭据变量名、许可全文和资源预算，不读取凭据正文 |
-| 4. [答案与证据生成](../project/FastCode/fastcode/answer_generator.py:71) | 模型协议、逐结论来源、错误、截断与用量；对照[概览生成器](../project/FastCode/fastcode/repo_overview.py:62) | 现有来源表不是证据绑定，概览不是整库解构，存在文本错误与截断路径。出口为场景 A/B 知识包规范及质量缺口清单 |
+| 1. [MCP 服务](../../../../../project/FastCode/mcp_server.py:213) | stdio 启动、工具 schema、索引副作用、错误映射、输出预算、会话及可变单例；对照目标 Roo 的 MCP 工具可见性 | 标准服务已存在，问答返回文本且默认多轮；输出预算与业务知识包缺失。出口为最小适配清单、真实宿主配置接口及待批准激活范围 |
+| 2. [核心编排](../../../../../project/FastCode/fastcode/main.py:185) | 首次索引、暖加载、增量新鲜度、检索到生成和缓存边界；沿调用检查[加载器](../../../../../project/FastCode/fastcode/loader.py:121) | 索引与增量基础存在；复制全树、缺清单返回、时间戳身份及共享状态需处理。出口为获准输入／写入集合和不静默过期的规则 |
+| 3. [配置](../../../../../project/FastCode/config/config.yaml:59) | 模型、提供方、上下文、图与迭代设置、数据根；对照[依赖声明](../../../../../project/FastCode/requirements.txt:1) | 允许较大模型预算，但环境与依赖版本未核验；默认持久化位置存在。出口为实际解释器、版本、凭据变量名、许可全文和资源预算，不读取凭据正文 |
+| 4. [答案与证据生成](../../../../../project/FastCode/fastcode/answer_generator.py:71) | 模型协议、逐结论来源、错误、截断与用量；对照[概览生成器](../../../../../project/FastCode/fastcode/repo_overview.py:62) | 现有来源表不是证据绑定，概览不是整库解构，存在文本错误与截断路径。出口为场景 A/B 知识包规范及质量缺口清单 |
 
 读取外部仓库仅使用当前用户指定范围与客户端真实权限，不借软链接或终端扩大读取。许可证全文未取得时不把说明文档徽章当许可证据；未取得环境或宿主信息时阻塞相关 K1 操作，不阻塞本轮提案优化交付。
 
@@ -443,8 +443,8 @@ K1 的场景 A 覆盖门禁仍为 BLOCKED，后续修复与重跑等待评审及
 
 | 路线 | 当前依据／约束 | 未证明或不符合项 | 裁决与重新评审触发 |
 | --- | --- | --- | --- |
-| 1：CPU FastCode | [CPU 轮子预检](_bmad-output/scratch/gateway_probe-cpu-head-b9c0c5594a8f4a2c8652e82410c7eb54.json)记录 torch 196253677 字节、相关轮子合计 206922741 字节，无实际安装 | 完整依赖体积、安装时间、内存及业务效用未知；不符合当前零 ML 主线 | 条件回退。仅轻量路线必要质量缺口有证据且另获准后重评，不继承旧安装或历史通过 |
-| 2：云端向量＋FAISS | [当前向量接口回执](_bmad-output/scratch/gateway_probe-embedding-cafd37244e6146c48b3828e70d80aa25.json)为 HTTP 404、退出 2 | 当前端点不可用；也不符合当前无向量库边界，不能外推其他供应商均不可用 | 当前不实施。若任务定位缺口成立且获准新供应商／依赖边界时另评 |
+| 1：CPU FastCode | [CPU 轮子预检](../../../../.scratch/legacy-bmad-output-20261102T120208Z/gateway_probe-cpu-head-b9c0c5594a8f4a2c8652e82410c7eb54.json)记录 torch 196253677 字节、相关轮子合计 206922741 字节，无实际安装 | 完整依赖体积、安装时间、内存及业务效用未知；不符合当前零 ML 主线 | 条件回退。仅轻量路线必要质量缺口有证据且另获准后重评，不继承旧安装或历史通过 |
+| 2：云端向量＋FAISS | [当前向量接口回执](../../../../.scratch/legacy-bmad-output-20261102T120208Z/gateway_probe-embedding-cafd37244e6146c48b3828e70d80aa25.json)为 HTTP 404、退出 2 | 当前端点不可用；也不符合当前无向量库边界，不能外推其他供应商均不可用 | 当前不实施。若任务定位缺口成立且获准新供应商／依赖边界时另评 |
 | 3：结构导航＋正文取证＋模型压缩 | 已有单轮骨架证据及轻量服务源码，符合用户选择；当前覆盖修复见第 3.3／5.3 节 | A 历史覆盖阻塞；新版本、完整质量、环境、真实宿主与清理证据仍须分别闭合 | 条件性主方案，锁定 gpt-6-sol／8080；仅补获准增量，通过对应门禁后交付阶段，不转正提案 |
 | 4：公网 URL 研究 | 公网材料可作辅助；URL 无法代表本地未提交快照 | 当前缺完整研究与源码下钻证据，不满足私有工作树权威输入要求 | 仅补充研究，不作为 K1 主链或本地证据替代；未来联网研究另获授权 |
 
@@ -452,7 +452,7 @@ K1 的场景 A 覆盖门禁仍为 BLOCKED，后续修复与重跑等待评审及
 
 ### 10.3 场景 A 阻塞的增量 DR／DM 与待审决策
 
-[关联评审](docs/analysis/ANALYSIS-20261025-solo-distill-rag-dag-cag-dr-dm.md)对“仅调提示／中心度”“增加向量／图平台”“通用角色骨架＋引用压缩”“按已知锚点特化”“立即重写或并发”进行硬门禁筛选。推荐通用角色方案为既有路线 3 内的条件性最优：直接针对当前已定位的候选域与覆盖缺口，保留标准库、只读、安全读取和协议边界；不是权重打分或普遍最优证明。
+[关联评审](../../../../docs/analysis/ANALYSIS-20261025-solo-distill-rag-dag-cag-dr-dm.md)对“仅调提示／中心度”“增加向量／图平台”“通用角色骨架＋引用压缩”“按已知锚点特化”“立即重写或并发”进行硬门禁筛选。推荐通用角色方案为既有路线 3 内的条件性最优：直接针对当前已定位的候选域与覆盖缺口，保留标准库、只读、安全读取和协议边界；不是权重打分或普遍最优证明。
 
 本次已获准将审计结论结晶为提案与独立计划，尚未批准本地选择替代 A 导航、单向借槽、V2 实施或 A 新发布政策生效。后续须明确获准 Epic、关联 ADR、输入／写入／外发范围、环境和验证命令。正文 13/13、语义、三轮、真实宿主与缓存收益分别取证，不能由文档批准互相替代；未经原始回执闭合的论文倍数、网页编号、某版协议字段或缓存收益不作为新增事实。
 
@@ -529,3 +529,7 @@ DM 不推荐原草案直接实施，也不引入全局求解／持久缓存平�
 推荐路线保持方案 3、gpt-6-sol／8080 和零本地 ML；V2 采用待评审的本地骨架＋一次邻接展开、16／12／4 基准与必需骨架单向借槽、完整公共引用闭包、A 完整帧 22,016 字节发布水位以及已认证核心封存。审计裁决见第 10.4 节，阶段／依赖见[新独立计划](PLAN-20261025-solo-distill-v2-risk-remediation-01.md)。13/13 是独立实测目标，预算不变量、来源认证、语义、缓存观测与宿主门禁各自取证，不能互相替代。
 
 提案保持 PROPOSED，新计划保持 DRAFT；关联 ADR、验证命令及目标访问前提尚未实例化，不冒称执行契约齐备。旧安装继续暂停；本轮仅刷新提案、新建独立计划并原生复读，不修改关联评审、治理计划、默认活动计划或事实基线，不创建 ADR、不提交、推送、归档，不运行终端、探针、模型请求、实施或验收。文档交付不解除 A 的历史阻塞；全部未完成实施、回归、A／B 证据绑定、三轮、语义、宿主、清理及第二项目事项保留在唯一平台任务记录中。
+
+## 2026-11-02 历史资产保全迁移边界
+
+本文件仅获准迁入任务归档区冷存；原状态、未完成义务和历史授权保持独立，不代表任务完成、恢复或提案接受。原字节保全见本次本地迁移清单，执行进度不在此复制。

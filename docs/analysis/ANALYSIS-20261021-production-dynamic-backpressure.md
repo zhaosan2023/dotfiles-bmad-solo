@@ -423,7 +423,7 @@ Agent 反馈建议不超过 8 KiB；可计量 Token 时同时设置 Token 预算
 
 编号引用本会话已收到的工作区工具结果；链接相对于本报告位置。
 
-- [1] [指定研究材料第 391 行以后](../../docs/Ralph-Wiggum-Loop/adr_propertyfuzzing_antithesis.md:391)：资源模型 440–483、四步闭环 608–664、最佳实践 668–680、局限 712–730。第三方主张是待核验材料，不因原文标注 FACT 而自动变成事实。
+- [1] [指定研究材料第 391 行以后](../Ralph-Wiggum-Loop/adr_propertyfuzzing_antithesis.md:391)：资源模型 440–483、四步闭环 608–664、最佳实践 668–680、局限 712–730。第三方主张是待核验材料，不因原文标注 FACT 而自动变成事实。
 - [2] [V4 返修及版本收敛提案](../adrs/ADR-20261021-v4-attended-repair-and-repository-cleanup.md:25)：测试互补 41–45、V5 冻结与迁移候选 63–73；状态为 PROPOSED。
 - [3] [当前 CI 配置](../../.github/workflows/ci.yml:55)：配置契约与隔离分发测试；第 132–133 行明确隔离资产测试不证明 Roo 运行时加载和权限执行。
 - [4] [V5 受管提交候选](../../bmralph-suite-v5/scripts/bmad_git_checkpoint.py:174)：活动 hook 检查 174–200、候选/验收关联 203–252、隔离索引和实际树关联 259–285。静态读取不是宿主运行回执。

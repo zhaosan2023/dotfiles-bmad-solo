@@ -2,15 +2,15 @@
 
 - 日期：2026-10-22。
 - 交付性质：分析与治理提案；不是实施、冻结、归档或宿主验收回执。
-- 旧契约：[`pending_implementation_plan.md`](../../_bmad-output/pending_implementation_plan.md:1)，标识 BMAD-V4-ATTENDED-CLEANUP-20261021-01。
-- 旧决策：[`ADR-20261021-v4-attended-repair-and-repository-cleanup.md`](../../_bmad-output/adrs/ADR-20261021-v4-attended-repair-and-repository-cleanup.md:3)。
+- 旧契约：[`pending_implementation_plan.md`](../../specs/tasks/archive/20261102T120208Z-BMAD-V4-ATTENDED-CLEANUP-20261021-01/pending_implementation_plan.md:1)，标识 BMAD-V4-ATTENDED-CLEANUP-20261021-01。
+- 旧决策：[`ADR-20261021-v4-attended-repair-and-repository-cleanup.md`](../adrs/ADR-20261021-v4-attended-repair-and-repository-cleanup.md:3)。
 - 指定研究输入：[`bmad-document-test-optimse.md`](../Ralph-Wiggum-Loop/bmad-document-test-optimse.md:3)。
 - 本次授权：只读对账旧任务；在实际允许路径内保存必要分析、PROPOSED ADR 和经确认的独立计划。当前明确不授权冻结旧任务、覆盖活动入口、生产迁移、宿主写入或终端验证。此前报告中“用户确认冻结及入口交接”的表述无当前授权依据，撤回；本次决策不能改变旧任务状态。
 - 本报告不改变旧计划、旧 ADR、项目事实基线、生产文件、分发目标或当前宿主配置。没有执行终端、测试、探针、安装或 Git 操作。
 
 ## 1. 最小充分结论
 
-旧任务不能按完成收尾：最新回读仍为 BLOCKED，旧 ADR 仍为 PROPOSED；宿主验收明确未完成，部分本地验收只有历史摘要，没有取得原始回执。保留旧验收、状态与活动入口，不重复清理，不冻结旧任务。依据见旧[`计划阶段与未决项`](../../_bmad-output/pending_implementation_plan.md:79)和旧[`ADR 接受边界`](../../_bmad-output/adrs/ADR-20261021-v4-attended-repair-and-repository-cleanup.md:87)。
+旧任务不能按完成收尾：最新回读仍为 BLOCKED，旧 ADR 仍为 PROPOSED；宿主验收明确未完成，部分本地验收只有历史摘要，没有取得原始回执。保留旧验收、状态与活动入口，不重复清理，不冻结旧任务。依据见旧[`计划阶段与未决项`](../../specs/tasks/archive/20261102T120208Z-BMAD-V4-ATTENDED-CLEANUP-20261021-01/pending_implementation_plan.md:79)和旧[`ADR 接受边界`](../adrs/ADR-20261021-v4-attended-repair-and-repository-cleanup.md:87)。
 
 推荐“职责分离的通用入口与目标布局＋薄宿主适配＋分阶段迁移”。当前可结晶条件设计，不能宣布执行门禁全部通过。新实施计划必须使用独立的经确认路径；现有分析模式白名单未提供独立活动计划目录，因此本轮先交付报告与决策提案，计划保存待路径确认及实际权限支持，不占用旧入口。
 
@@ -45,17 +45,17 @@
 
 | 阶段／验收 | 本轮判定 | 依据及覆盖范围 | 最小剩余事项 |
 |---|---|---|---|
-| 阶段 0：接管、所有权和在途边界 | 有历史摘要；当前写入边界缺证据 | [`计划`](../../_bmad-output/pending_implementation_plan.md:72)明确进程名称检查不足以证明绑定资产安全写入；清理边界调用标识见[`计划`](../../_bmad-output/pending_implementation_plan.md:67) | 工程在实际写入前只核对相关所有权、现有改动和在途操作，不由分析运行终端 |
+| 阶段 0：接管、所有权和在途边界 | 有历史摘要；当前写入边界缺证据 | [`计划`](../../specs/tasks/archive/20261102T120208Z-BMAD-V4-ATTENDED-CLEANUP-20261021-01/pending_implementation_plan.md:72)明确进程名称检查不足以证明绑定资产安全写入；清理边界调用标识见[`计划`](../../specs/tasks/archive/20261102T120208Z-BMAD-V4-ATTENDED-CLEANUP-20261021-01/pending_implementation_plan.md:67) | 工程在实际写入前只核对相关所有权、现有改动和在途操作，不由分析运行终端 |
 | 阶段 1，AC-1：分析入口一致性 | 静态候选存在；完整验收缺原始回执 | [`技能`](../../bmad-suite-v4/skills/ana-solo/SKILL.md:23)、[`模式`](../../bmad-suite-v4/roo/settings/custom_modes.yaml:5)、[`返修回归`](../../tests/roo_contracts/test_v4_analysis_repair.py:38) | 找回已有原始结果，核对覆盖版本；只在证据失效或确有缺口时定向重验 |
 | 阶段 1，AC-2：实验交接与失败不推进 | 静态契约可定位；运行结果缺证据 | [`工程规则`](../../bmad-suite-v4/roo/rules-bmad-engineer/01-bmad-engineer-core.md:5)和[`对账流程`](../../bmad-suite-v4/skills/bmad/references/procedures/state-reconcile.md:27) | 保留宿主和模型行为未验证边界，不把关键词断言当作行为证明 |
 | 阶段 1，AC-3：模板与元数据 | 接口静态可定位；本轮未运行校验 | [`模板`](../../bmad-suite-v4/skills/bmad/references/templates/implementation-plan.template.md:17)、[`校验器`](../../scripts/validate-roo-contracts.py:172) | 核对已有校验回执与当前候选，未知会话标识保持空值 |
 | 阶段 1，AC-4：旧报告返修与引用 | 修订报告存在；历史审校摘要存在 | [`返修分析`](ANALYSIS-20261021-v4-backpressure-repair.md:9)保存缺陷、修正和引用；其正文不是测试回执 | 工程对齐原始差异及范围，保护用户改动，不重新执行报告清理 |
-| 阶段 1，AC-5：静态及隔离分发通过 | 历史摘要，原始回执缺失 | [`计划`](../../_bmad-output/pending_implementation_plan.md:89)记载三组通过及调用标识；[`隔离用例`](../../tests/roo_distribution/test_v4_analysis_distribution.py:16)只覆盖隔离磁盘资产 | 取得对应结果并核对适用输入；不继承为当前宿主绿灯 |
-| 阶段 2，AC-6：真实宿主切换与加载 | 明确未完成、待目标与权限实例化 | [`计划`](../../_bmad-output/pending_implementation_plan.md:91)及[`未决项`](../../_bmad-output/pending_implementation_plan.md:161) | 明确 IDE/扩展版本、部署根、配置范围、预检、重载、新会话及只读/结晶交互，另由工程验收 |
-| 阶段 3，AC-7：清理范围与删除后回归 | 缺完整清理与即时回归原始证据 | [`计划`](../../_bmad-output/pending_implementation_plan.md:100)定义授权范围与门禁，当前目录或文件缺席不能证明清理验收 | 优先找回已有清理结果、范围与删除后回归；不为补证重复删除 |
+| 阶段 1，AC-5：静态及隔离分发通过 | 历史摘要，原始回执缺失 | [`计划`](../../specs/tasks/archive/20261102T120208Z-BMAD-V4-ATTENDED-CLEANUP-20261021-01/pending_implementation_plan.md:89)记载三组通过及调用标识；[`隔离用例`](../../tests/roo_distribution/test_v4_analysis_distribution.py:16)只覆盖隔离磁盘资产 | 取得对应结果并核对适用输入；不继承为当前宿主绿灯 |
+| 阶段 2，AC-6：真实宿主切换与加载 | 明确未完成、待目标与权限实例化 | [`计划`](../../specs/tasks/archive/20261102T120208Z-BMAD-V4-ATTENDED-CLEANUP-20261021-01/pending_implementation_plan.md:91)及[`未决项`](../../specs/tasks/archive/20261102T120208Z-BMAD-V4-ATTENDED-CLEANUP-20261021-01/pending_implementation_plan.md:161) | 明确 IDE/扩展版本、部署根、配置范围、预检、重载、新会话及只读/结晶交互，另由工程验收 |
+| 阶段 3，AC-7：清理范围与删除后回归 | 缺完整清理与即时回归原始证据 | [`计划`](../../specs/tasks/archive/20261102T120208Z-BMAD-V4-ATTENDED-CLEANUP-20261021-01/pending_implementation_plan.md:100)定义授权范围与门禁，当前目录或文件缺席不能证明清理验收 | 优先找回已有清理结果、范围与删除后回归；不为补证重复删除 |
 | 阶段 3/4，AC-9：V5 源码退役、历史保留及拒绝边界 | 部分静态实现可定位；完整验收缺证据 | [`版本映射`](../../scripts/suite_versions.py:28)、[`普通入口身份检查`](../../bs.sh:241)、[`CI 退役回归入口`](../../.github/workflows/ci.yml:137) | 对齐旧源码退役、保留资产和拒绝无副作用回执，不恢复 V5 或误删历史 |
 | 阶段 4，AC-8：唯一 V4、缓存、锁、事务与调用方 | 静态实现及断言存在；本轮无运行结果 | [`安装`](../../install.sh:13)、[`分发`](../../bs.sh:386)、[`源采集`](../../scripts/deployment_source.py:29)、[`CI 契约`](../../tests/roo_contracts/test_ci_contracts.py:97) | 核对相关真实回归、语法结果与环境；缺证据只阻塞依赖它的裁决 |
-| 阶段 5，AC-10及接受、完成归档 | 未完成；不能闭环 | [`计划`](../../_bmad-output/pending_implementation_plan.md:118)与旧[`ADR`](../../_bmad-output/adrs/ADR-20261021-v4-attended-repair-and-repository-cleanup.md:91)保留全部必需门禁 | 保全未完成项；真实宿主验收未通过前不接受旧 ADR，不完成归档 |
+| 阶段 5，AC-10及接受、完成归档 | 未完成；不能闭环 | [`计划`](../../specs/tasks/archive/20261102T120208Z-BMAD-V4-ATTENDED-CLEANUP-20261021-01/pending_implementation_plan.md:118)与旧[`ADR`](../adrs/ADR-20261021-v4-attended-repair-and-repository-cleanup.md:91)保留全部必需门禁 | 保全未完成项；真实宿主验收未通过前不接受旧 ADR，不完成归档 |
 
 ### 检索边界与错误分类
 
@@ -63,7 +63,7 @@
 
 原生读取已取得本轮列明的规则、技能、模板、源码、CI 和报告。先前若干调用因中断未完成，后续必要读取已经补齐；中断不等于文件缺失。对已成功读取对象，没有收到权限拒绝或磁盘错误；不能将未取得回执解释为磁盘文件确定不存在。
 
-最新原生读取确认[`项目事实文件`](../../_bmad-output/project-context.md:1)首行包含字面换行转义，其余正文可读；这不是磁盘错误或已证明的解析失败。本轮不修写事实基线。文件缺失、权限拒绝、磁盘错误和格式损坏按实际回执分别报告；未找到运行回执不能推断文件缺失。
+最新原生读取确认[`项目事实文件`](../project-context.md:1)首行包含字面换行转义，其余正文可读；这不是磁盘错误或已证明的解析失败。本轮不修写事实基线。文件缺失、权限拒绝、磁盘错误和格式损坏按实际回执分别报告；未找到运行回执不能推断文件缺失。
 
 ### 条件收尾与活动入口保护
 
@@ -119,13 +119,13 @@ Go 测试分类不能将包内部未导出成员与 internal 目录导入范围�
 |---|---|---|
 | 稳定项目入口 | [`AGENTS.md`](../../AGENTS.md) | 单一权威导航、纪律、构建与验证入口；不放逐轮进度，不整体复制事实基线 |
 | 领域规范 | [`specs/`](../../specs/) | 当前需求、接口、不变量、验收及相关 ADR 引用；项目内容不全局分发 |
-| 架构决策 | 过渡保留[`现有 ADR 目录`](../../_bmad-output/adrs/)，目标候选[`docs/adrs/`](../adrs/) | 保存必要 PROPOSED、ACCEPTED、历史及替代关系；不镜像规范或状态 |
-| 活动契约 | 旧任务保留[`默认计划`](../../_bmad-output/pending_implementation_plan.md:1)，新任务使用待确认的独立路径；布局候选为[`plans/`](../../plans/) | 每个任务明确绑定契约，默认入口只作候选；多任务不相互覆盖，路径变更须确认并适配消费者 |
-| 历史计划 | 过渡[`archive/plans/`](../../_bmad-output/archive/plans/)，后续候选[`plans/archive/`](../../plans/archive/) | 完成含日期与唯一标识；冻结另加 frozen 后缀且保留未完成状态；敏感信息审查后决定同步，不能仅靠本地副本 |
-| 分析与旧报告 | 过渡[`analysis/`](../../_bmad-output/analysis/)，后续候选[`docs/analysis/`](./) | 保留证据、比较和未知；当前/历史/被替代/待核验分开标识，默认不加载历史，不等于删除 |
+| 架构决策 | 过渡保留[`现有 ADR 目录`](../adrs/)，目标候选[`docs/adrs/`](../adrs/) | 保存必要 PROPOSED、ACCEPTED、历史及替代关系；不镜像规范或状态 |
+| 活动契约 | 旧任务保留[`默认计划`](../../specs/tasks/archive/20261102T120208Z-BMAD-V4-ATTENDED-CLEANUP-20261021-01/pending_implementation_plan.md:1)，新任务使用待确认的独立路径；布局候选为[`plans/`](../../plans/) | 每个任务明确绑定契约，默认入口只作候选；多任务不相互覆盖，路径变更须确认并适配消费者 |
+| 历史计划 | 过渡[`archive/plans/`](../../specs/tasks/archive/20261102T120208Z-document-closeout/legacy-plans/)，后续候选[`plans/archive/`](../../plans/archive/) | 完成含日期与唯一标识；冻结另加 frozen 后缀且保留未完成状态；敏感信息审查后决定同步，不能仅靠本地副本 |
+| 分析与旧报告 | 过渡[`analysis/`](./)，后续候选[`docs/analysis/`](./) | 保留证据、比较和未知；当前/历史/被替代/待核验分开标识，默认不加载历史，不等于删除 |
 | 持久测试及夹具 | 复用[`tests/`](../../tests/)与必要同包 Go 测试 | 必需回归随工程版本保留和提交；本仓库 CI 可见，不默认随插件运行分发 |
-| 临时工作区 | 过渡[`scratch/`](../../_bmad-output/scratch/)，后续候选[`.scratch/`](../../.scratch/) | 草稿与一次性探针按任务授权；忽略规则不是权限或证据可信度保证 |
-| 持久证据 | 过渡[`verification/`](../../_bmad-output/verification/)；目标目录暂不迁 | 原始回执可能是一手证据；摘要是解释。先保留来源、适用范围及唯一依赖，再裁决脱敏、同步与保留 |
+| 临时工作区 | 过渡[`scratch/`](../../.scratch/legacy-bmad-output-20261102T120208Z/)，后续候选[`.scratch/`](../../.scratch/) | 草稿与一次性探针按任务授权；忽略规则不是权限或证据可信度保证 |
+| 持久证据 | 过渡[`verification/`](../../verification/legacy-bmad-output/)；目标目录暂不迁 | 原始回执可能是一手证据；摘要是解释。先保留来源、适用范围及唯一依赖，再裁决脱敏、同步与保留 |
 
 表中分析目录的过渡位置以本报告所在的现有 analysis 目录为准；不借此创建额外活跃计划。
 
@@ -185,7 +185,7 @@ Cline 官方概述将 Plan 描述为不改变文件的探索与规划，将 Act 
 
 - 依赖：用户确认独立计划路径，模式实际允许写入，路径校验支持，且目标不存在或已有内容得到保护。
 - 现有[`模式白名单`](../../bmad-suite-v4/roo/settings/custom_modes.yaml:8)没有独立活动计划目录；历史归档目录不能充当未经确认的活动入口。本轮不修改模式配置，不先向未允许目录写入。
-- 旧[`活动计划`](../../_bmad-output/pending_implementation_plan.md:1)与旧[`ADR`](../../_bmad-output/adrs/ADR-20261021-v4-attended-repair-and-repository-cleanup.md:3)保持不变。新计划明确绑定独立路径，显式路由优先，不读取默认入口来替换新任务。
+- 旧[`活动计划`](../../specs/tasks/archive/20261102T120208Z-BMAD-V4-ATTENDED-CLEANUP-20261021-01/pending_implementation_plan.md:1)与旧[`ADR`](../adrs/ADR-20261021-v4-attended-repair-and-repository-cleanup.md:3)保持不变。新计划明确绑定独立路径，显式路由优先，不读取默认入口来替换新任务。
 - 独立计划保存前核对真实模板、关联 ADR、支持字段、验证资产与限时命令；收到成功回执才能列为已保存。
 - 无合适路径时先交付报告与提案，计划保存待确认；不通过冻结、改名或腾空旧入口解除阻塞。
 

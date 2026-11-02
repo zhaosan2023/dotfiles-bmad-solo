@@ -1,14 +1,14 @@
 ---
 plan_id: "BMAD-V4-ATTENDED-CLEANUP-20261021-01"
-status: BLOCKED
+status: COMPLETED
 scenario: structural
 impact_tier: M
 requires_adr: true
-adr_file: "_bmad-output/adrs/ADR-20261021-v4-attended-repair-and-repository-cleanup.md"
+adr_file: "docs/adrs/ADR-20261021-v4-attended-repair-and-repository-cleanup.md"
 verification_type: config_syntax
-verification_command: "timeout --kill-after=2s 30s python3 -B scripts/validate-roo-contracts.py --suite v4 --plan _bmad-output/pending_implementation_plan.md < /dev/null"
+verification_command: "timeout --kill-after=2s 30s python3 -B scripts/validate-roo-contracts.py --suite v4 --plan specs/tasks/archive/20261102T120208Z-BMAD-V4-ATTENDED-CLEANUP-20261021-01/pending_implementation_plan.md < /dev/null"
 verification_command_status: AVAILABLE
-authorization: "2026-10-22 用户授权继续本活动计划及关联 ADR，以全部必需门禁通过后的转正与归档为目标；工程取舍可通过硬门禁、DR/DM 自治决定，落实当前技术栈的类型契约、属性与确定性模糊输入背压，保护既有改动，不重复清理或恢复 V5。普通入口继续拒绝非 V4 或未知身份，显式一次性退役不自动执行。该授权不实例化尚未知的真实宿主目标、配置写入范围或加载交互接口，也不取消客户端审批；阶段 2 缺少目标、实际执行入口或必需运行时证据时保持 BLOCKED，不以决策替代证据或豁免验收。全部必需门禁通过后方可接受对应 ADR；全计划完成后方可防覆盖归档实际绑定的活动计划，并复核源标识与内容版本。不授权 V5 恢复、项目外迁移、联网安装、提交、推送或事实基线更新。"
+authorization: "2026-11-02 用户明确确认：本次仅关闭本地 V4 整改，宿主验收移出范围并保留独立未完成说明；全部存量资产防覆盖迁移保全，修复文档引用，指定 V4 校验和本任务差异审查通过后，仅提交本任务的已跟踪资产迁移及必要引用修订。一次性迁移程序获专项工具正交例外，分步保全、准备、复核、移除，失败保留现场。未跟踪草稿仅本地保全、不提交；其他计划不改变状态，不恢复 V5、宿主或外部项目，不联网安装、不推送、不登记新事实。当前授权取代此前禁止本地收口及归档的限制；契约版本为 2，接受范围仅本地整改，不冒称真实宿主门禁通过。"
 session_id: null
 ---
 
@@ -16,9 +16,9 @@ session_id: null
 
 ## 1. 契约实例化与接管
 
-- 本计划是新的 V4 执行实例，不是 V5 历史计划恢复；关联[本任务 ADR](adrs/ADR-20261021-v4-attended-repair-and-repository-cleanup.md)，状态 PROPOSED。
+- 本计划是新的 V4 执行实例，不是 V5 历史计划恢复；关联[本任务 ADR](../../../../docs/adrs/ADR-20261021-v4-attended-repair-and-repository-cleanup.md)，状态在本次本地门禁通过后按明确授权转为 ACCEPTED；不包含宿主验收。
 - 默认入口替换依据：V5 子任务返回防覆盖保存、全文字节比较及最终源复核成功；父任务随后回读实际冻结目标导航，并完整读取待替换源的 802 行。源计划身份与暂停内容仍与接管快照一致，未发现冲突；原生读取不能提供跨调用写入锁或保证后续无并发变化。
-- 原 V5 内容保存在[V5 冻结计划](archive/plans/plan-20261021-BMAD-ANTI-BUREAUCRACY-20261012-01-frozen.md)，其计划标识和未完成承诺保持独立；[V5 ADR](adrs/ADR-20261012-bmad-solo-anti-bureaucracy-and-programmatic-guards.md:14)明确历史引用语境。保全回执报告源与副本均为 118033 字节、全文摘要一致；本计划不复制其任务块、旧预算或通过记录。
+- 原 V5 内容保存在[V5 冻结计划](../20261102T120208Z-document-closeout/legacy-plans/plan-20261021-BMAD-ANTI-BUREAUCRACY-20261012-01-frozen.md)，其计划标识和未完成承诺保持独立；[V5 ADR](../../../../docs/adrs/ADR-20261012-bmad-solo-anti-bureaucracy-and-programmatic-guards.md:14)明确历史引用语境。保全回执报告源与副本均为 118033 字节、全文摘要一致；本计划不复制其任务块、旧预算或通过记录。
 - 就绪、执行及阻塞状态不表示验证通过、宿主已切换、所有后续权限齐备或 V5 已停止；当前进度与阻塞证据仅引用平台唯一任务记录，头部状态不替代阶段验收。
 - 接管和阶段边界核对实际路径、计划标识、关联 ADR、授权与候选变化；不逐修改计算或同步指纹。发现外部契约变化先停止对账，不覆盖他人修改。
 - 当前平台任务记录是本阶段唯一临时进度入口，引用实际回执；下面是任务规格、依赖及验收，不维护第二份执行流水。未证明控制器覆盖本任务，不为使用它而引入 V5 运行依赖；迁移进度职责须另明确接管边界。
@@ -41,7 +41,7 @@ session_id: null
 - 不按比例删测试、固定限制 ADR 行数或承诺提速；不升级无关依赖或全库格式化。
 - 不自动删除研究笔记、第三方资产、历史计划和回执；不把通用套件名称直接认定为 V1。
 - 不在未明确目标时写真实宿主配置，不以安装或 IDE 重载启动模型任务。
-- 不提交、推送或修改项目事实基线。2026-10-22 授权的 ADR 转正及归档仅在各自必需门禁齐备后执行；不得通过缩减范围、取消阶段 2 或伪造加载证据取得闭环。
+- 不推送、不登记新的项目事实、不恢复 V5 或启动真实宿主。2026-11-02 明确授权本地整改收口、对应 ADR 接受、文档防覆盖迁移及仅本任务 Git 提交；真实宿主验收独立保留，不记通过。
 
 ## 3. 验收标准
 
@@ -55,15 +55,15 @@ session_id: null
 - AC-6：真实宿主切换与加载仍未验收，本轮不执行，不作为最新获准阶段 3/4 的依赖；恢复时须另行绑定目标、写入范围及交互证据。
 - AC-7：按用户明确路径和引用依据清理旧通用套件、V3、V5 及失效文档；保护范围外改动、退役原稿导航与历史证据，删除后立即取得 V4 契约回归通过回执。
 - AC-8：普通安装、更新和部署唯一分发 V4，旧版本参数拒绝，缺源失败，未知或退役部署身份阻塞，不静默覆盖；保留更新移交、提交绑定缓存、所有权、锁与事务保护，相关回归实际通过。另获授权的显式一次性受管退役入口不是普通入口的绕过分支，本次仅在项目内隔离夹具验证，不写真实宿主。
-- AC-9：V5 本仓库源码与专属测试按明确授权删除；冻结计划、历史 ADR、运行记录和验证回执保留。普通入口对既有非 V4 部署失败关闭，不保留 V5 自动迁移或激活分支；允许保留[显式一次性受管退役入口](../scripts/migrate-retired-deployment.py:37)，仅接受已核验 V5 身份并精确覆盖历史受管目标，复用所有权、现有锁、清理门禁与事务，不加载或恢复 V5，不将磁盘退役记为宿主加载或 V5 开发完成。
+- AC-9：V5 本仓库源码与专属测试按明确授权删除；冻结计划、历史 ADR、运行记录和验证回执保留。普通入口对既有非 V4 部署失败关闭，不保留 V5 自动迁移或激活分支；允许保留[显式一次性受管退役入口](../../../../scripts/migrate-retired-deployment.py:37)，仅接受已核验 V5 身份并精确覆盖历史受管目标，复用所有权、现有锁、清理门禁与事务，不加载或恢复 V5，不将磁盘退役记为宿主加载或 V5 开发完成。
 - AC-10：最终报告准确区分已实现、已验证、未覆盖和待授权项；无对照测量时不声称效率提升已实证。
 
 ## 4. 架构基线与影响范围
 
-- 保留[已接受生命周期 ADR](adrs/ADR-20261008-roocode-bmad-v42-lifecycle-and-governance.md:37)的显式计划优先、历史恢复授权、分析权限与受管资产保护；不追改其接受记录或扩大历史运行时委托范围。
-- [V4 分析技能](../bmad-suite-v4/skills/ana-solo/SKILL.md:46)、[Roo 模式配置](../bmad-suite-v4/roo/settings/custom_modes.yaml:5)和[静态校验器](../scripts/validate-roo-contracts.py:172)是当前返修依据，不是有效加载证明。
-- [V4 计划模板](../bmad-suite-v4/skills/bmad/references/templates/implementation-plan.template.md:17)提供当前元数据契约。头部验证入口已静态定位，AVAILABLE 不表示本轮执行或依赖就绪。
-- [部署入口](../bs.sh)、[安装入口](../install.sh)、[套件映射](../scripts/suite_versions.py:29)和[CI](../.github/workflows/ci.yml:55)有版本与分发依赖；删除旧版本须同步接口、文案及相关测试。
+- 保留[已接受生命周期 ADR](../../../../docs/adrs/ADR-20261008-roocode-bmad-v42-lifecycle-and-governance.md:37)的显式计划优先、历史恢复授权、分析权限与受管资产保护；不追改其接受记录或扩大历史运行时委托范围。
+- [V4 分析技能](../../../../bmad-suite-v4/skills/ana-solo/SKILL.md:46)、[Roo 模式配置](../../../../bmad-suite-v4/roo/settings/custom_modes.yaml:5)和[静态校验器](../../../../scripts/validate-roo-contracts.py:172)是当前返修依据，不是有效加载证明。
+- [V4 计划模板](../../../../bmad-suite-v4/skills/bmad/references/templates/implementation-plan.template.md:17)提供当前元数据契约。头部验证入口已静态定位，AVAILABLE 不表示本轮执行或依赖就绪。
+- [部署入口](../../../../bs.sh)、[安装入口](../../../../install.sh)、[套件映射](../../../../scripts/suite_versions.py:29)和[CI](../../../../.github/workflows/ci.yml:55)有版本与分发依赖；删除旧版本须同步接口、文案及相关测试。
 - 本轮边界取证：仓库旧循环记录均为 BLOCKED 且 cleanup_ok=true，当前记录有结束时间和最终回执；只读进程路径与描述符检查未见退役源码活动引用，内核锁检查未见仓库锁。真实回执为平台调用 call_c2565ca04d5d7dffb6b38dc1、call_229a4d8dee68fbb10e406c66、call_34e4f6b72f4829b78eff0f6e。仅支持本轮仓库源清理，不证明所有宿主旁路受控，不授权替换实际部署资产。
 - 受影响验证覆盖接口、调用方、数据所有权和跨层依赖，不机械缩小为被编辑函数，也不追加无关 V5 业务测试。
 
@@ -80,15 +80,15 @@ session_id: null
 
 依赖 T0-INTAKE、T0-SCOPE。
 
-- T1-ANALYSIS：精确返修[V4 分析技能](../bmad-suite-v4/skills/ana-solo/SKILL.md)和[Roo 分析规则](../bmad-suite-v4/roo/rules-ana-architect/01-ana-solo-core.md)；同步模式说明、共享核心及实际相关下层流程，删除免审批探针赋权和机械约束，保持分析权限不扩大。
-- T1-HANDOFF：核对[V4 工程入口](../bmad-suite-v4/skills/bmad/SKILL.md)及[Roo 工程规则](../bmad-suite-v4/roo/rules-bmad-engineer/01-bmad-engineer-core.md)的实验接收、失败修复与验证选择；只改实际冲突，不重新做完整方法论重构。
+- T1-ANALYSIS：精确返修[V4 分析技能](../../../../bmad-suite-v4/skills/ana-solo/SKILL.md)和[Roo 分析规则](../../../../bmad-suite-v4/roo/rules-ana-architect/01-ana-solo-core.md)；同步模式说明、共享核心及实际相关下层流程，删除免审批探针赋权和机械约束，保持分析权限不扩大。
+- T1-HANDOFF：核对[V4 工程入口](../../../../bmad-suite-v4/skills/bmad/SKILL.md)及[Roo 工程规则](../../../../bmad-suite-v4/roo/rules-bmad-engineer/01-bmad-engineer-core.md)的实验接收、失败修复与验证选择；只改实际冲突，不重新做完整方法论重构。
 - T1-METADATA：修正分析技能内计划示例，复用真实模板和支持的验证类型；头部命令的静态校验不替代计划体、运行时或实验验收。
-- T1-REPORT：核对[旧 DR/DM 报告](../docs/Ralph-Wiggum-Loop/dr_dm_v4_backpressure_optimization.md)及引用，修正后的有效分析定位为[V4 返修分析](analysis/ANALYSIS-20261021-v4-backpressure-repair.md)。旧位置退役时保留原正文与有效产物导航，保护已有改动；历史问题与当前候选明确区分，不移动错误原文后宣称合格。本项定义产物与验收，不复制执行进度。
+- T1-REPORT：核对[旧 DR/DM 报告](../../../../docs/Ralph-Wiggum-Loop/dr_dm_v4_backpressure_optimization.md)及引用，修正后的有效分析定位为[V4 返修分析](../../../../docs/analysis/ANALYSIS-20261021-v4-backpressure-repair.md)。旧位置退役时保留原正文与有效产物导航，保护已有改动；历史问题与当前候选明确区分，不移动错误原文后宣称合格。本项定义产物与验收，不复制执行进度。
 - T1-VERIFY：完成对应契约断言及必要新增回归，再执行下方阶段命令和受影响隔离分发用例。新增行为用例在真实创建、定位后才登记可用，不猜测试标识或数量。
 - 阶段出口：AC-1 至 AC-5 有实际证据；未通过不得切换或以返修 V4 开展 clean。若发现必须改变分析权限，停止并提交新的明确取舍，不自行加终端组。
-- 2026-10-21 本地出口通过：显式 V4 配置与元数据校验退出 0；[契约回归](../tests/roo_contracts/test_v4_analysis_repair.py:38)实际通过 9 项，[隔离分发回归](../tests/roo_distribution/test_v4_analysis_distribution.py:16)实际通过 1 项，共 10 项测试，无失败或跳过。依据本轮用户明确指定的三组验证及相关静态审校，接受 AC-1 至 AC-5 的本地证据；这不是全部 10 条 AC 通过，也不证明真实宿主加载、运行时权限或效率提升。真实回执定位为平台调用 call_d312ccd61398a0fab925f352、call_f71b061f4860f218ae96f67b、call_f612b85a4f53068701b15b31；本条是阶段边界交付摘要，不另建逐轮进度或日志账本。
+- 2026-10-21 本地出口通过：显式 V4 配置与元数据校验退出 0；[契约回归](../../../../tests/roo_contracts/test_v4_analysis_repair.py:38)实际通过 9 项，[隔离分发回归](../../../../tests/roo_distribution/test_v4_analysis_distribution.py:16)实际通过 1 项，共 10 项测试，无失败或跳过。依据本轮用户明确指定的三组验证及相关静态审校，接受 AC-1 至 AC-5 的本地证据；这不是全部 10 条 AC 通过，也不证明真实宿主加载、运行时权限或效率提升。真实回执定位为平台调用 call_d312ccd61398a0fab925f352、call_f71b061f4860f218ae96f67b、call_f612b85a4f53068701b15b31；本条是阶段边界交付摘要，不另建逐轮进度或日志账本。
 
-### 阶段 2：受管切换与返修 V4 有效加载（后置，未完成）
+### 本次范围外保留：原阶段 2 受管切换与返修 V4 有效加载（未完成）
 
 依赖阶段 1 通过；真实目标及配置写入授权须明确。按本轮用户要求后置，不执行真实宿主切换或加载；恢复前补齐阶段 0 运行绑定证据、目标、写入授权和 AC-6 实测，不能由本地出口通过自动推进。
 
@@ -112,7 +112,7 @@ session_id: null
 
 - T4-DESIGN：核对实际调用链，将来源获取、环境前提和调用职责留在安装层，将意图、预检及受管分发留在部署层；复用已有来源、缓存、所有权、锁、事务和恢复原语，不复制新部署框架。
 - T4-IMPLEMENT：精确删除重复职责及已决定退役的版本分支，同步相关公共模块、CI 和说明；兼容别名按真实依赖保留或明确迁移，不按行数或文件数量制造简化效果。
-- T4-VERIFY：运行受影响的 V4 参数、来源、缓存、更新移交、第三方保护、锁和失败恢复测试；普通入口对既有非 V4 或未知身份阻塞，不因显式 V4 别名绕过保护。CI 必须显式收集[退役迁移回归](../tests/roo_distribution/test_retired_deployment_migration.py:29)，串行、限时、封闭输入且缺文件、零用例、失败或必需项跳过均失败关闭；[CI 契约回归](../tests/roo_contracts/test_ci_contracts.py:97)核对该入口和收集边界，不以文件存在代替测试通过。
+- T4-VERIFY：运行受影响的 V4 参数、来源、缓存、更新移交、第三方保护、锁和失败恢复测试；普通入口对既有非 V4 或未知身份阻塞，不因显式 V4 别名绕过保护。CI 必须显式收集[退役迁移回归](../../../../tests/roo_distribution/test_retired_deployment_migration.py:29)，串行、限时、封闭输入且缺文件、零用例、失败或必需项跳过均失败关闭；[CI 契约回归](../../../../tests/roo_contracts/test_ci_contracts.py:97)核对该入口和收集边界，不以文件存在代替测试通过。
 - 阶段出口：AC-8、AC-9 通过。本仓库停止所有非 V4 激活及 V5 自动迁移；显式一次性退役仅在另获真实目标与写入授权时使用，本次只运行隔离回归，普通入口仍验证拒绝且无副作用。宿主验收后置，不阻塞获准本地清理，也不因本地通过自动完成。
 
 ### 阶段 5：范围对账与工程交付
@@ -120,8 +120,8 @@ session_id: null
 依赖全部适用前序阶段。
 
 - T5-REVIEW：核对当前差异、有效证据、未覆盖边界和所有未完成项；记录实际人工交互和缺陷，不编造旧版对照或提速百分比。
-- T5-HANDOFF：对照实现差异和真实验证交付；阶段 2 未通过时保留宿主验收及完整收尾未完成项，不将局部交付写成全计划完成。不在本仓库继续 V5，不实际操作 solo-engine。
-- 2026-10-22 用户已授权条件收尾：关联 ADR 的全部必需门禁通过后才转正，全计划完成后才防覆盖归档；保存完整目标后复核活动源标识与内容版本，失败或源已变化则保留源。事实基线更新、提交和推送仍未授权。
+- T5-HANDOFF：本次仅对本地 V4 整改与文档迁移收口；原阶段 2 已由用户明确移出完成范围，保持宿主验收未完成，不声称有效加载。不继续 V5，不操作 solo-engine。
+- 2026-10-22 条件收尾为历史授权；2026-11-02 用户明确批准本地范围收口、对应 ADR 接受及归档提交。本次必需门禁为指定 V4 静态校验、迁移保全与源目标复核、必要引用修订及本任务差异审查；不重放历史业务验证，不把静态结果记为宿主通过。
 
 ## 6. 验证矩阵与执行约束
 
@@ -132,12 +132,12 @@ session_id: null
 - 阶段 2：明确目标的预检、受管切换和加载交互；精确参数以当前工具及宿主接口为准，目标未知不生成可直接执行的写入命令。
 - 阶段 3/4：根据最终差异及有效回执选择现有相关分发测试组，必要新增用例先创建；不能仅以删去旧测试让退役后的校验通过。本小阶段必需入口为退役迁移回归、受影响 CI 契约及确有证据缺口的相关用例；使用 `timeout --kill-after=2s 30s`、禁止字节码写入和封闭输入，不固定测试数量。已有回执须核对命令、工作目录、实际退出状态、目标与适用输入；无法取得则披露缺口，不推断过去未测或已通过。
 - 共享版本映射和校验接口收敛为 V4；退役版本仅作为拒绝与无副作用反例，不加载已删除的 V5 模块或恢复其工程。
-- 背压补充契约：使用[身份属性测试](../tests/roo_distribution/test_suite_identity_properties.py)的类型化故障、固定种子生成、合法与非法分支命中断言、输入不变性、同种子重放和神谕变异检查；保留[状态接口回归](../tests/roo_distribution/test_suite_status.py)及受影响安装、普通分发和显式退役的真实副作用回归。测试须非零收集、执行数量一致且无失败或跳过；不引入外部依赖，不声称该输入生成器提供静态强类型证明、通用收缩、覆盖率引导模糊测试或完整系统确定性。
+- 背压补充契约：使用[身份属性测试](../../../../tests/roo_distribution/test_suite_identity_properties.py)的类型化故障、固定种子生成、合法与非法分支命中断言、输入不变性、同种子重放和神谕变异检查；保留[状态接口回归](../../../../tests/roo_distribution/test_suite_status.py)及受影响安装、普通分发和显式退役的真实副作用回归。测试须非零收集、执行数量一致且无失败或跳过；不引入外部依赖，不声称该输入生成器提供静态强类型证明、通用收缩、覆盖率引导模糊测试或完整系统确定性。
 
 阶段 1 本轮命令契约按用户明确指定的 V4 定向验证更新如下；单测补充进程级限时、强杀宽限期、禁止字节码写入与封闭输入，不改测试断言。此块仅定义命令，实际结果引用平台回执：
 
 ```bash
-timeout --kill-after=2s 30s python3 -B scripts/validate-roo-contracts.py --suite v4 --plan _bmad-output/pending_implementation_plan.md < /dev/null
+timeout --kill-after=2s 30s python3 -B scripts/validate-roo-contracts.py --suite v4 --plan specs/tasks/archive/20261102T120208Z-BMAD-V4-ATTENDED-CLEANUP-20261021-01/pending_implementation_plan.md < /dev/null
 timeout --kill-after=2s 30s python3 -B -m unittest discover -s tests/roo_contracts -p 'test_v4*' < /dev/null
 timeout --kill-after=2s 30s python3 -B -m unittest discover -s tests/roo_distribution -p 'test_v4*' < /dev/null
 ```
@@ -164,4 +164,13 @@ timeout --kill-after=2s 15s bash -n install.sh < /dev/null
 - 真实宿主切换的确切目标与写入范围尚未在本计划实例化；操作前确认，不扩大到其他 IDE 或全局目录。
 - 旧通用套件、V3、V5 的本仓库退役范围已经用户明确；其他未知遗留资产不顺手删除。solo-engine 的迁移完整性为用户确认，本轮未跨项目独立核验。
 - 阶段 1 的分析产物与回归按实际文件及回执验收，阶段 3/4 使用平台任务记录作为唯一临时进度；控制器不覆盖本轮，不宣称程序防篡改保证。
-- 2026-10-22 继续授权覆盖本活动计划的自治取舍与条件收尾，不扩大清理范围。阶段 2 仍须实例化 IDE/Roo 版本、部署根与历史受管目标、配置写入范围、重载及新会话执行入口，以及只读审核/获准结晶交互范围；未取得对应必需证据时保持 BLOCKED。关联 ADR 保持 PROPOSED，活动计划保留，不以局部验证或 DR/DM 代替宿主验收。当前任务的全部未完成事项与真实回执由平台唯一任务记录保存，不另建账本；不提交、不推送、不更新事实基线、不启动 V5。
+- 2026-10-22 继续授权保留为历史语境，当前以 2026-11-02 用户明确收窄的本地整改闭环授权为准。原阶段 2 的 IDE/Roo 版本、部署根、配置写入、重载、新会话及只读审核/获准结晶交互仍未验收；后续须独立授权、绑定目标并重验，不继承本次静态绿灯。平台任务记录为唯一进度入口，控制器覆盖未核验。
+
+## 9. 2026-11-02 本地收口契约（版本 2）
+
+- 本节及当前授权优先于上文历史阶段边界；原阶段 2 和 AC-6 移出本次完成范围，未完成、不记通过。
+- 本次不重复本地代码实施或历史业务验证；只按用户确认的本地整改基线完成文档治理。
+- 必需出口：指定 V4 静态校验、本任务差异审查、全部存量资产原字节保全、目标防覆盖及移除前源版本复核。
+- 收窄后的本地范围通过后登记 COMPLETED，关联 ADR 仅接受相同本地范围；不宣布真实宿主或其他计划完成。
+- 历史冻结/暂停计划、其他 ADR、事实基线及原始回执保留独立身份；路径修订不登记新的运行事实。
+- 当前进度与实际回执只在平台任务记录，不在本计划建立迁移进度账本。
