@@ -7,10 +7,32 @@ from pathlib import Path
 from asset_safety import AssetError
 from managed_files import ownership_record
 from suite_versions import SuiteSpec, suite_spec, unique_object
+from release_version import parse_release
 
 
 PLUGIN_PREFIX = '.gemini/config/plugins/bmad-suite/'
 IDENTITY_FIELDS = ('suite_id', 'major_version', 'source_path')
+
+
+def manifest_release(provenance, observed):
+    """从已核验部署快照解析发布版本；缺旧声明返回 None，不推断当前版本。"""
+    sources = provenance.get('source_files')
+    managed = provenance.get('managed_files')
+    if not isinstance(sources, dict) or not isinstance(managed, dict):
+        raise AssetError('部署来源文件摘要结构非法')
+    target = PLUGIN_PREFIX + 'VERSION'
+    value = observed.get(target)
+    source_present = 'VERSION' in sources
+    managed_present = target in managed
+    observed_present = value is not None and value.content is not None
+    if not (source_present == managed_present == observed_present):
+        raise AssetError('部署发布版本在来源、受管清单与快照中的存在性不一致')
+    if not source_present:
+        return None
+    record = sources['VERSION']
+    if managed[target] != record or ownership_record(value) != record:
+        raise AssetError('部署发布版本资产与来源摘要不一致')
+    return parse_release(value.content)
 
 
 def manifest_suite(provenance, observed, *, retired_from=None):

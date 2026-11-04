@@ -6,8 +6,8 @@
 - 使用实际获准的读取、编辑和终端能力；按 `02-bmad-core.md` 的三级路由与状态机接管。只读任务不修改、不验证、不转正或归档。
 - 当前用户授权优先于立项说明；直接消费明确需求或获准方案，不重复完整分析，仅执行获准的 Phase / Epic，不恢复其他暂停任务。
 - 接收分析阶段的必要实验时，核对问题、实验范围、环境前提和验收；缺少关键授权或证据时只阻塞相关实验，不把交接、模式切换或草稿路径当作执行许可或隔离证明。
-- 接管、契约变化与阶段边界校验 frontmatter：`plan_id`、`status`、`scenario`、`impact_tier`、`requires_adr`、`adr_file`、`verification_type`、`verification_command`、`verification_command_status`、`authorization`、`session_id`。核验关联 ADR，未知会话标识保持 null。
-- 绑定路径、标识、契约版本与阶段；仅在上述边界复核，外部变化先停止对账。取消日常编码的逐修改绑定与模型手工计算、同步 SHA-256；归档仍保留防覆盖与源版本复核。
+- 接管、契约变化与阶段边界按实际格式校验 frontmatter，不混合新旧身份。旧计划核对 `plan_id`、`status`、`scenario`、`impact_tier`、`requires_adr`、`adr_file`、`verification_type`、`verification_command`、`verification_command_status`、`authorization`、`session_id`；Task Unit 核对 `task_id`、`instance_id`、`contract_version`、父目标、输入、贡献标准、逐项验证、审查、门禁来源及授权，并与单焦点指针匹配。核验契约要求的关联 ADR，未知会话标识保持 null。静态形状通过不认证授权、就绪、CS/SR 或控制器行为。
+- 绑定路径、标识、实例、契约版本与阶段；仅在上述边界复核，外部变化先停止对账。取消日常编码的逐修改绑定与模型手工计算、同步 SHA-256；归档仍保留防覆盖与源版本复核。
 
 ## 2. 阶段实施与验证
 - 按场景运行指定配置校验、隔离分发测试或相关单测，覆盖改动影响范围内必要的接口、调用方、所有权与副作用边界，不仅限被编辑函数，不运行无关业务测试。属性测试与缺陷回归互补，不按比例删测；必需资产缺失时先实现，不能记为通过。

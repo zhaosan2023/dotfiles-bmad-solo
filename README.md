@@ -1,6 +1,6 @@
 # dotfiles-bmad-solo
 
-[![Version](https://img.shields.io/badge/version-v4.2.0-blue.svg)](https://github.com/zhaosan2023/dotfiles-bmad-solo/releases/tag/v4.2.0)
+[![Version](https://img.shields.io/badge/version-v4.3-blue.svg)](bmad-suite-v4/VERSION)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 面向 AI 编程助手（Antigravity / Gemini / Claude）的人-AI 值守 V4 工程套件。本仓库只维护和分发 V4，不承载无人值守 V5 开发或运行。
@@ -9,7 +9,9 @@
 
 ## 唯一版本：V4
 
-唯一来源为 [V4 套件](bmad-suite-v4/)。安装和分发无需选择主版本；兼容已有 V4 参数，其他版本拒绝。已有部署必须通过所有权、摘要和 V4 身份核验，未知、退役或被修改的资产阻塞，显式 V4 参数也不能绕过保护。
+唯一来源为 [V4 套件](bmad-suite-v4/)，发布版本由 [VERSION](bmad-suite-v4/VERSION)声明。新发布统一使用 v4.3、v4.4 等两段版本；主身份仍为 V4，提交标识用于来源追溯，不增加补丁版本管理。历史标签与回执不改写，本地声明版本不等于远端已发布。
+
+安装和分发无需选择主版本；兼容已有 V4 参数，其他版本拒绝。已有部署必须通过所有权、摘要和 V4 身份核验，未知、退役或被修改的资产阻塞，显式 V4 参数也不能绕过保护。
 
 V5 已按维护者确认独立迁至 solo-engine，本仓库退役其源码与专属测试，不提供 V5 激活或自动迁移。[V5 冻结计划](specs/tasks/archive/20261102T120208Z-document-closeout/legacy-plans/plan-20261021-BMAD-ANTI-BUREAUCRACY-20261012-01-frozen.md)及历史 ADR、回执保留，不代表 V5 开发完成；历史源码路径仅供追溯。
 
@@ -27,7 +29,15 @@ V5 已按维护者确认独立迁至 solo-engine，本仓库退役其源码与�
 
 安装入口仅分发 V4，兼容已有 V4 调用；退役版本参数在克隆或更新之前拒绝，V4 来源缺失不回退其他目录。安装、更新、文件分发及 IDE 重载不启动任务、不准备模型认证、不提交、推送或部署业务服务。
 
-当前实现需要 Bash、Git、GNU timeout、Python 3.10 或更高版本及 PyYAML；2026-10-13 本机复核环境为 Python 3.10.12 和 PyYAML 5.4.1，不将历史检查环境当作当前状态。运行环境和权限仍需按实际宿主核验。
+当前实现需要 Bash、Git、GNU timeout、Python 3.10 或更高版本、可用的 fcntl 和 PyYAML。[安装入口](install.sh)在创建目录或克隆前检查命令、解释器与 YAML 解析能力；[部署入口](bs.sh)在更新、锁、缓存或部署动作前执行同类预检。缺依赖或探测失败即停止，不联网安装包、不改 Python 环境；帮助和非法参数无需依赖检查。
+
+2026-10-13 本机复核环境为 Python 3.10.12 和 PyYAML 5.4.1，不将历史检查环境当作当前状态。运行环境和权限仍需按实际宿主核验；依赖预检通过不证明套件来源完整或宿主已经加载。
+
+### 技能安装完整性
+
+声明 v4.3 或更高发布版本的来源，在部署预检、模拟部署、实际分发和标签缓存核验时，必须通过[技能快照门禁](scripts/skill_integrity.py:23)。门禁检查同批采集的两个技能入口、必需文档和本地引用，使用当前部署入口所属仓库的[校验实现](bmad-suite-v4/skills/bmad/scripts/validate-solo-package.py:181)，不执行候选来源中的校验脚本。提交前仍须复核来源快照；不完整技能包不能进入部署写入。
+
+CI 同时执行静态技能检查与相关负控，缺测试、零收集、失败或跳过均不能通过该技能回归门禁。较早发布或缺少发布声明的旧来源保持既有兼容边界，不因此获得新的技能完整性通过声明。静态完整性不证明宿主加载、模型调用技能或上游技能包实时同步。
 
 ### 本地部署与版本操作
 
@@ -53,7 +63,7 @@ V5 已按维护者确认独立迁至 solo-engine，本仓库退役其源码与�
  timeout 15s bash bs.sh --tags < /dev/null
 
 # 仅预览指定标签；标签必须在本地存在
- timeout 30s bash bs.sh --dry-run --tag v4.2.0 < /dev/null
+ timeout 30s bash bs.sh --dry-run --tag v4.3 < /dev/null
 
 # 预览卸载；实际卸载仍会保留未知资产
  timeout 30s bash bs.sh --dry-run --uninstall < /dev/null
@@ -61,7 +71,7 @@ V5 已按维护者确认独立迁至 solo-engine，本仓库退役其源码与�
 
 真实版本操作及卸载参数见[部署入口](bs.sh)。更新需要干净工作树并仅允许快进；已有部署身份在网络访问和分支切换前核验。成功核验提交后执行磁盘新版入口，不继续旧版部署尾部；续接保留部署根目录及显式模式目标，再次核验 main、提交和工作树，禁止重复更新。
 
-标签部署绑定实际提交及 V4 身份，保持 V4 提交缓存格式；标签名仅是版本线索。缺源、身份矛盾、非 V4 标签线索或缓存被修改均拒绝，不回退、不自动修复缓存。主分支切换同样移交新版入口。
+新发布标签须采用两段版本并与 VERSION 一致，由发布检查及 CI 校验；历史标签只保留原来语境，不批量重命名。标签部署仍绑定实际提交及 V4 身份，保持提交缓存格式；旧快照未声明小版本时只报告 V4，不猜测为当前发布。缺源、身份矛盾、非 V4 标签线索或缓存被修改均拒绝，不回退、不自动修复缓存。主分支切换同样移交新版入口。
 
 旧版本不作为降级目标。未包含移交整改的历史入口不会自动获得新保护；首次应用先结束旧进程，再从审查后的入口启动。
 
@@ -126,9 +136,13 @@ BMAD_DEPLOY_ROOT="$PWD/sandbox/deployment" timeout 30s bash bs.sh --dry-run --mo
 
 目标体验见[Cline 原生适配提案](docs/adrs/ADR-20261023-cline-native-plan-act-and-backpressure.md:1)：Plan 默认承载分析能力，Act 默认承载工程能力，不要求用户输入技能斜杠命令。原生上下文压缩与模式交互保持各自用途，不替代项目契约、授权或验证证据。
 
-当前安装与分发入口仍是 Gemini/Roo 链路，Cline 模式绑定及运行时程序门禁尚未实现和验收；不能将现有部署命令当作 Cline 安装命令。规则中的动态背压不是已经运行的硬拦截，需分别验收执行前、验证后和推进前的实际覆盖。
+[安装入口](install.sh:19)与[部署入口](bs.sh:96)支持显式选择 Cline 技能副本；这不是 Cline CLI 或插件本身的安装，也不自动启动宿主。技能目标位于部署根目录下的 `.cline/skills/`；默认根目录是当前用户目录，显式项目根只影响该次受管部署目标，不生成项目私有治理文档。
 
-后续适配复用[治理计划](PLAN-20261022-document-test-governance-01.md:87)，保护已有 Gemini/Roo 和第三方资产。真实插件安装、宿主配置与交互验收须明确版本、扩展宿主、目标路径和操作授权，不自动卸载旧宿主或迁移认证材料。
+- [技能适配](scripts/cline_skill_assets.py:1)分发分析与工程入口及其资源，适配技能名称和跨技能链接，保留原始套件快照；不把上游参考技能目录加入运行依赖。
+- [受管部署入口](scripts/deploy-managed-cli.py:78)在新增或继续更新 Cline 技能时保留既有 Gemini/Roo 资产与已受管模式目标；后续默认更新继续包含已选技能。用户修改过的受管技能、未授权同路径冲突和不支持的旧来源均阻塞，不静默退役宿主。
+- [隔离分发回归](tests/roo_distribution/test_cline_distribution.py:1)覆盖新增、更新、卸载、来源记录和已有宿主保全；[外层安装回归](tests/roo_distribution/test_cline_installer.py:1)覆盖参数透传与本地文件远端。它们不证明真实 Cline CLI 或插件已经发现、自动调用技能。
+
+Cline Plan/Act 默认角色绑定、运行时程序门禁与真实宿主加载仍未完成验收；技能副本不等于完整原生适配。规则中的动态背压不是已经运行的硬拦截，需分别验收执行前、验证后和推进前的实际覆盖。真实插件安装、宿主配置与交互验收须明确版本、扩展宿主、目标路径和操作授权，不自动卸载旧宿主、恢复历史计划或迁移认证材料。
 
 ---
 

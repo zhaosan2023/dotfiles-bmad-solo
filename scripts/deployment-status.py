@@ -13,7 +13,7 @@ from asset_safety import AssetError, checked_path, snapshot
 from deploy_managed import load_manifest, _unique_object
 from managed_files import plan_files, validate_relative_path
 from managed_modes import merge_modes
-from deployment_identity import manifest_suite
+from deployment_identity import manifest_release, manifest_suite
 
 
 def inspect(root, *, active_suite=False, retired_from=None):
@@ -127,10 +127,18 @@ def inspect(root, *, active_suite=False, retired_from=None):
             print(f'记录的来源仓库：{repository}')
             print(f'记录的来源提交：{commit}')
             print(f'记录的套件源差异状态：{"有差异" if dirty else "无差异"}')
-        spec = manifest_suite(provenance, {
+        observed_relative = {
             path.relative_to(root).as_posix(): value
             for path, value in observed.items()
-        }, retired_from=retired_from)
+        }
+        spec = manifest_suite(provenance, observed_relative, retired_from=retired_from)
+        # 只消费本次已核验快照，不读取当前仓库 VERSION，也不改主版本机器接口。
+        if retired_from is None:
+            release = manifest_release(provenance, observed_relative)
+            if release is None:
+                print('记录的发布版本：未知；旧部署未声明小版本，不推断为当前发布。')
+            else:
+                print(f'记录的发布版本：{release}')
         if spec is not None:
             print(f'记录的套件身份：{spec.suite_id}')
             print(f'记录的套件主版本：{spec.major_version}')

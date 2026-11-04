@@ -10,11 +10,14 @@ NC='\033[0m'
 REPO_URL="https://github.com/zhaosan2023/dotfiles-bmad-solo.git"
 TARGET_DIR="${BMAD_SOLO_DIR:-$HOME/.dotfiles/dotfiles-bmad-solo}"
 
+INSTALL_ARGS=(--suite v4)
+
 # 唯一 V4；兼容已有 V4 参数，其他参数在克隆、更新或部署之前拒绝。
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --help|-h)
-            printf '%s\n' '用法：bash install.sh；兼容 v4 或 --suite v4。'
+            printf '%s\n' '用法：bash install.sh [--cline-skills]；兼容 v4 或 --suite v4。'
+            printf '%s\n' '--cline-skills 新增 Cline 原生技能副本，保留 Gemini/Roo 资产，不安装或启动宿主。'
             printf '%s\n' '仅安装人-AI 值守 V4；已有退役或未知部署身份停止，不自动覆盖。'
             printf '%s\n' '安装仅物化受管资产，不启动 Ralph、不准备模型认证或部署业务服务。'
             exit 0
@@ -29,12 +32,42 @@ while [[ $# -gt 0 ]]; do
         v4|4|--v4|--version-4|-4)
             shift
             ;;
+        --cline-skills)
+            INSTALL_ARGS+=(--cline-skills)
+            shift
+            ;;
         *)
             printf '错误：未知安装参数 %s；未克隆、更新或部署。\n' "$1" >&2
             exit 1
             ;;
     esac
 done
+
+# 在创建目录、克隆或更新之前检查依赖；不联网安装、不修改 Python 环境。
+for dependency in git timeout python3 env mkdir dirname; do
+    if ! command -v "$dependency" > /dev/null 2>&1; then
+        printf '错误：缺少安装依赖 %s；未克隆、更新或部署。\n' "$dependency" >&2
+        exit 1
+    fi
+done
+TIMEOUT_VERSION=$(timeout --kill-after=2s 15s timeout --version < /dev/null)
+if [[ "$TIMEOUT_VERSION" != *"GNU coreutils"* ]]; then
+    printf '%s\n' '错误：需要 GNU timeout；未克隆、更新或部署。' >&2
+    exit 1
+fi
+timeout --kill-after=2s 15s python3 -B -c '
+import sys
+if sys.version_info < (3, 10):
+    raise SystemExit("错误：需要 Python 3.10 或更高版本；未执行安装。")
+try:
+    import fcntl
+    from yaml import SafeLoader, safe_load
+except ImportError as exc:
+    raise SystemExit("错误：需要可用的 fcntl 和 PyYAML；未执行安装，不自动安装依赖。") from exc
+if safe_load("dependency_probe: true") != {"dependency_probe": True}:
+    raise SystemExit("错误：PyYAML 解析能力异常；未执行安装。")
+' < /dev/null
+
 # 受管入口唯一分发 V4，并在更新前核验已有部署身份。
 echo -e "${YELLOW}======================================================${NC}"
 echo -e "${YELLOW} BMAD-Solo Remote One-Line Installer                  ${NC}"
@@ -59,13 +92,13 @@ else
 fi
 
 echo -e "\n  [i] Bootstrapping Physical Mirror via bs.sh..."
-timeout --kill-after=5s 30s bash "$TARGET_DIR/bs.sh" "$BOOTSTRAP_ACTION" --suite v4 < /dev/null
+timeout --kill-after=5s 30s bash "$TARGET_DIR/bs.sh" "$BOOTSTRAP_ACTION" "${INSTALL_ARGS[@]}" < /dev/null
 
 echo -e "\n${GREEN}======================================================${NC}"
 printf '%s\n' '受管资产处理完成；尚未验证 Roo 运行时加载或权限行为。'
 echo -e "${GREEN}======================================================${NC}"
 echo -e "Repository Path : ${GREEN}$TARGET_DIR${NC}"
-echo -e "Global Mirror   : ${GREEN}$HOME/.gemini/config/plugins/bmad-suite${NC}"
+echo -e "Global Mirror   : ${GREEN}${BMAD_DEPLOY_ROOT:-$HOME}/.gemini/config/plugins/bmad-suite${NC}"
 echo -e "\nTo check status at any time:"
 echo -e "  cd $TARGET_DIR && ./bs.sh --status"
 echo -e "\nTo pull future updates:"

@@ -78,6 +78,15 @@ def prepare(root, state_dir, files, modes, *, uninstall=False,
     manifest_path = state_dir / "ownership.json"
     manifest_before = snapshot(manifest_path)
     old = load_manifest(manifest_before.content)
+    # 新增宿主不能通过缩减输入隐式退役旧宿主；持锁后的 prepare 同样检查，
+    # 防止外层选择与提交之间发生另一个已完成部署。完整卸载仍需显式请求。
+    cline_prefix = ".cline/skills/"
+    existing_cline = any(relative.startswith(cline_prefix) for relative in old["files"])
+    selected_cline = any(relative.startswith(cline_prefix) for relative in files)
+    if not uninstall and existing_cline and not selected_cline:
+        raise AssetError("已有受管 Cline 技能未纳入部署输入，拒绝隐式退役宿主")
+    if not uninstall and selected_cline and set(old["modes"]) - set(modes):
+        raise AssetError("Cline 技能部署遗漏已有受管 Roo 模式目标，拒绝隐式退役")
     file_paths = set(files) | set(old["files"])
     mode_paths = set(modes) | set(old["modes"])
     if file_paths & mode_paths:

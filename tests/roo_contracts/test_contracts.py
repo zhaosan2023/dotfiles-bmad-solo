@@ -53,7 +53,9 @@ class ModeContracts(unittest.TestCase):
 
     def test_overbroad_and_end_anchor_regex_rejected(self):
         for regex in (".*", r"^_bmad-output/.*\.md$",
-                      r"^_bmad-output/(?:(?:adrs|analysis|archive/plans)/[A-Za-z0-9_-]+\.md|pending_implementation_plan\.md)$"):
+                      r"^_bmad-output/(?:(?:adrs|analysis|archive/plans)/[A-Za-z0-9_-]+\.md|pending_implementation_plan\.md)$",
+                      r"^(?:docs/.*\.md|specs/tasks/.*\.md|_bmad-output/.*\.md)$",
+                      r"^(?:docs/(?:adrs|analysis)/[A-Za-z0-9_-]+\.md|specs/tasks/TU-[A-Za-z0-9_-]+\.md|_bmad-output/(?:(?:adrs|analysis|archive/plans)/[A-Za-z0-9_-]+\.md|pending_implementation_plan\.md))$"):
             data = source_modes()
             data["customModes"][0]["groups"][1][1]["fileRegex"] = regex
             with self.subTest(regex=regex), self.assertRaises(contracts.ContractError):
@@ -78,6 +80,7 @@ class RepositoryContracts(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         for relative in (contracts.MODE_PATH, contracts.TEMPLATE_PATH,
+                         contracts.TASK_TEMPLATE_PATH,
                          *contracts.RULE_PATHS, *contracts.SKILL_PATHS):
             target = self.root / relative
             target.parent.mkdir(parents=True, exist_ok=True)

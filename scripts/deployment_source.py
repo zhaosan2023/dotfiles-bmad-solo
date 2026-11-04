@@ -7,11 +7,15 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+import re
 import stat
 
-from asset_safety import AssetError, checked_path, parse_modes, require_unchanged, snapshot
+from asset_safety import AssetError, Snapshot, checked_path, parse_modes, require_unchanged, snapshot
 from managed_files import validate_relative_path, validate_snapshot
 from suite_versions import SUITES, IDENTITY_FILE, validate_identity
+from release_version import parse_release
+from skill_integrity import validate_source_skills
+from cline_skill_assets import cline_skill_files
 
 
 REQUIRED_FILES = (
@@ -26,12 +30,42 @@ REQUIRED_FILES = (
 )
 
 
-def collect_source(source: Path, mode_targets: tuple[str, ...]):
+def standalone_rule(value: Snapshot, sources):
+    """适配独立规则副本中的技能链接，原始套件快照保持不变。
+
+    仅转换 Markdown 链接目标；源技能必须实际存在于同批来源中。
+    转换后的字节由受管清单记录，不冒充 Git 提交中的原始文件。
+    """
+    def replace(match):
+        destination = match.group(1)
+        try:
+            relative = destination.decode("utf-8")[3:]
+        except UnicodeError as exc:
+            raise AssetError("规则技能链接不是有效 UTF-8") from exc
+        # 保留链接的片段或行定位，只核对对应的物理源文件。
+        physical = relative.split("#", 1)[0]
+        physical = re.sub(r":\d+$", "", physical)
+        validate_relative_path(physical)
+        linked = sources.get(physical)
+        if linked is None:
+            raise AssetError(f"规则引用的技能资产缺失：{physical}")
+        validate_snapshot(linked, allow_missing=False)
+        return b"](../plugins/bmad-suite/" + destination[3:] + b")"
+
+    content = re.sub(rb"\]\((\.\./skills/[^)\s]+)\)", replace, value.content)
+    return Snapshot(content, value.mode)
+
+
+def collect_source(source: Path, mode_targets: tuple[str, ...], *, cline_skills=False):
     """返回普通文件映射、模式合并输入以及源快照。
 
     目标路径相对于后续部署根目录；本函数不赋予写入这些路径的权限。
     现阶段仅接受包含 Roo 资产的套件，无 Roo 源的降级失败关闭。
+    Cline 技能须显式选择，新增映射不缩减既有 Gemini/Roo 来源集合。
+    调用方仍须核对目标授权及选择变化，不能将遗漏旧目标视为退役许可。
     """
+    if type(cline_skills) is not bool:
+        raise AssetError("Cline 技能选择必须是明确布尔值")
     source = checked_path(source)
     if not source.is_dir():
         raise AssetError("套件源必须是已经存在的物理目录")
@@ -65,6 +99,9 @@ def collect_source(source: Path, mode_targets: tuple[str, ...]):
     missing = set(REQUIRED_FILES) - set(sources)
     if missing:
         raise AssetError("套件缺少必需资产，拒绝不完整部署：" + ", ".join(sorted(missing)))
+    # 兼容无小版本声明的旧快照，但直接调用部署入口也不能绕过损坏声明。
+    if "VERSION" in sources:
+        parse_release(sources["VERSION"].content)
     if ".manifest.json" in sources:
         raise AssetError("套件源包含部署生成的清单，拒绝混入目标状态")
     known = [spec for spec in SUITES.values() if spec.source_path == source.name]
@@ -72,6 +109,10 @@ def collect_source(source: Path, mode_targets: tuple[str, ...]):
         validate_identity(source, known[0])
     elif IDENTITY_FILE in sources:
         raise AssetError("套件声明身份但物理目录不符合受支持的固定映射")
+
+    # v4.3 起检查同一批源快照；不运行所选来源中的校验脚本。
+    # 无声明或较早发布保留旧兼容，不冒称具备新的技能完整性证据。
+    validate_source_skills(source, sources)
 
     mode_source = sources["roo/settings/custom_modes.yaml"].content
     mode_data = parse_modes(mode_source)
@@ -82,12 +123,19 @@ def collect_source(source: Path, mode_targets: tuple[str, ...]):
     for relative, value in sources.items():
         files[f".gemini/config/plugins/bmad-suite/{relative}"] = value
     for name in ("bmad-constitution.md", "bmad-core.md"):
-        files[f".gemini/config/rules/{name}"] = sources[f"rules/{name}"]
+        files[f".gemini/config/rules/{name}"] = standalone_rule(
+            sources[f"rules/{name}"], sources,
+        )
     for relative, value in sources.items():
         if any(relative.startswith(f"roo/{directory}/") for directory in (
             "rules", "rules-ana-architect", "rules-bmad-engineer"
         )):
             files[f".roo/{relative.removeprefix('roo/')}"] = value
+    if cline_skills:
+        adapted = cline_skill_files(source, sources)
+        if set(adapted) & set(files):
+            raise AssetError("Cline 技能与既有文件部署目标重叠")
+        files.update(adapted)
     if set(mode_targets) & set(files):
         raise AssetError("模式合并目标与普通文件部署目标重叠")
     modes = {relative: mode_source for relative in mode_targets}

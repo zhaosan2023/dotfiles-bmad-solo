@@ -95,5 +95,54 @@ class SuiteTagCache(unittest.TestCase):
         self.assertEqual((self.target / '.roo/rules/02-bmad-core.md').read_bytes(), original)
 
 
+class SkillTagCache(unittest.TestCase):
+    """复用隔离夹具，不重复继承既有缓存测试；保留技能负控覆盖。"""
+
+    setUp = SuiteTagCache.setUp
+    run_command = SuiteTagCache.run_command
+    git = SuiteTagCache.git
+    tree = SuiteTagCache.tree
+    deploy_tag = SuiteTagCache.deploy_tag
+    MANIFEST = SuiteTagCache.MANIFEST
+
+    def test_incomplete_tagged_skills_never_publish_cache_or_replace_deployment(self):
+        baseline = self.git('rev-parse', 'HEAD').strip()
+        self.deploy_tag()
+        old_cache = self.repo / '.versions' / ('commit-' + baseline)
+        before_cache = self.tree(old_cache)
+        before_target = self.tree(self.target)
+        before_source = self.tree(self.repo / 'bmad-suite-v4')
+        cases = (
+            ('missing-entry', 'bmad-suite-v4/skills/bmad/SKILL.md'),
+            ('missing-reference', 'bmad-suite-v4/skills/ana-solo/references/decision-matrix.md'),
+        )
+        for name, relative in cases:
+            with self.subTest(fault=name):
+                self.git('checkout', '-b', 'fixture-' + name)
+                path = self.repo / relative
+                if name == 'missing-entry':
+                    path.unlink()
+                else:
+                    path.write_bytes(path.read_bytes() + b'\n[Missing](missing.md:1)\n')
+                self.git('add', relative)
+                self.git('-c', 'commit.gpgsign=false', 'commit', '-m', 'fixture ' + name)
+                selected = self.git('rev-parse', 'HEAD').strip()
+                tag = 'fixture-broken-' + name
+                self.git('tag', tag)
+                # 当前工作树保持完整，失败必须来自标签的同批技能快照。
+                self.git('checkout', 'main')
+                result = self.run_command(['bash', 'bs.sh', '--tag', tag])
+                self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+                self.assertIn('技能完整性预检失败', result.stderr)
+                self.assertNotIn('受管文件分发完成', result.stdout)
+                self.assertFalse((self.repo / '.versions' / ('commit-' + selected)).exists())
+                self.assertEqual(list((self.repo / '.versions').glob('.preparing-*')), [])
+                self.assertEqual(self.tree(old_cache), before_cache)
+                self.assertEqual(self.tree(self.target), before_target)
+                self.assertEqual(self.tree(self.repo / 'bmad-suite-v4'), before_source)
+                self.assertEqual(self.git('rev-parse', 'HEAD').strip(), baseline)
+                self.assertEqual(self.git('branch', '--show-current').strip(), 'main')
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -11,9 +11,9 @@ from pathlib import Path
 import sys
 
 from asset_safety import (
-    AssetError, checked_path, validate_inherited_deployment_lock,
+    AssetError, checked_path, snapshot, validate_inherited_deployment_lock,
 )
-from deploy_managed import deploy
+from deploy_managed import deploy, load_manifest
 from deployment_preflight import inspect_migration
 from deployment_targets import discover_mode_targets
 from deployment_source import collect_source, verify_source
@@ -32,6 +32,8 @@ def parser():
                         help="相对于部署根目录的模式配置文件，可重复")
     result.add_argument("--discover-modes", action="store_true",
                         help="只读发现已存在的 Roo 存储；显式模式目标优先")
+    result.add_argument("--cline-skills", action="store_true",
+                        help="新增 Cline 原生技能副本；保留 Gemini/Roo 资产，不启动宿主")
     result.add_argument("--preflight", action="store_true",
                         help="仅列出迁移范围及全部阻塞；不写入或授权接管")
     result.add_argument("--adopt-file", action="append", default=[],
@@ -64,7 +66,7 @@ def main(argv=None):
             )
         if arguments.uninstall:
             if (arguments.source is not None or arguments.repository is not None
-                    or arguments.mode_target or arguments.discover_modes
+                    or arguments.mode_target or arguments.discover_modes or arguments.cline_skills
                     or arguments.adopt_file or arguments.adopt_mode):
                 raise AssetError("卸载不能同时指定套件源、模式目标或接管授权")
             files, modes = {}, {}
@@ -73,10 +75,20 @@ def main(argv=None):
             if arguments.source is None:
                 raise AssetError("部署必须显式指定套件源")
             source = checked_path(arguments.source)
+            existing = load_manifest(snapshot(state / "ownership.json").content)
+            cline_selected = arguments.cline_skills or any(
+                relative.startswith(".cline/skills/") for relative in existing["files"]
+            )
             mode_targets = tuple(arguments.mode_target)
             if arguments.discover_modes and not mode_targets:
                 mode_targets = discover_mode_targets(root)
-            files, modes, sources = collect_source(source, mode_targets)
+            if cline_selected:
+                # 新增或继续更新 Cline 时保留已受管模式，不把宿主选择当成
+                # Roo 退役授权。提交时的协调器再次检查遗漏及资产摘要。
+                mode_targets += tuple(sorted(set(existing["modes"]) - set(mode_targets)))
+            files, modes, sources = collect_source(
+                source, mode_targets, cline_skills=cline_selected,
+            )
             adopt_modes = {}
             for specification in arguments.adopt_mode:
                 relative, separator, slug = specification.rpartition("=")

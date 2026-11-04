@@ -27,6 +27,7 @@ UPDATE_REMOTE=0
 MODE_TARGETS=()
 PREFLIGHT=0
 RESUME_COMMIT=""
+CLINE_SKILLS=0
 
 # 使用参数数组重建有效部署意图；更新/切分支参数不进入新版执行。
 # 环境变量中的部署根目录由 exec 继承，不拼接为命令字符串。
@@ -38,12 +39,41 @@ handoff_main() {
     local RESUME_ARGS=(--_resume-main "$1")
     if [ $DRY_RUN -eq 1 ]; then RESUME_ARGS+=(--dry-run); fi
     if [ $PREFLIGHT -eq 1 ]; then RESUME_ARGS+=(--preflight); fi
+    if [ $CLINE_SKILLS -eq 1 ]; then RESUME_ARGS+=(--cline-skills); fi
     local TARGET
     for TARGET in "${MODE_TARGETS[@]}"; do
         RESUME_ARGS+=(--mode-target "$TARGET")
     done
     printf '显式移交磁盘新版部署入口，提交 %s；不重复更新。\n' "$1"
     exec env BMAD_HANDOFF_ACTIVE=1 bash "$SCRIPT_DIR/bs.sh" "${RESUME_ARGS[@]}" < /dev/null
+}
+
+check_dependencies() {
+    local DEPENDENCY
+    local TIMEOUT_VERSION
+    for DEPENDENCY in git timeout python3 env; do
+        if ! command -v "$DEPENDENCY" > /dev/null 2>&1; then
+            printf '错误：缺少部署依赖 %s；未更新或部署。\n' "$DEPENDENCY" >&2
+            return 1
+        fi
+    done
+    TIMEOUT_VERSION=$(timeout --kill-after=2s 15s timeout --version < /dev/null)
+    if [[ "$TIMEOUT_VERSION" != *"GNU coreutils"* ]]; then
+        printf '%s\n' '错误：需要 GNU timeout；未更新或部署。' >&2
+        return 1
+    fi
+    timeout --kill-after=2s 15s python3 -B -c '
+import sys
+if sys.version_info < (3, 10):
+    raise SystemExit("错误：需要 Python 3.10 或更高版本；未执行部署。")
+try:
+    import fcntl
+    from yaml import SafeLoader, safe_load
+except ImportError as exc:
+    raise SystemExit("错误：需要可用的 fcntl 和 PyYAML；未执行部署，不自动安装依赖。") from exc
+if safe_load("dependency_probe: true") != {"dependency_probe": True}:
+    raise SystemExit("错误：PyYAML 解析能力异常；未执行部署。")
+' < /dev/null
 }
 
 show_help() {
@@ -55,7 +85,7 @@ show_help() {
     echo -e "${GREEN}GitOps Version Inspection & Updates:${NC}"
     echo "  --update, -u      Fetch & pull latest from origin and deploy physical mirror"
     echo "  --status, -s      Show Git status, deployed mirror status, commit, and manifest"
-    echo "  --tags, -l        List all available release tags (v4.0.0, v4.1.0, etc.)"
+    echo "  --tags, -l        列出本地标签；新发布使用 v4.3、v4.4 等两段版本"
     echo "  --tag <tag>, -t   从标签提交核验并分发所选套件，不切换工作树"
     echo "  --latest          切回 main；仓库分支选择不改变已确定的套件版本"
     echo ""
@@ -63,6 +93,7 @@ show_help() {
     echo "  --dry-run         Show actions without making changes"
     echo "  --preflight       只读列出全部迁移范围与阻塞，不授予接管权限"
     echo "  --mode-target <path>  显式模式配置相对路径，可重复；替代自动探测"
+    echo "  --cline-skills     新增 Cline 原生技能副本；保留 Gemini/Roo，不启动宿主"
     echo "  --uninstall       Remove bmad-suite and global rules from Gemini config"
     echo "  --help, -h        Show this help message"
     echo "  安装、更新、分发及 IDE 重载不启动 Ralph，不准备模型认证或部署业务服务"
@@ -70,23 +101,45 @@ show_help() {
 }
 
 show_status() {
+    check_dependencies
     # 与部署使用同一根目录；路径通过参数传递，不插值为 Python 代码。
     # 只读核验受管摘要及事务状态，非零退出直接传递给调用者。
     timeout 15s python3 -B "$SCRIPT_DIR/scripts/deployment-status.py" --root "${BMAD_DEPLOY_ROOT:-$HOME}" < /dev/null
 }
 
 list_tags() {
+    local DEPENDENCY
+    local TIMEOUT_VERSION
+    local REPOSITORY_ROOT
+    # 标签查询不需要 Python 或 YAML，但同样必须限时、封闭输入并传播失败。
+    for DEPENDENCY in git timeout env; do
+        if ! command -v "$DEPENDENCY" > /dev/null 2>&1; then
+            printf '错误：缺少标签查询依赖 %s；未查询或修改标签。\n' "$DEPENDENCY" >&2
+            return 1
+        fi
+    done
+    TIMEOUT_VERSION=$(timeout --kill-after=2s 15s timeout --version < /dev/null) || return "$?"
+    if [[ "$TIMEOUT_VERSION" != *"GNU coreutils"* ]]; then
+        printf '%s\n' '错误：标签查询需要 GNU timeout；未查询或修改标签。' >&2
+        return 1
+    fi
     echo -e "${YELLOW}======================================================${NC}"
     echo -e "${YELLOW} BMAD-Solo Available Release Tags ${NC}"
     echo -e "${YELLOW}======================================================${NC}"
-    if git -C "$SCRIPT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-        git -C "$SCRIPT_DIR" --no-pager tag -l -n1
-        echo -e "\n${GREEN}Tip:${NC} Rollback to any tag: ./bs.sh --tag <tag>"
-        echo -e "     Update from remote: ./bs.sh --update"
-        echo -e "     Return to latest:   ./bs.sh --latest"
-    else
-        echo -e "${RED}Error: Not a git repository.${NC}"
+    # Git 会向父目录发现仓库；必须核对实际根目录，不能读取父项目标签。
+    if ! REPOSITORY_ROOT=$(timeout --kill-after=2s 15s env GIT_TERMINAL_PROMPT=0 git --no-pager --no-optional-locks -C "$SCRIPT_DIR" rev-parse --show-toplevel < /dev/null); then
+        printf '%s\n' '错误：标签查询的仓库探测失败或超时；未修改标签。' >&2
+        return 1
     fi
+    if [ "$REPOSITORY_ROOT" != "$SCRIPT_DIR" ]; then
+        printf '%s\n' '错误：标签查询的仓库探测失败或超时：实际仓库根目录与部署入口不一致；拒绝读取父项目标签。' >&2
+        return 1
+    fi
+    timeout --kill-after=2s 15s env GIT_TERMINAL_PROMPT=0 git --no-pager --no-optional-locks -C "$SCRIPT_DIR" tag -l -n1 < /dev/null || return "$?"
+    printf '%s\n' '标签只读查询完成；历史标签不改名，新发布采用 v4.3、v4.4 等两段版本。'
+    echo -e "\n${GREEN}Tip:${NC} Inspect/deploy a reviewed V4 tag: ./bs.sh --tag <tag>"
+    echo -e "     Update from remote: ./bs.sh --update"
+    echo -e "     Return to latest:   ./bs.sh --latest"
     echo -e "${YELLOW}======================================================${NC}"
 }
 
@@ -111,7 +164,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         --tag|-t)
             if [[ $# -lt 2 ]] || [[ "$2" =~ ^- ]]; then
-                echo -e "${RED}Error: --tag requires a tag argument (e.g. ./bs.sh --tag v4.0.0)${NC}"
+                echo -e "${RED}Error: --tag requires a tag argument (e.g. ./bs.sh --tag v4.3)${NC}"
                 exit 1
             fi
             if [ -n "$SWITCH_TAG" ] && [ "$SWITCH_TAG" != "$2" ]; then
@@ -139,6 +192,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --preflight)
             PREFLIGHT=1
+            shift
+            ;;
+        --cline-skills)
+            CLINE_SKILLS=1
             shift
             ;;
         --_resume-main)
@@ -174,6 +231,9 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# 帮助与非法参数已返回；在 Git、锁、缓存及部署动作前失败关闭。
+check_dependencies
 
 # 继承编号不是持锁证据；在新版续接及任何版本动作前核验内核排他锁。
 # 同一描述符穿过 exec 移交，最终部署仅借用，不释放外层锁。
@@ -214,8 +274,8 @@ if [ $PREFLIGHT -eq 1 ] && { [ $UPDATE_REMOTE -eq 1 ] || [ $SWITCH_LATEST -eq 1 
 fi
 
 if [ $UNINSTALL -eq 1 ]; then
-    if [ ${#MODE_TARGETS[@]} -gt 0 ]; then
-        printf '%s\n' '错误：卸载按所有权清单处理，不支持同时指定模式目标。' >&2
+    if [ ${#MODE_TARGETS[@]} -gt 0 ] || [ $CLINE_SKILLS -eq 1 ]; then
+        printf '%s\n' '错误：卸载按所有权清单处理，不支持同时指定模式目标或新增 Cline 技能。' >&2
         exit 1
     fi
     if [ $UPDATE_REMOTE -eq 1 ] || [ $SWITCH_LATEST -eq 1 ] || [ -n "$SWITCH_TAG" ]; then
@@ -374,6 +434,15 @@ if [ ! -d "$SOURCE_SUITE" ]; then
     exit 1
 fi
 
+# 发布版本从实际选中的套件读取，不从当前脚本或标签名称猜测。
+# 历史快照可缺小版本声明；声明损坏仍停止，不冒记为当前发布。
+RELEASE_VERSION=$(timeout --kill-after=2s 15s python3 -B "$SCRIPT_DIR/scripts/release_version.py" --source "$SOURCE_SUITE" --allow-legacy < /dev/null)
+VERSION_TITLE="BMAD-Solo $RELEASE_VERSION"
+if [ -n "$SWITCH_TAG" ]; then
+    VERSION_TITLE+="（标签 $SWITCH_TAG 的提交快照）"
+fi
+COMMAND_TIPS="  • /bmad-solo  : $RELEASE_VERSION 工程入口\n  • /ana-solo   : 分析入口；以目标运行时实际加载为准"
+
 echo -e "${YELLOW}======================================================${NC}"
 echo -e "${YELLOW} Bootstrapping $VERSION_TITLE... ${NC}"
 echo -e "${YELLOW}======================================================${NC}"
@@ -387,6 +456,9 @@ deploy_managed_suite() {
     local DEPLOY_ROOT="${BMAD_DEPLOY_ROOT:-$HOME}"
     local RELATIVE_SETTINGS
     local DEPLOY_ARGS=(--root "$DEPLOY_ROOT" --source "$SOURCE_SUITE" --repository "$SCRIPT_DIR")
+    if [ $CLINE_SKILLS -eq 1 ]; then
+        DEPLOY_ARGS+=(--cline-skills)
+    fi
     if [ "${BMAD_VERSION_LOCK_FD+x}" = x ]; then
         DEPLOY_ARGS+=(--deployment-lock-fd "$BMAD_VERSION_LOCK_FD")
     fi
@@ -434,7 +506,7 @@ echo -e "3. Version & Rollback management:
    • Check active version:  ./bs.sh --status
    • Pull remote updates:   ./bs.sh --update
    • View release tags:     ./bs.sh --tags
-   • Rollback to tag:       ./bs.sh --tag <tag> (e.g. ./bs.sh --tag v4.1.0)
+   • Inspect/deploy tag:    ./bs.sh --tag <tag> (e.g. ./bs.sh --tag v4.3; tag must exist locally)
    • Return to latest:      ./bs.sh --latest"
 printf '%s\n' '安装、更新、分发和 IDE 重载不启动 Ralph；远程试跑与模型认证须另行授权。'
 echo -e ""

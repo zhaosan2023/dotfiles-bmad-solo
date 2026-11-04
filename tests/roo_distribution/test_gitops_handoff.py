@@ -64,7 +64,7 @@ class GitOpsHandoff(unittest.TestCase):
         ignored.parent.mkdir(parents=True)
         ignored.write_bytes(b"customModes: [")
         result = self.run_command([
-            "bash", "bs.sh", "--update", "--latest", "v4",
+            "bash", "bs.sh", "--update", "--latest", "v4", "--cline-skills",
             "--mode-target", first, "--mode-target", second,
         ])
         self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
@@ -75,6 +75,8 @@ class GitOpsHandoff(unittest.TestCase):
         self.assertEqual(sum("merge" in call for call in calls), 1)
         self.assertEqual(self.git("rev-parse", "HEAD").strip(), commit)
         self.assertEqual((self.target / ".roo/rules/02-bmad-core.md").read_bytes(), updated)
+        for directory in ("ana-solo", "bmad-solo"):
+            self.assertTrue((self.target / ".cline/skills" / directory / "SKILL.md").is_file())
         for relative in (first, second):
             self.assertIn(b"personal", (self.target / relative).read_bytes())
             self.assertIn(b"bmad-engineer", (self.target / relative).read_bytes())
@@ -85,11 +87,13 @@ class GitOpsHandoff(unittest.TestCase):
         self.prepare_update()
         self.git("checkout", "--detach", "fixture-release")
         self.git("branch", "-f", "main", "fixture-new-entry")
-        result = self.run_command(["bash", "bs.sh", "--latest"])
+        result = self.run_command(["bash", "bs.sh", "--latest", "--cline-skills"])
         self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
         self.assertEqual(result.stdout.count("NEW_ENTRY_LOADED"), 1)
         self.assertEqual(result.stdout.count("显式移交磁盘新版部署入口"), 1)
         self.assertEqual(self.git("branch", "--show-current").strip(), "main")
+        for directory in ("ana-solo", "bmad-solo"):
+            self.assertTrue((self.target / ".cline/skills" / directory / "SKILL.md").is_file())
 
     def test_new_entry_failure_propagates_without_repeat_or_asset_writes(self):
         self.prepare_update()

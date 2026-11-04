@@ -29,6 +29,11 @@ class SuiteInstaller(unittest.TestCase):
     def run_installer(self, *arguments):
         result = self.run_command(['bash', str(self.installer), *arguments])
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        # 外层入口必须展示实际部署根；不能在隔离部署成功后误报用户目录。
+        self.assertIn(str(self.target / '.gemini/config/plugins/bmad-suite'),
+                      result.stdout)
+        self.assertNotIn(str(self.home / '.gemini/config/plugins/bmad-suite'),
+                         result.stdout)
         return json.loads((self.target / self.MANIFEST).read_bytes())
 
     def test_explicit_v4_existing_repository_update_is_forwarded(self):

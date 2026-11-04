@@ -14,7 +14,7 @@ import yaml
 SCRIPT_DIRECTORY = Path(__file__).resolve().parent
 if str(SCRIPT_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIRECTORY))
-from asset_safety import AssetError
+from asset_safety import AssetError, checked_path
 from suite_versions import suite_spec
 
 
@@ -48,7 +48,10 @@ UniqueLoader.add_constructor(
 ROOT = Path(__file__).resolve().parents[1]
 MODE_PATH = "bmad-suite-v4/roo/settings/custom_modes.yaml"
 TEMPLATE_PATH = "bmad-suite-v4/skills/bmad/references/templates/implementation-plan.template.md"
+TASK_TEMPLATE_PATH = "bmad-suite-v4/skills/bmad/references/templates/task-unit.template.md"
+# 旧计划仅在新入口不存在时兼容；空闲新入口不能恢复旧计划。
 DEFAULT_PLAN = "_bmad-output/pending_implementation_plan.md"
+ACTIVE_TASK = "specs/tasks/_active.md"
 RULE_PATHS = (
     "bmad-suite-v4/roo/rules/02-bmad-core.md",
     "bmad-suite-v4/roo/rules-ana-architect/01-ana-solo-core.md",
@@ -69,6 +72,9 @@ STATES = {
     "ARCHIVED", "BLOCKED", "SUSPENDED",
 }
 ALLOWED_PATHS = (
+    "docs/adrs/ADR-20261103-topic.md",
+    "docs/analysis/ANALYSIS-20261103-topic.md",
+    "specs/tasks/TU-DEMO-001.md",
     "_bmad-output/adrs/ADR-20261008-topic.md",
     "_bmad-output/analysis/report_1.md",
     "_bmad-output/archive/plans/plan-20261008-topic.md",
@@ -76,6 +82,25 @@ ALLOWED_PATHS = (
 )
 DENIED_PATHS = (
     "bs.sh", "src/app.py", ".roomodes", "README.md",
+    "docs/project-context.md",
+    "docs/adrs-extra/test.md",
+    "docs/adrs/nested/test.md",
+    "docs/adrs/../project-context.md",
+    "docs/adrs/%2e%2e/project-context.md",
+    "docs/analysis/test.md.bak",
+    "docs/analysis/test.md\n",
+    "../docs/adrs/test.md",
+    "prefix/docs/adrs/test.md",
+    "/docs/adrs/test.md",
+    "docs\\adrs\\test.md",
+    "specs/tasks/_active.md",
+    "specs/tasks/archive/TU-DEMO-001.md",
+    "specs/tasks/TU-DEMO-001.md\n",
+    "specs/tasks/TU-../outside.md",
+    "specs/governance/00-governance-index.md",
+    "specs/business-domain.md",
+    "verification/TU-DEMO-001.verdict.json",
+    "AGENTS.md",
     "_bmad-output/project-context.md",
     "_bmad-output/adrs-extra/test.md",
     "_bmad-output/adrs/nested/test.md",
@@ -222,6 +247,104 @@ def validate_plan(data, root, template=False):
     # 仅做契约形状校验，不执行命令，也不宣称这是 Shell 安全解析器。
 
 
+def validate_task(data, template=False):
+    """仅检查任务或模板静态形状，不认证就绪、授权、CS/SR 或执行命令。"""
+    require("plan_id" not in data, "任务与旧计划身份不能混合声明")
+    required = {
+        "task_id", "parent_objective", "inputs", "cs_specification",
+        "kcp_verification", "sod_review", "gate_status", "contract_version",
+        "instance_id", "status", "authorization", "session_id",
+    }
+    require(required <= data.keys(),
+            f"缺少任务字段：{sorted(required - data.keys())}")
+    require(isinstance(data["task_id"], str)
+            and bool(re.fullmatch(r"[A-Za-z0-9_-]+", data["task_id"])),
+            "任务标识非法")
+    if not template:
+        require("REPLACE_WITH" not in data["task_id"], "任务标识未实例化")
+    require(isinstance(data["contract_version"], str)
+            and bool(data["contract_version"].strip()), "任务契约版本为空")
+    for field in ("instance_id", "session_id"):
+        require(data[field] is None or (
+            isinstance(data[field], str) and bool(data[field].strip())),
+            f"任务 {field} 必须为非空字符串或 null")
+    require(isinstance(data["status"], str)
+            and data["status"] in STATES | {"FAILED", "CANCELLED"}, "任务状态非法")
+    require(isinstance(data["inputs"], list), "任务 inputs 必须为列表")
+    for field in ("parent_objective", "cs_specification", "kcp_verification",
+                  "sod_review", "gate_status", "authorization"):
+        require(isinstance(data[field], dict) and bool(data[field]),
+                f"任务 {field} 必须为非空映射")
+    checks = data["kcp_verification"].get("checks")
+    require(isinstance(checks, list) and bool(checks), "任务缺少逐项验证契约")
+    identifiers = set()
+    for check in checks:
+        require(isinstance(check, dict), "任务验证项必须为映射")
+        identifier = check.get("check_id")
+        require(isinstance(identifier, str) and bool(identifier.strip())
+                and identifier not in identifiers, "任务验证项标识为空或重复")
+        identifiers.add(identifier)
+        require(type(check.get("required")) is bool, "验证项 required 必须为布尔值")
+        require(isinstance(check.get("command_status"), str)
+                and check["command_status"] in {
+                    "UNAVAILABLE", "PLANNED_NOT_YET_CREATED", "AVAILABLE",
+                }, "任务验证入口状态非法")
+        command = check.get("command")
+        require(command is None or (isinstance(command, str) and bool(command.strip())),
+                "任务验证命令必须为非空字符串或 null")
+        if check["command_status"] == "AVAILABLE":
+            require(isinstance(command, str) and bool(command.strip()),
+                    "可用任务验证入口缺少命令")
+    gate = data["gate_status"]
+    require(type(gate.get("accepted")) is bool, "任务 accepted 必须为布尔值")
+    require(isinstance(gate.get("cs"), str)
+            and gate["cs"] in {"UNKNOWN", "PASS", "FAIL"}, "任务 CS 状态非法")
+    require(isinstance(gate.get("sr"), str)
+            and gate["sr"] in {"UNKNOWN", "APPROVED", "REJECTED"}, "任务 SR 状态非法")
+    # 只拒绝自相矛盾的声明；即使三项一致，也不把它认证为真实接受证据。
+    if gate["accepted"]:
+        require(gate["cs"] == "PASS" and gate["sr"] == "APPROVED",
+                "任务接受声明与 CS/SR 不一致")
+    if template:
+        require(data["status"] == "DRAFT", "任务模板必须保持 DRAFT")
+        require(not gate["accepted"] and gate["cs"] == "UNKNOWN"
+                and gate["sr"] == "UNKNOWN", "任务模板不得声明接受或通过")
+        require(all(check["command_status"] == "UNAVAILABLE"
+                    and check["command"] is None for check in checks),
+                "任务模板不得声明可用验证命令")
+
+
+def active_task(root):
+    """读取新薄指针；返回 None 表示明确空闲，不向旧默认入口降级。"""
+    path = checked_path(root / ACTIVE_TASK)
+    data = frontmatter(project_file(root, ACTIVE_TASK).read_text(encoding="utf-8"))
+    fields = {"active_task_id", "instance_id", "task_ref", "contract_version", "authority_ref"}
+    require(fields <= data.keys(), "单焦点指针缺少必需字段")
+    require(data["authority_ref"] is None or (
+        isinstance(data["authority_ref"], str) and bool(data["authority_ref"].strip())),
+        "单焦点指针授权来源非法")
+    if data["active_task_id"] is None:
+        require(all(data[field] is None for field in (
+            "instance_id", "task_ref", "contract_version",
+        )), "空闲指针包含残留任务绑定")
+        print("单焦点任务入口明确空闲：未读取旧默认计划，未恢复归档。")
+        return None
+    identifier = data["active_task_id"]
+    require(isinstance(identifier, str)
+            and bool(re.fullmatch(r"[A-Za-z0-9_-]+", identifier)), "单焦点任务标识非法")
+    relative = f"specs/tasks/TU-{identifier}.md"
+    require(data["task_ref"] == relative, "任务引用与单焦点标识不匹配")
+    checked_path(root / relative)
+    task = project_file(root, relative)
+    content = frontmatter(task.read_text(encoding="utf-8"))
+    validate_task(content)
+    require(content["task_id"] == identifier
+            and content["instance_id"] == data["instance_id"]
+            and content["contract_version"] == data["contract_version"],
+            "单焦点指针与任务身份或契约版本不一致")
+    return task
+
+
 def suite_paths(version):
     """保留旧 V4 常量接口；显式版本仅选择对应资产，不回退。"""
     spec = suite_spec(version)
@@ -244,6 +367,11 @@ def validate_repository(root, explicit_plan=None, suite="v4"):
     validate_modes(load_yaml(project_file(root, mode_path).read_text(encoding="utf-8")))
     validate_plan(frontmatter(project_file(root, template_path).read_text(encoding="utf-8")),
                   root, template=True)
+    task_template_path = (
+        f"{suite_spec(suite).source_path}/skills/bmad/references/templates/task-unit.template.md"
+    )
+    validate_task(frontmatter(project_file(root, task_template_path).read_text(
+        encoding="utf-8")), template=True)
     for path, name in zip(skill_paths, ("bmad-solo", "ana-solo")):
         data = frontmatter(project_file(root, path).read_text(encoding="utf-8"))
         require(data.get("name") == name, f"原生入口标识错误：{path}")
@@ -253,23 +381,32 @@ def validate_repository(root, explicit_plan=None, suite="v4"):
                 f"规则文件为空：{path}")
     if explicit_plan is not None:
         plan = project_file(root, explicit_plan)
+    elif (root / ACTIVE_TASK).exists() or (root / ACTIVE_TASK).is_symlink():
+        plan = active_task(root)
     elif (root / DEFAULT_PLAN).exists() or (root / DEFAULT_PLAN).is_symlink():
+        print("新任务入口不存在：仅兼容检查旧默认计划，不迁移或恢复历史任务。")
         plan = project_file(root, DEFAULT_PLAN)
     else:
         plan = None
     if plan is not None:
         data = frontmatter(plan.read_text(encoding="utf-8"))
-        validate_plan(data, root)
-        if data["verification_command_status"] == "PLANNED_NOT_YET_CREATED":
-            print("注意：计划验证资产仍标记待创建；本次静态检查不代表阶段验收完成。")
+        require(not ("task_id" in data and "plan_id" in data),
+                "任务与旧计划身份不能混合声明")
+        if "task_id" in data:
+            validate_task(data)
+            print("Task Unit 静态形状检查完成；未认证授权、CS/SR、控制器或运行时验收。")
+        else:
+            validate_plan(data, root)
+            if data["verification_command_status"] == "PLANNED_NOT_YET_CREATED":
+                print("注意：计划验证资产仍标记待创建；本次静态检查不代表阶段验收完成。")
     else:
-        print("默认活动计划不存在：正常生命周期状态；未选择或执行归档。")
+        print("没有选中的活动任务：正常生命周期状态；未选择或执行归档。")
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=ROOT)
-    parser.add_argument("--plan", help="显式计划路径；缺失时失败，不降级替换")
+    parser.add_argument("--plan", help="显式计划或 Task Unit 路径；缺失时失败，不降级替换")
     parser.add_argument("--suite", choices=("v4",), default="v4",
                         help="唯一 V4 静态契约；缺源不回退")
     args = parser.parse_args(argv)

@@ -20,7 +20,7 @@ alwaysApply: true
 1. 平台安全规则和本文件的安全红线。
 2. 用户在当前任务中的明确指令。
 3. 当前项目的 `AGENTS.md`、`GEMINI.md` 或 `.agents/rules/`。
-4. `_bmad-output/project-context.md` 中已验证的项目事实。
+4. 目标项目 `docs/project-context.md` 中有依据的项目事实；仅新基线不存在时兼容旧 `_bmad-output/project-context.md`，损坏或来源冲突不静默换源。
 5. 当前代码、配置、Git 状态和终端真实输出。
 6. AI 的推断与通用经验。
 

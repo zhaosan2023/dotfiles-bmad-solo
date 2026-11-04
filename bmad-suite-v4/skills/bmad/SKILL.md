@@ -8,7 +8,7 @@ description: >
   初始化目录、棕地治理、init-governance 意图按 ops 加载棕地蒸馏治理规程。
 ---
 
-# BMAD-Solo V4.2 Router (Adaptive Empirical Engine)
+# BMAD-Solo V4 Router (Adaptive Empirical Engine)
 
 ## Objective
 
@@ -25,12 +25,12 @@ and uses real test feedback as the ultimate arbiter of truth.
 
 工程直接消费明确需求或获准方案，不重复完整分析。接收必要实验时核对问题、实验范围、环境前提和验收；交接或模式切换不构成启动授权，草稿路径不提供执行级隔离。分析角色不使用终端、不创建或执行探针。
 
-1. **显式指定优先**：用户指定计划时只读取该候选，跳过默认暂存入口。指定文件缺失或非法时报告可恢复阻塞，可发现候选，不静默替换任务。
-2. **活动计划探测**：无显式路径时才探测 `_bmad-output/pending_implementation_plan.md`；相关且有效才绑定，无关计划不抢占，多任务冲突时请求选择。
-3. **归档与空闲降级**：默认入口缺失是正常状态，不重复盲读。继续历史任务时检索 `_bmad-output/archive/plans/` 并展示匹配依据，不自动执行最新归档；候选不明时请求选择，无候选时按意图空闲或提出新方案。明确的小修复与运维任务可走轻量路径。
-4. **恢复边界**：文件缺失、权限拒绝、磁盘错误和格式损坏分别处理。历史计划默认只读，恢复或重放须显式授权，建立保留来源的新执行实例并重新验证，不继承旧绿灯或覆盖历史输入。
-5. **契约绑定**：在接管、契约变化与阶段边界校验 `plan_id`、`status`、`scenario`、`impact_tier`、`requires_adr`、`adr_file`、`verification_type`、`verification_command`、`verification_command_status`、`authorization` 和 `session_id`。绑定路径、标识、契约版本与阶段；外部变化先停止对账，取消逐修改绑定和模型手工计算、同步指纹。当前用户授权优先于立项说明，在唯一任务记录中注明差异，不编造会话标识。
-6. **事实与平台适配**：读取 `_bmad-output/project-context.md`；仅在权限和任务允许时执行 `timeout 15s git --no-pager status --short < /dev/null`。使用当前平台实际提供的任务跟踪能力；不强制写入未知的应用目录，不编造会话路径，不绕过工作区边界。
+1. **显式指定优先**：用户指定计划或 Task Unit 时只读取该候选，跳过默认入口。指定文件缺失或非法时报告可恢复阻塞，可发现候选，不静默替换任务。
+2. **单焦点入口**：无显式路径时先检查 `specs/tasks/_active.md`；存在时核对其任务引用、标识、实例和契约版本。明确空闲不读取旧默认计划；损坏、缺少所引用任务或身份不一致时阻塞，不向旧入口降级。薄指针仅定位契约，不是进度账本或执行授权。只有新入口不存在时，才兼容探测 `_bmad-output/pending_implementation_plan.md`；相关且有效才绑定，无关计划不抢占，多任务冲突时请求选择。
+3. **归档与空闲降级**：默认入口缺失是正常状态，不重复盲读。仅用户明确要求继续历史任务时，按来源检索 `specs/tasks/archive/` 或旧 `_bmad-output/archive/plans/` 并展示匹配依据，不自动执行最新归档；候选不明时请求选择，无候选时按意图空闲或提出新方案。明确的小修复与运维任务可走轻量路径。
+4. **恢复边界**：文件缺失、权限拒绝、磁盘错误和格式损坏分别处理。历史任务与计划默认只读，恢复或重放须显式授权，建立保留来源的新执行实例并重新验证，不继承旧绿灯或覆盖历史输入。
+5. **契约绑定**：仅在接管、契约变化与阶段边界按实际契约格式校验，不混合新旧身份。旧计划核对 `plan_id`、`status`、`scenario`、`impact_tier`、`requires_adr`、`adr_file`、`verification_type`、`verification_command`、`verification_command_status`、`authorization` 和 `session_id`；Task Unit 核对 `task_id`、`instance_id`、`contract_version`、目标、输入、贡献标准、逐项验证、审查、授权及会话来源，并与薄指针匹配。绑定路径、标识、契约版本与阶段；外部变化先停止对账，取消逐修改绑定和模型手工计算、同步指纹。当前用户授权优先于立项说明，在唯一任务记录中注明差异，不编造会话标识。静态字段检查不认证授权、CS/SR 或控制器行为。
+6. **事实与平台适配**：优先读取目标项目 `docs/project-context.md`；仅该文件不存在时兼容旧 `_bmad-output/project-context.md`，不自动创建、迁移或合并。文件损坏或来源冲突时报告缺口，不静默换源。仅在权限和任务允许时执行 `timeout 15s git --no-pager status --short < /dev/null`。使用当前平台实际提供的任务跟踪能力；不强制写入未知的应用目录，不编造会话路径，不绕过工作区边界。
 
 状态契约：`INTAKE → READ_ONLY / IDLE / NEEDS_SELECTION / READY`；获准实施后 `READY → EXECUTING → VERIFYING → COMPLETED → ARCHIVED`。失败进入 `BLOCKED`，明确暂停进入 `SUSPENDED`，获准恢复后重新校验再进入 `READY`。
 

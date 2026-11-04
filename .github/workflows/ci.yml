@@ -3,6 +3,7 @@ name: BMAD Suite CI & Security Gate
 on:
   push:
     branches: [main]
+    tags: ['v4.*']
   pull_request:
     branches: [main]
 
@@ -52,13 +53,45 @@ jobs:
               print(f"Valid plugin JSON: {path}")
           ' < /dev/null
 
+      - name: Validate Two-Segment Release and Source Consistency
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(--root .)
+          if [[ "${GITHUB_REF_TYPE:-}" = tag ]]; then
+            args+=(--tag "$GITHUB_REF_NAME")
+          fi
+          timeout --kill-after=2s 30s python3 -B scripts/release_version.py "${args[@]}" < /dev/null
+
+      - name: Test Release Version Contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f tests/roo_distribution/test_release_versions.py
+          timeout --kill-after=2s 30s python3 -B -c '
+          import sys, unittest
+          suite = unittest.defaultTestLoader.discover(
+              "tests/roo_distribution", pattern="test_release_versions.py",
+          )
+          if suite.countTestCases() == 0:
+              raise SystemExit("Missing required regression test cases")
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          sys.exit(0 if result.wasSuccessful() and not result.skipped else 1)
+          ' < /dev/null
+
+      - name: Validate Self-Contained Skill Assets
+        run: timeout --kill-after=2s 30s python3 -B bmad-suite-v4/skills/bmad/scripts/validate-solo-package.py < /dev/null
+
       - name: Validate V4 Configuration and Metadata Contracts
         run: |
           set -euo pipefail
           timeout 30s python3 -B scripts/validate-roo-contracts.py --suite v4 < /dev/null
 
       - name: Test Configuration Contracts
-        run: timeout 30s python3 -m unittest discover -s tests/roo_contracts -p 'test_*.py' < /dev/null
+        shell: bash
+        run: |
+          set -euo pipefail
+          timeout --kill-after=2s 30s python3 -B scripts/run-required-tests.py --directory tests/roo_contracts --pattern 'test_*.py' < /dev/null
 
   test-physical-mirror-install:
     name: Isolated Asset Safety and GitOps Contracts
@@ -94,7 +127,7 @@ jobs:
             exit 1
           fi
           for group in "${groups[@]}"; do
-            timeout 30s python3 -m unittest discover -s tests/roo_distribution -p "${group##*/}" < /dev/null
+            timeout --kill-after=2s 30s python3 -B scripts/run-required-tests.py --directory tests/roo_distribution --pattern "${group##*/}" < /dev/null
           done
 
       - name: Test GitOps and Three IDE Layouts in Bounded Sequential Groups
@@ -108,7 +141,7 @@ jobs:
             exit 1
           fi
           for group in "${groups[@]}"; do
-            timeout 30s python3 -m unittest discover -s tests/roo_distribution -p "${group##*/}" < /dev/null
+            timeout --kill-after=2s 30s python3 -B scripts/run-required-tests.py --directory tests/roo_distribution --pattern "${group##*/}" < /dev/null
           done
 
       - name: Test Suite Selection and Compatibility in Bounded Sequential Groups
@@ -122,7 +155,7 @@ jobs:
             exit 1
           fi
           for group in "${groups[@]}"; do
-            timeout 30s python3 -B -m unittest discover -s tests/roo_distribution -p "${group##*/}" < /dev/null
+            timeout --kill-after=2s 30s python3 -B scripts/run-required-tests.py --directory tests/roo_distribution --pattern "${group##*/}" < /dev/null
           done
 
       - name: Test Deployment Guards in Bounded Sequential Groups
@@ -131,7 +164,7 @@ jobs:
           set -euo pipefail
           for group in test_version_guard.py test_task_cleanup_guard.py; do
             test -f "tests/roo_distribution/$group"
-            timeout 30s python3 -B -m unittest discover -s tests/roo_distribution -p "$group" < /dev/null
+            timeout --kill-after=2s 30s python3 -B scripts/run-required-tests.py --directory tests/roo_distribution --pattern "$group" < /dev/null
           done
 
       - name: Test Retired Deployment Migration in Isolation
@@ -169,8 +202,93 @@ jobs:
           ' "$case" < /dev/null
           done <<< "$cases"
 
+      - name: Test Skill Integrity and Source Boundaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f tests/roo_distribution/test_skill_integrity.py
+          timeout --kill-after=2s 30s python3 -B -c '
+          import sys, unittest
+          suite = unittest.defaultTestLoader.discover(
+              "tests/roo_distribution", pattern="test_skill_integrity.py",
+          )
+          if suite.countTestCases() == 0:
+              raise SystemExit("Missing skill integrity test cases")
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          sys.exit(0 if result.wasSuccessful() and not result.skipped else 1)
+          ' < /dev/null
+
+      - name: Test Cline Skills and Installation in Bounded Sequential Groups
+        shell: bash
+        run: |
+          set -euo pipefail
+          for group in test_cline_skill_assets.py test_cline_distribution.py test_cline_installer.py; do
+            test -f "tests/roo_distribution/$group"
+            timeout --kill-after=2s 30s python3 -B -c '
+          import sys, unittest
+          suite = unittest.defaultTestLoader.discover(
+              "tests/roo_distribution", pattern=sys.argv[1],
+          )
+          if suite.countTestCases() == 0:
+              raise SystemExit("Missing Cline regression test cases")
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          sys.exit(0 if result.wasSuccessful() and not result.skipped else 1)
+          ' "$group" < /dev/null
+          done
+
+      - name: Test Installation Dependency Preflight
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f tests/roo_distribution/test_install_dependencies.py
+          timeout --kill-after=2s 30s python3 -B -c '
+          import sys, unittest
+          suite = unittest.defaultTestLoader.discover(
+              "tests/roo_distribution", pattern="test_install_dependencies.py",
+          )
+          if suite.countTestCases() == 0:
+              raise SystemExit("Missing required regression test cases")
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          sys.exit(0 if result.wasSuccessful() and not result.skipped else 1)
+          ' < /dev/null
+
+      - name: Test Deployed Rule Link Contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f tests/roo_distribution/test_deployed_rule_links.py
+          timeout --kill-after=2s 30s python3 -B -c '
+          import sys, unittest
+          suite = unittest.defaultTestLoader.discover(
+              "tests/roo_distribution", pattern="test_deployed_rule_links.py",
+          )
+          if suite.countTestCases() == 0:
+              raise SystemExit("Missing required regression test cases")
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          sys.exit(0 if result.wasSuccessful() and not result.skipped else 1)
+          ' < /dev/null
+
+      - name: Test Portable Governance Contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f tests/roo_distribution/test_portable_governance.py
+          timeout --kill-after=2s 30s python3 -B -c '
+          import sys, unittest
+          suite = unittest.defaultTestLoader.discover(
+              "tests/roo_distribution", pattern="test_portable_governance.py",
+          )
+          if suite.countTestCases() == 0:
+              raise SystemExit("Missing required regression test cases")
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          sys.exit(0 if result.wasSuccessful() and not result.skipped else 1)
+          ' < /dev/null
+
       - name: Test V4 Analysis Repair Distribution
-        run: timeout 30s python3 -B -m unittest discover -s tests/roo_distribution -p 'test_v4_analysis_distribution.py' < /dev/null
+        shell: bash
+        run: |
+          set -euo pipefail
+          timeout --kill-after=2s 30s python3 -B scripts/run-required-tests.py --directory tests/roo_distribution --pattern 'test_v4_analysis_distribution.py' < /dev/null
 
       - name: State Verification Boundary
         run: printf '%s\n' 'Isolated disk-asset tests do not verify Roo runtime loading or permission enforcement.'
