@@ -93,7 +93,7 @@ show_help() {
     echo "  --dry-run         Show actions without making changes"
     echo "  --preflight       只读列出全部迁移范围与阻塞，不授予接管权限"
     echo "  --mode-target <path>  显式模式配置相对路径，可重复；替代自动探测"
-    echo "  --cline-skills     新增 Cline 原生技能副本；保留 Gemini/Roo，不启动宿主"
+    echo "  --cline-skills     新增 Cline 原生技能及全局 Plan/Act 路由；保留 Gemini/Roo，不启动宿主"
     echo "  --uninstall       Remove bmad-suite and global rules from Gemini config"
     echo "  --help, -h        Show this help message"
     echo "  安装、更新、分发及 IDE 重载不启动 Ralph，不准备模型认证或部署业务服务"

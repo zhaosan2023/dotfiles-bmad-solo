@@ -33,7 +33,7 @@ def parser():
     result.add_argument("--discover-modes", action="store_true",
                         help="只读发现已存在的 Roo 存储；显式模式目标优先")
     result.add_argument("--cline-skills", action="store_true",
-                        help="新增 Cline 原生技能副本；保留 Gemini/Roo 资产，不启动宿主")
+                        help="新增 Cline 原生技能与全局 Plan/Act 路由；保留 Gemini/Roo，不启动宿主")
     result.add_argument("--preflight", action="store_true",
                         help="仅列出迁移范围及全部阻塞；不写入或授权接管")
     result.add_argument("--adopt-file", action="append", default=[],
@@ -77,7 +77,9 @@ def main(argv=None):
             source = checked_path(arguments.source)
             existing = load_manifest(snapshot(state / "ownership.json").content)
             cline_selected = arguments.cline_skills or any(
-                relative.startswith(".cline/skills/") for relative in existing["files"]
+                relative.startswith(".cline/skills/")
+                or relative == ".cline/rules/bmad-router.md"
+                for relative in existing["files"]
             )
             mode_targets = tuple(arguments.mode_target)
             if arguments.discover_modes and not mode_targets:

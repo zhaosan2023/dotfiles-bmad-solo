@@ -9,6 +9,7 @@ import test_suite_installer as installer
 
 
 ENTRY = ".cline/skills/bmad-solo/SKILL.md"
+ROUTER = ".cline/rules/bmad-router.md"
 
 
 class ClineInstaller(unittest.TestCase):
@@ -26,6 +27,8 @@ class ClineInstaller(unittest.TestCase):
         self.assertEqual(manifest["major_version"], "v4")
         self.assertIn(ENTRY, manifest["managed_files"])
         self.assertTrue((self.target / ENTRY).is_file())
+        self.assertIn(ROUTER, manifest["managed_files"])
+        self.assertTrue((self.target / ROUTER).is_file())
         self.assertEqual(list(self.home.iterdir()), [])
 
     def test_fresh_clone_forwards_cline_selection_through_latest_handoff(self):
@@ -36,6 +39,8 @@ class ClineInstaller(unittest.TestCase):
         self.assertEqual(manifest["source_repository"], str(clone))
         self.assertIn(ENTRY, manifest["managed_files"])
         self.assertTrue((self.target / ENTRY).is_file())
+        self.assertIn(ROUTER, manifest["managed_files"])
+        self.assertTrue((self.target / ROUTER).is_file())
         self.assertTrue((self.target / ".roo/rules/02-bmad-core.md").is_file())
 
     def test_default_installer_update_keeps_previously_selected_skills(self):
@@ -44,6 +49,7 @@ class ClineInstaller(unittest.TestCase):
         before = self.tree(self.target)
         manifest = self.run_installer()
         self.assertIn(ENTRY, manifest["managed_files"])
+        self.assertIn(ROUTER, manifest["managed_files"])
         self.assertEqual(self.tree(self.target), before)
 
     def test_cline_selection_does_not_bypass_invalid_parameter_rejection(self):

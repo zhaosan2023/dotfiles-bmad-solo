@@ -1,4 +1,4 @@
-"""从已核验的套件快照构造 Cline 原生技能资产，不读写部署目标。
+"""从已核验的套件快照构造 Cline 原生技能与全局路由资产，不读写部署目标。
 
 仅负责静态适配；调用方仍须明确目标授权，并使用受管事务处理资产。
 本模块不启动 Cline，不保证技能自动触发、模式绑定或程序权限隔离。
@@ -18,9 +18,37 @@ from skill_integrity import validate_source_skills
 
 
 SKILL_PREFIX = ".cline/skills/"
+ROUTER_SOURCE = "cline/templates/bmad-router.md"
+ROUTER_TARGET = ".cline/rules/bmad-router.md"
 ENTRY_DIRECTORIES = {"bmad": "bmad-solo", "ana-solo": "ana-solo"}
 INSTALL_ONLY = "skills/bmad/scripts/validate-solo-package.py"
 LINKS = re.compile(rb"\]\((\.\./bmad/[^)\s]+)\)")
+
+
+def cline_router(value: Snapshot, sources):
+    """仅适配套件链接；全局副本相对规则目录，项目私有导航仍相对工作区。
+
+    引用必须来自同批冻结快照，保留片段和行定位，不补读磁盘来源。
+    """
+    def replace(match):
+        destination = match.group(1).decode("utf-8")
+        relative = destination.removeprefix("bmad-suite-v4/")
+        physical = re.sub(r":\d+$", "", relative.split("#", 1)[0])
+        validate_relative_path(physical)
+        if physical not in sources:
+            raise AssetError(f"Cline 路由引用的套件资产缺失：{physical}")
+        if physical.startswith("skills/"):
+            parts = physical.split("/", 2)
+            if (len(parts) != 3 or parts[1] not in ENTRY_DIRECTORIES
+                    or physical == INSTALL_ONLY):
+                raise AssetError(f"Cline 路由引用未分发技能：{physical}")
+            target = "../skills/" + ENTRY_DIRECTORIES[parts[1]] + "/" + parts[2]
+        else:
+            target = "../../.gemini/config/plugins/bmad-suite/" + physical
+        return ("](" + target + relative[len(physical):] + ")").encode("utf-8")
+
+    content = re.sub(rb"\]\((bmad-suite-v4/[^)\s]+)\)", replace, value.content)
+    return Snapshot(content, value.mode)
 
 
 def cline_skill_files(source: Path, sources):
@@ -30,7 +58,8 @@ def cline_skill_files(source: Path, sources):
     v4.3 的完整性声明。Cline 的目录名与入口 name 必须完全一致，
     因此仅在分发副本中将 bmad 目录映射为 bmad-solo，同时适配
     ana-solo 指向该目录的 Markdown 链接，保留片段与行定位。
-    所有其他运行资源保留原字节与权限；不读取源目录来补齐快照。
+    全局路由同批映射到 .cline/rules；所有其他运行资源保留原字节与权限，
+    不读取源目录来补齐快照，不在此执行写入或宿主激活。
     """
     if not isinstance(sources, dict):
         raise AssetError("Cline 技能来源必须为完整源快照映射")
@@ -70,4 +99,8 @@ def cline_skill_files(source: Path, sources):
             raise AssetError(f"Cline 技能名称与目录不一致：{relative}")
         if len(header["description"]) > 1024:
             raise AssetError(f"Cline 技能描述超过 1024 字符：{relative}")
+    router = sources.get(ROUTER_SOURCE)
+    if router is None:
+        raise AssetError(f"Cline 全局路由缺少来源：{ROUTER_SOURCE}")
+    files[ROUTER_TARGET] = cline_router(router, sources)
     return files

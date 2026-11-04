@@ -1,4 +1,4 @@
-"""未激活 Cline 模板的静态及隔离分发回归。
+"""Cline 路由资产的静态及默认未启用分发回归。
 
 仅验证模板、真实来源映射和项目内分发消费者；不运行 Cline，
 不证明原生模式承载、自动技能绑定或执行/推进硬门禁。
@@ -66,8 +66,10 @@ class HostTemplateContracts(unittest.TestCase):
     def test_static_text_discloses_permission_and_runtime_limits(self):
         # 这些断言只防止模板契约退化，不证明模型行为或程序拒绝。
         for requirement in (
-            "未激活的项目级行为适配模板",
-            "不是程序门禁或有效宿主配置",
+            "Cline 原生模式的行为路由资产",
+            "不是程序门禁",
+            "自动调用可用的 ana-solo 技能",
+            "自动调用可用的 bmad-solo 技能",
             "不要求用户手动输入技能口令",
             "显式读取退路",
             "不使用终端、不实施生产代码",
