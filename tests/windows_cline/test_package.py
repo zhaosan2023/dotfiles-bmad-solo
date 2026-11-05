@@ -91,7 +91,8 @@ class PackageTests(unittest.TestCase):
             package.build(output, development=True)
         self.assertFalse(output.exists())
         script = (ROOT / 'install-win10.ps1').read_bytes()
-        self.assertTrue(script.startswith(b'\xef\xbb\xbf'))
+        self.assertFalse(script.startswith(b'\xef\xbb\xbf'))
+        self.assertTrue(script.decode('utf-8').startswith('#Requires -Version 5.1\n'))
         self.assertNotIn(b'@@WIN10_RELEASE_BINDING@@', script)
 
     def test_uncommitted_source_cannot_be_release(self):

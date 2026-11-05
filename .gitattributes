@@ -1,0 +1,3 @@
+# Keep HTTP transport text identical to Windows CI checkout text.
+/install-win10.ps1 text eol=lf
+/tests/windows_cline/test_iex_entry.ps1 text eol=lf

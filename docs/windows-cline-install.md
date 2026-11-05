@@ -7,9 +7,10 @@
 在 Windows PowerShell 5.1 中，可免克隆运行以下入口。远程执行前应确认信任仓库及脚本内容；`main` 是可变分支，不是经过摘要绑定的冻结发行包。本地未发布的改动不会出现在远程入口。
 
 ```powershell
-[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
-irm 'https://raw.githubusercontent.com/zhaosan2023/dotfiles-bmad-solo/main/install-win10.ps1' | iex
+irm https://raw.githubusercontent.com/zhaosan2023/dotfiles-bmad-solo/main/install-win10.ps1 | iex
 ```
+
+`install-win10.ps1` 保存为标准 UTF-8 无 BOM；远程传输文本开头不得包含 `U+FEFF`，原始文本直接传给 `iex`，不需要预处理或额外命令。首次 HTTPS 请求依赖本机已有的 TLS 与网络配置，脚本不能在被下载前修改它们。
 
 无参数运行直接展示菜单；使用 `Read-Host` 读取一次数字，回车默认选择 1，操作完成即返回，不循环、不关闭当前 PowerShell 会话。非法选择报错，不执行安装。
 
@@ -18,17 +19,18 @@ irm 'https://raw.githubusercontent.com/zhaosan2023/dotfiles-bmad-solo/main/insta
 - `[3] 健康检查 (Status/Check)`
 - `[0] 退出 (Exit)`
 
-也可以下载脚本到本地后运行。以下假设仓库位于当前用户目录下；若不是，修改 `$repo` 为实际绝对路径。
+推荐直接使用上面的一行远程入口。开发者也可以下载脚本到本地；Windows PowerShell 5.1 默认从磁盘按 ANSI 读取无 BOM 文件，因此本地示例显式按 UTF-8 解码以保留中文，并明确指定本地套件目录。以下假设仓库位于当前用户目录下；若不是，修改 `$repo` 为实际绝对路径。
 
 ```powershell
 $repo = Join-Path $env:USERPROFILE 'dotfiles-bmad-solo'
 $installer = Join-Path $repo 'install-win10.ps1'
-& $installer
-& $installer -Action Install -WhatIf
-& $installer -Action Install
-& $installer -Action Status
-& $installer -Action Uninstall -WhatIf
-& $installer -Action Uninstall
+$entry = [scriptblock]::Create([IO.File]::ReadAllText($installer, [Text.Encoding]::UTF8))
+& $entry -SourcePath (Join-Path $repo 'bmad-suite-v4')
+& $entry -Action Install -SourcePath (Join-Path $repo 'bmad-suite-v4') -WhatIf
+& $entry -Action Install -SourcePath (Join-Path $repo 'bmad-suite-v4')
+& $entry -Action Status
+& $entry -Action Uninstall -WhatIf
+& $entry -Action Uninstall
 ```
 
 `-Action Check` 等同于 `Status`；`-Action Exit` 直接返回。显式 `-SourcePath` 指定本地套件目录时，缺失或无效即报错，不静默改用远程来源。不需要管理员权限、Python、Git、WSL 或旧 ZIP 构建器；不修改系统执行策略。若系统策略阻止脚本，按本机策略处理，不自动降低安全设置。
@@ -70,6 +72,8 @@ $installer = Join-Path $repo 'install-win10.ps1'
 
 - `-WhatIf` 在安装批准点前返回，不下载、不解压、不创建目录、备份或安装文件；卸载预览不删除文件，也不询问删除备份。
 - 当前 Linux 工作区没有 PowerShell，源码回归不等于 PowerShell 5.1 语法或安装运行通过。
+- Windows PowerShell 5.1 原生回归入口为 `tests\windows_cline\test_iex_entry.ps1`：从仓库根目录用 `& .\tests\windows_cline\test_iex_entry.ps1` 执行。它断言文件无 BOM、未经预处理的传输文本开头无 `U+FEFF`、解析无错误、命名参数退出以及原始文本直接管道传给 `iex` 后菜单退出无错误；仅模拟菜单输入 `0`，不安装、不卸载。可用 `-Uri` 检查真实 HTTP 返回文本，并要求与当前候选正文一致。
+- CI 增加独立的 Windows PowerShell 5.1 回归，先检查检出文件，再检查该提交的 GitHub raw HTTP 文本；只有取得对应提交的真实运行回执后，才声明原生回归通过。
 - 在目标 Cline 中核对规则启用及两个技能的发现情况，再开启新任务核对 Plan/Act 路由。磁盘复制不证明自动技能调用、权限隔离或硬门禁生效。
 - `AGENTS.md` 属于实际目标项目，不把本套件仓库的项目入口复制成全局规则。`solo-distill-mcp` 不在本次安装范围。
 - 旧 `scripts/build-win10-cline-package.py` 的冻结 ZIP 安装协议与新入口不同；保留其旧载荷检查，但遇到轻量脚本时明确拒绝构建，不生成不兼容安装包。直接使用脚本的本地或远程菜单入口。

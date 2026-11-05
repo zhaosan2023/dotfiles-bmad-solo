@@ -1,8 +1,9 @@
-﻿#Requires -Version 5.1
+#Requires -Version 5.1
 <#
 Interactive BMAD deployment menu. Local suite first; otherwise download GitHub main.zip.
 No MCP or IDE settings are changed. Back up before replacing files; no automatic rollback.
-The script block keeps variables and preferences local when invoked through irm | iex.
+The script block keeps execution variables and preferences local.
+UTF-8 without BOM. Remote entry: irm https://raw.githubusercontent.com/zhaosan2023/dotfiles-bmad-solo/main/install-win10.ps1 | iex
 #>
 [CmdletBinding(SupportsShouldProcess = $true)]
 param(

@@ -10,7 +10,7 @@ class InstallerContractTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.raw = (ROOT / 'install-win10.ps1').read_bytes()
-        cls.text = cls.raw.decode('utf-8-sig')
+        cls.text = cls.raw.decode('utf-8')
         cls.status = cls.text.split("    if ($Action -in @('Status', 'Check')) {", 1)[1].split(
             "    if ((Test-Path", 1)[0]
         cls.uninstall = cls.text.split("    if ($Action -eq 'Uninstall') {", 1)[1].split(
@@ -18,12 +18,37 @@ class InstallerContractTests(unittest.TestCase):
         cls.install = cls.text.split('    $source = $null', 1)[1].split('} catch {', 1)[0]
         cls.cleanup = cls.text.split('} finally {', 1)[1]
 
-    def test_ps51_encoding_and_no_external_installer_dependencies(self):
-        self.assertTrue(self.raw.startswith(b'\xef\xbb\xbf'))
+    def test_utf8_no_bom_and_no_external_installer_dependencies(self):
+        self.assertFalse(self.raw.startswith(b'\xef\xbb\xbf'))
+        self.assertFalse(self.text.startswith('\ufeff'))
+        self.assertEqual(self.text.encode('utf-8'), self.raw)
         self.assertTrue(self.text.startswith('#Requires -Version 5.1\n'))
         for obsolete in ('Add-Type', 'Get-FileHash', 'SHA256', 'Invoke-Transaction',
                          'ReleaseBinding', 'Read-Package', 'Invoke-WebRequest'):
             self.assertNotIn(obsolete, self.text)
+
+    def test_remote_entry_is_one_line_with_unmodified_bom_free_text(self):
+        # Decode transport bytes strictly; never hide a BOM with utf-8-sig.
+        http_text = self.raw.decode('utf-8')
+        self.assertNotEqual(http_text[0], '\ufeff')
+        self.assertEqual(http_text, self.text)
+        docs = (ROOT / 'docs/windows-cline-install.md').read_text(encoding='utf-8')
+        entry = ('irm https://raw.githubusercontent.com/zhaosan2023/'
+                 'dotfiles-bmad-solo/main/install-win10.ps1 | iex')
+        self.assertIn('```powershell\n' + entry + '\n```', docs)
+        self.assertIn(entry, self.text)
+        probe_text = (ROOT / 'tests/windows_cline/test_iex_entry.ps1').read_text(encoding='utf-8')
+        for content in (self.text, docs, probe_text):
+            self.assertNotIn('TrimStart', content)
+        self.assertIn('[System.Management.Automation.Language.Parser]::ParseInput', probe_text)
+        self.assertIn('$httpText[0] -eq [char]0xFEFF', probe_text)
+        self.assertIn('$httpText | iex', probe_text)
+        self.assertIn('irm -Uri $Uri -TimeoutSec 15 -ErrorAction Stop', probe_text)
+        self.assertIn('-Action Exit -WhatIf', probe_text)
+        workflow = (ROOT / '.github/workflows/ci.yml').read_text(encoding='utf-8')
+        self.assertIn('runs-on: windows-latest', workflow)
+        self.assertIn('shell: powershell', workflow)
+        self.assertIn('test_iex_entry.ps1', workflow)
 
     def test_menu_defaults_and_single_read_without_session_exit(self):
         self.assertIn("[string]$Action = 'Menu'", self.text)

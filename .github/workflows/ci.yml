@@ -292,3 +292,27 @@ jobs:
 
       - name: State Verification Boundary
         run: printf '%s\n' 'Isolated disk-asset tests do not verify Roo runtime loading or permission enforcement.'
+
+  test-win10-iex-entry:
+    name: Windows PowerShell 5.1 Direct IEX Contract
+    runs-on: windows-latest
+    timeout-minutes: 3
+    steps:
+      - name: Checkout Candidate
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Test BOM-Free Candidate and Direct IEX
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          & .\tests\windows_cline\test_iex_entry.ps1
+
+      - name: Test Published Commit HTTP Text and Direct IEX
+        if: github.event_name == 'push'
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $uri = 'https://raw.githubusercontent.com/' + $env:GITHUB_REPOSITORY + '/' + $env:GITHUB_SHA + '/install-win10.ps1'
+          & .\tests\windows_cline\test_iex_entry.ps1 -Uri $uri
