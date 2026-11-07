@@ -46,6 +46,17 @@ class PackageTests(unittest.TestCase):
         self.assertGreater(package.validate_payload(self.files), 0)
         router = self.files['rules/bmad-router.md'].decode()
         self.assertIn('../bmad-solo/resources/bmad-constitution.md:6', router)
+        self.assertIn('../skills/ana-solo/SKILL.md:10', router)
+        self.assertIn('../skills/bmad-solo/SKILL.md:21', router)
+        for mode, skill in (("Plan", "ana-solo"), ("Act", "bmad-solo")):
+            with self.subTest(mode=mode):
+                self.assertIn(
+                    f"- {mode}：进入该模式或接收新任务时，在首轮业务响应前"
+                    f"自动调用可用的 {skill} 技能", router,
+                )
+        self.assertIn("`Current Mode`", router)
+        self.assertIn("真实工具回执定位", router)
+        self.assertIn("权限拒绝不得改用其他工具绕过", router)
         self.assertIn('(docs/project-context.md:1)', router)
         self.assertNotIn('.gemini', router)
         self.assertNotIn('timeout 15s', self.files['skills/bmad-solo/SKILL.md'].decode())

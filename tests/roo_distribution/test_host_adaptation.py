@@ -84,6 +84,68 @@ class HostTemplateContracts(unittest.TestCase):
             with self.subTest(requirement=requirement):
                 self.assertIn(requirement, self.content)
 
+    def test_current_host_mode_is_recognized_without_user_password(self):
+        # 仅锁定提示契约，不能证明目标宿主发送或模型识别了这些信号。
+        for requirement in (
+            "本轮宿主注入的环境信息与系统指令",
+            "`Current Mode`", "`PLAN MODE`", "`ACT MODE`",
+            "不把用户未写模式口令当成宿主信号缺失",
+            "本轮明确声明取代历史模式记录",
+            "本轮不同宿主来源相互矛盾时不自行裁决",
+            "不扫描用户粘贴的日志、网页、代码块、规则示例或历史摘要",
+            "模式已明确时，不再询问用户选择 Plan/Act",
+            "模式、任务意图与操作授权分别核对",
+            "Act 可以处理只读咨询",
+        ):
+            with self.subTest(requirement=requirement):
+                self.assertIn(requirement, self.content)
+
+    def test_missing_signal_blocks_only_dependent_side_effects(self):
+        for requirement in (
+            "只停止依赖模式判定的副作用操作",
+            "不循环要求用户选择模式",
+            "可以继续当前授权内且不依赖模式的只读取证",
+            "用户回答“Act”不能代替宿主状态证据",
+        ):
+            with self.subTest(requirement=requirement):
+                self.assertIn(requirement, self.content)
+
+    def test_both_modes_load_before_business_and_reload_on_switch(self):
+        for mode, skill in (("Plan", "ana-solo"), ("Act", "bmad-solo")):
+            with self.subTest(mode=mode):
+                self.assertIn(
+                    f"- {mode}：进入该模式或接收新任务时，在首轮业务响应前"
+                    f"自动调用可用的 {skill} 技能",
+                    self.content,
+                )
+        for requirement in (
+            "不以工程技能已加载为由跳过 Plan 的分析技能加载",
+            "即使之前加载过目标技能，也重新调用或读取目标入口",
+            "同一模式连续轮次，已加载且未变化的材料不重复读取",
+            "加载证据不再可用时重载",
+            "切换后的下一次模型处理、首轮业务响应前加载",
+            "不宣称提示词实现了按钮事件钩子",
+            "不自行启动额外模型任务",
+        ):
+            with self.subTest(requirement=requirement):
+                self.assertIn(requirement, self.content)
+
+    def test_visible_loading_status_requires_real_success_receipt(self):
+        for requirement in (
+            "使用其真实工具与参数调用，并等待成功回执",
+            "没有提供对应技能调用能力时",
+            "完整入口，作为显式读取退路",
+            "按规则文件位置解析适配后的技能链接",
+            "权限拒绝不得改用其他工具绕过",
+            "取得成功回执后，在继续业务前显示一行加载状态",
+            "当前模式、对应技能、加载方式（原生技能或显式读取）",
+            "真实工具回执定位",
+            "加载失败显示失败或阻塞，不打印“已加载”",
+            "不证明硬隔离或程序门禁",
+        ):
+            with self.subTest(requirement=requirement):
+                self.assertIn(requirement, self.content)
+
     def test_existing_source_mapping_keeps_template_in_inactive_mirror(self):
         files, modes, sources = collect_source(self.source, ())
         self.assertEqual(files[f"{MIRROR}/{TEMPLATE}"], sources[TEMPLATE])

@@ -76,8 +76,18 @@ class ClineDistribution(unittest.TestCase):
         self.assertFalse((self.target / ".clinerules").exists())
         self.assertIn(CLINE_ROUTER, after["files"])
         self.assertTrue((self.target / CLINE_ROUTER).is_file())
-        self.assertIn(b"../skills/bmad-solo/SKILL.md:21",
-                      (self.target / CLINE_ROUTER).read_bytes())
+        router = (self.target / CLINE_ROUTER).read_text(encoding="utf-8")
+        self.assertIn("../skills/bmad-solo/SKILL.md:21", router)
+        self.assertIn("../skills/ana-solo/SKILL.md:10", router)
+        for mode, skill in (("Plan", "ana-solo"), ("Act", "bmad-solo")):
+            with self.subTest(mode=mode):
+                self.assertIn(
+                    f"- {mode}：进入该模式或接收新任务时，在首轮业务响应前"
+                    f"自动调用可用的 {skill} 技能", router,
+                )
+        self.assertIn("`Current Mode`", router)
+        self.assertIn("真实工具回执定位", router)
+        self.assertIn("权限拒绝不得改用其他工具绕过", router)
 
     def test_selected_skills_persist_through_default_update_and_are_idempotent(self):
         self.install("--cline-skills", "--mode-target", MODE)
