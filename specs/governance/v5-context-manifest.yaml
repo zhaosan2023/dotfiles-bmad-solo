@@ -100,8 +100,9 @@ flows:
   analysis:
     intent_triggers: ["/ana-solo", "/ana", "analyze", "review", "consult", "investigate"]
     policy_allowed_tools:
-      - "read_files"
-      - "search_codebase"
+      - "read_file"
+      - "search_files"
+      - "list_files"
       - "fetch_web_content"
       - "skills" # 允许调用只读分析型技能，严禁产生磁盘写副作用
       - "ask_question" # 消除分歧需求及 DM 决策仲裁
@@ -126,8 +127,9 @@ flows:
   implementation:
     intent_triggers: ["/bmad-solo", "/bmad", "build", "implement", "fix", "refactor"]
     policy_allowed_tools:
-      - "read_files"
-      - "search_codebase" # 实施前 Preflight 检查依赖拓扑
+      - "read_file"
+      - "search_files" # 实施前 Preflight 检查依赖拓扑
+      - "list_files"
       - "apply_patch"     # 优先差分补丁
       - "editor"          # 新文件或大重构后备
       - "run_commands"    # 运行构建与验证

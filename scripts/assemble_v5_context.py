@@ -133,7 +133,8 @@ class ContextAssembler:
             idle_msg = (
                 "### 2. 活动任务契约 (Active Task)\n"
                 "- **当前状态**：`IDLE` (薄指针 `active_task_id` 为空)\n"
-                "- **行为约束**：当前工作区无活动工程任务，严禁擅自实施代码修改。"
+                "- **行为约束**：当前工作区无未终结工程任务，严禁擅自实施代码修改。\n"
+                "- **寻址指引**：如需查阅历史已归档成果或治理规范，请直接通过上方常驻锚点（`specs/tasks/archive/` 与 `docs/adrs/`）索引阅读。"
             )
             return idle_msg, "IDLE", pointer_data
 
@@ -150,7 +151,7 @@ class ContextAssembler:
             tu_data, tu_body = parse_frontmatter(f.read())
 
         status = tu_data.get("status", "UNKNOWN")
-        allowed_statuses = {"APPROVED", "READY", "IN_PROGRESS", "COMPLETED"}
+        allowed_statuses = {"APPROVED", "READY", "IN_PROGRESS", "COMPLETED", "AUDIT_READY"}
         if status not in allowed_statuses:
             err_msg = (
                 f"> [!CAUTION] **任务状态未获批准 (BLOCKED)**\n"
@@ -175,10 +176,14 @@ class ContextAssembler:
             vtype = chk.get("verification_type", "check")
             verification_lines.append(f"  - [{chk.get('check_id', 'KCP')}] ({vtype}): `{cmd}`")
 
+        status_display = f"`{status}`"
+        if status in ("COMPLETED", "AUDIT_READY"):
+            status_display = f"`{status}` (待独立审计验收，归档前保留指针寻址)"
+
         formatted_task = [
             "### 2. 当前活动任务契约 (Active Task Unit)",
             f"- **任务标识**：`{task_id}` (实例: `{tu_data.get('instance_id', 'default')}`)",
-            f"- **当前状态**：`{status}` (场景: `{scenario}`, 影响级别: `{impact_tier}`)",
+            f"- **当前状态**：{status_display} (场景: `{scenario}`, 影响级别: `{impact_tier}`)",
             f"- **交付目标**：{objective}",
             f"- **贡献范围**：{scope}",
         ]
@@ -204,12 +209,23 @@ class ContextAssembler:
 
         timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
+        anchors_text = """### 0. 治理导航常驻锚点 (Governance Anchors)
+- **治理总索引**：`specs/governance/00-governance-index.md` (全生命周期与业务流规范)
+- **架构决策目录**：`docs/adrs/` (架构决策记录，当前已接受 ADR-20261116)
+- **任务工件与归档**：`specs/tasks/` (活动 Task Unit 契约与 archive/ 历史归档)
+- **项目事实基线**：`docs/project-context.md` (项目级唯一事实基线真理源)
+- **探针取证纪律**：只读分析与审计（`/ana-solo`）必须且只能调用只读工具（`read_file`、`search_files`、`list_files`）主动阅读物理证据，严禁无证据凭空推演；实施修改（`/bmad-solo`）使用 `replace_in_file` / `write_to_file`。"""
+
         bundle = f"""# BMAD-Solo V5 动态任务上下文 (Active Task Context Bundle)
 
 > **装配时间戳**：`{timestamp}`  
 > **装配来源**：`specs/governance/v5-context-manifest.yaml` (v{manifest.get('schema_version', '1.1')})  
 > **工作区基线状态**：`{baseline_status}` | **活动任务状态**：`{task_status}`  
-> **定位**：工作区级动态上下文。由 In-Context Push 自动装配，随任务状态动态流转，完成即解绑。
+> **定位**：工作区级动态上下文。由 In-Context Push 自动装配，随任务状态动态流转。
+
+---
+
+{anchors_text}
 
 ---
 

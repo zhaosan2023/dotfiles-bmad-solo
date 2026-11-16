@@ -1,10 +1,10 @@
 ---
 schema_version: "1.0-draft"
-active_task_id: null
-instance_id: null
-task_ref: null
-contract_version: null
-authority_ref: "2026-11-16 Phase 2 验收完成，任务归位进入空闲待命态"
+active_task_id: "TU-20261116-V5-DYNAMIC-ASSEMBLER"
+instance_id: "inst-20261116-v5-dynamic-assembler-01"
+task_ref: "specs/tasks/TU-20261116-v5-dynamic-context-assembler.md"
+contract_version: "1"
+authority_ref: "2026-11-16 任务实现完成，进入待独立审计与验收阶段，归档前保留指针"
 ---
 
 # 单焦点任务入口
