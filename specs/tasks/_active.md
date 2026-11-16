@@ -4,7 +4,7 @@ active_task_id: null
 instance_id: null
 task_ref: null
 contract_version: null
-authority_ref: "2026-10-28 当前用户授权治理收口与目录归位；本轮进度使用平台任务记录"
+authority_ref: "2026-11-16 Phase 2 验收完成，任务归位进入空闲待命态"
 ---
 
 # 单焦点任务入口

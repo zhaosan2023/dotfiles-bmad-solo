@@ -1,0 +1,151 @@
+schema_version: "1.1"
+bundle_version: 1
+description: "BMAD-Solo V5 文档关联清单真理源规范（Cline 双轨工具适配、背压软门禁与双模路由契约）"
+
+# 1. 上下文来源定义 (Sources)
+sources:
+  - id: governance_core
+    authority: required
+    type: static_kernel
+    description: "BMAD-Solo V5 固定治理内核（三遍阅读、证据分层、场景背压、状态机规则）"
+    distribution: "managed_symlink"
+    target_path: "~/.cline/rules/bmad-core.md"
+
+  - id: text_bridge_shim
+    authority: optional_adaptation # 仅用于纯文本流逆向网关，非 Native Tool Calling 生产强制依赖
+    type: static_shim
+    description: "Claude 文本流通信声明垫片（说明纯文本标签协议，严禁越权，严格受制于活动模式）"
+    distribution: "managed_symlink"
+    target_path: "~/.cline/rules/bmad-bridge-shim.md"
+
+  - id: project_baseline
+    authority: required
+    type: workspace_file
+    path_pattern: "docs/project-context.md"
+    on_missing: "SUSPEND_AND_WARN_DEGRADED" # 缺失时进入 Tier 4 降级治理模式（规则可用，项目事实受限）
+
+  - id: active_task_pointer
+    authority: optional_conditional # 按需条件加载
+    type: workspace_file
+    path_pattern: "specs/tasks/_active.md"
+    on_missing: "IDLE_OR_REPORT" # 严禁静默回退默认！空闲即空闲，非法即报错
+    conflict_resolution: "SINGLE_ACTIVE_TASK_ONLY" # 多个活动任务指针冲突时硬阻断
+
+  - id: approved_plan # 实施阶段必需的已获准计划
+    authority: required_for_implementation
+    type: workspace_file
+    path_pattern: "specs/tasks/TU-*.md"
+    selection_rule: "match_active_task_pointer" # 由 _active.md 唯一选定，严禁多选或盲搜
+    validation_rule:
+      required_fields: ["task_id", "status", "scope", "acceptance_criteria"]
+      status_allowed: ["APPROVED", "IN_PROGRESS", "COMPLETED", "READY"]
+      require_non_expired_evidence: true
+    on_missing: "BLOCK_AND_REQUIRE_APPROVAL"
+
+  - id: external_research_context # 服务端检索增强注入模型
+    authority: optional_dynamic
+    type: server_retrieval
+    trigger_suffix: [":academic", ":factcheck"]
+    injection_tag: "[EXTERNAL_RESEARCH_REFERENCE]" # 强制注入标记：显式声明非本地工具执行回执
+    provenance_metadata: ["source_url", "retrieval_timestamp", "capability_type"]
+
+# 2. 工具能力字典与双轨协议适配 (Tool Registry: Native Tool Calling vs Text XML Bridge)
+tools_registry:
+  supported_runtime_modes:
+    - mode: "native_tool_calling" # Cline v3.35+ 原生 API 模式 (推荐首选)
+      description: "由客户端通过 API tools 字段注册，模型输出结构化 tool_calls，网关透传"
+    - mode: "text_xml_bridge"     # 逆向/受限网关文本流模式 (可选兼容)
+      description: "网关剥离 tools 字段时，模型输出纯文本 XML 标签，由客户端 AssistantMessageParser 捕获"
+
+  capabilities:
+    read:
+      canonical: "read_files" # 推荐批量与单文件兼容
+      aliases: ["read_file"]
+      description: "只读文件检索，支持单文件与批处理"
+    edit:
+      canonical: "apply_patch" # 推荐范围明确的差分编辑（低 Token 消耗，防覆盖冲突）
+      fallback: "editor"       # 生成全新文件或大规模重构时的全量覆写后备
+      legacy_aliases: ["replace_in_file", "write_to_file"]
+      description: "受管文件创建与修改"
+    search:
+      canonical: "search_codebase"
+      aliases: ["search_files", "list_code_definition_names"]
+      description: "AST/语义/代码拓扑与跨文件符号搜索"
+    execute:
+      canonical: "run_commands"
+      aliases: ["execute_command"]
+      description: "非交互式系统终端命令执行"
+    web:
+      canonical: "fetch_web_content"
+      aliases: ["browser_action"]
+      description: "轻量网页内容抓取或本地浏览器现场观测"
+    system:
+      skills:
+        canonical: "skills"
+        description: "受管技能动态发现与执行容器（必须继承当前 Flow 权限策略）"
+      interaction:
+        canonical: "ask_question"
+        description: "向用户发起结构化澄清或决策仲裁"
+        policy_rules:
+          in_plan: "推荐 <=2 个澄清问题作为效率软目标；若涉及核心范围或授权边界，允许必要澄清"
+          in_act: "严禁琐碎打扰；遇到未授权破坏性风险首次立即触发；连续 2 次同根因失败触发熔断请示"
+      completion:
+        canonical: "submit_and_exit"
+        aliases: ["attempt_completion"]
+        description: "客户端会话交互关闭工具（注：非物理质量门禁，质量门禁依赖独立验证回执）"
+
+# 3. 工作流阶段与策略路由 (Flows)
+flows:
+  # 阶段 A: 分析与结晶 (Plan)
+  analysis:
+    intent_triggers: ["/ana-solo", "/ana", "analyze", "review", "consult", "investigate"]
+    policy_allowed_tools:
+      - "read_files"
+      - "search_codebase"
+      - "fetch_web_content"
+      - "skills" # 允许调用只读分析型技能，严禁产生磁盘写副作用
+      - "ask_question" # 消除分歧需求及 DM 决策仲裁
+      - "submit_and_exit" # 会话内提交分析报告，交付人工审阅
+    policy_prohibited_tools:
+      - "apply_patch"
+      - "editor"
+      - "run_commands"
+    requires:
+      - governance_core
+      - project_baseline
+    may_produce:
+      session_proposals: # 明确产物首先生效于会话内提案
+        - adr_candidate: "docs/adrs/ADR-YYYYMMDD-[topic].md"
+        - pending_plan: "specs/tasks/TU-[task_id].md"
+      disk_persistence_requires_approval: true # 持久化落盘仍须符合用户显式授权
+    on_missing_required_context: "SUSPEND_AND_CLARIFY"
+    exit_gate:
+      require_user_approval: true # 未经用户明确授权，绝不推进至 implementation
+
+  # 阶段 B: 工程实施与验证 (Act)
+  implementation:
+    intent_triggers: ["/bmad-solo", "/bmad", "build", "implement", "fix", "refactor"]
+    policy_allowed_tools:
+      - "read_files"
+      - "search_codebase" # 实施前 Preflight 检查依赖拓扑
+      - "apply_patch"     # 优先差分补丁
+      - "editor"          # 新文件或大重构后备
+      - "run_commands"    # 运行构建与验证
+      - "fetch_web_content"
+      - "skills"          # 允许调用工程实现技能
+      - "ask_question"    # 授权不清首次询问；2 次同根因熔断时请示
+      - "submit_and_exit" # 会话关闭动作；前置质量门禁必须由验证回执判定
+    policy_prohibited_tools: []
+    requires:
+      - governance_core
+      - project_baseline
+      - approved_plan # 强依赖唯一绑定的有效批准计划
+    produces:
+      - implementation_changes
+      - verification_evidence
+    backpressure_policy:
+      max_consecutive_same_root_failures: 2 # 同根因连续失败 2 次硬熔断
+      verification_type_routing:
+        code_tasks: "require_non_interactive_verification (EXECUTED_PASS)"
+        doc_governance_tasks: "require_diff_cleanliness_and_schema_pass"
+    on_required_gate_failure: "BLOCKED"

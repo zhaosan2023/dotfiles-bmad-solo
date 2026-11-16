@@ -54,3 +54,12 @@
   - 数据三阶隔离（Train / Gate / Sealed）与表面白名单检查（CHECKSURFACE），防范模型自我欺骗与盲测集（Held-out）退化；
   - 支撑 AGENTS.md 自动演化的 6 篇核心前沿顶会/arXiv 文献（ACE ICLR 2026、Configuration Smells arXiv:2606.15828、Evaluating AGENTS.md arXiv:2602.11988、AGIT-Template arXiv:2611.02383、AHE arXiv:2604.25850、Agent READMEs arXiv:2511.12884）；
   - 奠定 Tmux 4+1 多角色物理隔离架构（Orchestrator, Scout, Coder, Breaker, Curator），根除多轮交互中的 Prompt Caching 击穿与 Lint Leakage 坏味道。
+
+---
+
+## 5. Loop Engineering 第 1 集：官方章节与中文解构
+
+- 本地资料：[`youtube-ziXOV0b134s-loop-engineering-part1.md`](youtube-ziXOV0b134s-loop-engineering-part1.md:1)。
+- 内容：官方章节时间导航、中文论证解构、工程启发与证据限制；一手来源编号及链接见资料正文。
+- 状态：解构已保存；官方字幕／带时间戳的官方逐字稿尚未取得，相关交付受阻。章节时间导航不是逐句字幕。
+- 适用边界：区分官方资料、作者观点和整理者建议，不把职业预测、经验比例或商业类比视为已验证事实。
