@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-"""BMAD-Solo V5 动态任务上下文装配器 (scripts/assemble_v5_context.py)
+"""BMAD-Solo V5.1 工作区上下文只读摘要装配器 (scripts/assemble_v5_context.py)
 
-功能：
-1. 依据 specs/governance/v5-context-manifest.yaml 清单规范，动态发现并组装当前工作区任务上下文；
-2. 提取 docs/project-context.md 架构事实基线（缺失时降级报警）；
-3. 读取 specs/tasks/_active.md 唯一锁定当前活动 Task Unit (TU-*.md)，提取范围、验收与门禁（空闲时标记 IDLE，冲突时硬阻断）；
-4. 执行 Token 软背压预算规划评估（目标 800 ~ 1,200 Tokens，超限报警不截断）；
-5. 支持 --inject-workspace 模式，通过原子写入安全更新当前工作区 .cline/rules/active-context.md，供 Cline 热加载。
+定位说明（V5.1 更新）：
+- V5.1 默认部署采用独立 XDG 核心 ~/.local/share/bmad-solo/v5/ 与单一全局薄入口
+  ~/.cline/rules/bmad-v5-router.md，**不再默认向业务仓库注入 .cline/rules/active-context.md**，
+  以彻底杜绝全局与工作区多版本规则混杂。
+- 本脚本保留为纯可选的本地工作区上下文摘要工具，已清除所有硬编码工具名与旧协议词。
 """
 
 from __future__ import annotations
@@ -41,7 +40,6 @@ def parse_frontmatter(content: str) -> tuple[dict, str]:
     if not content_str.startswith("---"):
         return {}, content
 
-    # 尝试匹配带闭合 --- 的 frontmatter: ^---\s*\n(.*?)\n---\s*(.*)$
     match = re.match(r"^---\s*\n(.*?)\n---\s*\n?(.*)$", content_str, re.DOTALL)
     if match:
         try:
@@ -50,7 +48,6 @@ def parse_frontmatter(content: str) -> tuple[dict, str]:
         except Exception:
             pass
 
-    # 若无闭合 ---，尝试将全文作为纯 YAML 解析
     try:
         data = yaml.safe_load(content_str)
         if isinstance(data, dict):
@@ -62,20 +59,22 @@ def parse_frontmatter(content: str) -> tuple[dict, str]:
 
 
 class ContextAssembler:
-    """动态上下文装配引擎。"""
+    """工作区任务上下文摘要装配器（可选只读辅助，不作为默认工作区规则注入）。"""
 
     def __init__(self, workspace: Path, manifest_path: Path | None = None):
         self.workspace = Path(workspace).resolve()
-        self.manifest_path = Path(manifest_path or (self.workspace / "specs/governance/v5-context-manifest.yaml")).resolve()
+        self.manifest_path = Path(
+            manifest_path or (self.workspace / "specs/governance/v5-context-manifest.yaml")
+        ).resolve()
 
     def load_manifest(self) -> dict:
         """读取并校验 Manifest 清单。"""
         if not self.manifest_path.is_file():
             raise FileNotFoundError(f"清单文件缺失: {self.manifest_path}")
-        
+
         with open(self.manifest_path, "r", encoding="utf-8") as f:
             manifest = yaml.safe_load(f)
-            
+
         if not isinstance(manifest, dict) or "sources" not in manifest:
             raise ValueError(f"清单格式非法: {self.manifest_path}")
         return manifest
@@ -83,28 +82,25 @@ class ContextAssembler:
     def assemble_baseline(self) -> tuple[str, str]:
         """装配项目事实基线 (docs/project-context.md)。"""
         baseline_file = self.workspace / "docs/project-context.md"
-        
+
         if not baseline_file.is_file():
             warning = (
                 "> [!WARNING] **项目事实基线缺失 (docs/project-context.md)**\n"
                 "> 当前工作区未检测到项目事实基线，系统进入 **Tier 4 降级治理模式**（规则可用，项目事实受限）。\n"
-                "> 建议执行 `/ana-solo` 生成基线文档以消除上下文盲区。"
+                "> 建议在 Plan 阶段核验基线文档以消除上下文盲区。"
             )
             return warning, "DEGRADED_MISSING"
 
         try:
             with open(baseline_file, "r", encoding="utf-8") as f:
-                content = f.read().replace('\\n', '\n').strip()
-            
-            # 压缩空白，提取头部项目核心信息与最新章节
+                content = f.read().replace("\\n", "\n").strip()
+
             lines = [line.rstrip() for line in content.splitlines() if line.strip()]
-            header_lines = []
-            for line in lines[:25]:
-                header_lines.append(line)
-            
+            header_lines = lines[:25]
+
             formatted = (
                 "### 1. 项目事实基线 (Project Context Baseline)\n"
-                f"- **基线文件来源**：`docs/project-context.md` (已加载)\n\n"
+                "- **基线文件来源**：`docs/project-context.md` (已加载)\n\n"
                 + "\n".join(header_lines)
             )
             return formatted, "LOADED"
@@ -112,14 +108,14 @@ class ContextAssembler:
             return f"> [!WARNING] 读取项目基线发生异常: {exc}", "ERROR"
 
     def assemble_active_task(self) -> tuple[str, str, dict]:
-        """解析单焦点薄指针 specs/tasks/_active.md 并装配 Task Unit。"""
+        """解析单焦点薄指针 specs/tasks/_active.md 并装配 Task Unit 摘要。"""
         active_pointer = self.workspace / "specs/tasks/_active.md"
-        
+
         if not active_pointer.is_file():
             idle_msg = (
                 "### 2. 活动任务契约 (Active Task)\n"
                 "- **当前状态**：`IDLE` (未检测到 `specs/tasks/_active.md`)\n"
-                "- **行为约束**：严禁自动恢复归档任务，保持待命只读状态。"
+                "- **行为约束**：不恢复历史归档任务；普通业务仓库按用户明确需求推进。"
             )
             return idle_msg, "IDLE", {}
 
@@ -133,34 +129,33 @@ class ContextAssembler:
             idle_msg = (
                 "### 2. 活动任务契约 (Active Task)\n"
                 "- **当前状态**：`IDLE` (薄指针 `active_task_id` 为空)\n"
-                "- **行为约束**：当前工作区无未终结工程任务，严禁擅自实施代码修改。\n"
-                "- **寻址指引**：如需查阅历史已归档成果或治理规范，请直接通过上方常驻锚点（`specs/tasks/archive/` 与 `docs/adrs/`）索引阅读。"
+                "- **行为约束**：当前工作区无未终结工程任务，不擅自实施代码修改。\n"
+                "- **寻址指引**：如需查阅历史归档成果或治理规范，直接按路径读取 `specs/tasks/archive/` 与 `docs/adrs/`。"
             )
             return idle_msg, "IDLE", pointer_data
 
         tu_path = self.workspace / task_ref
         if not tu_path.is_file():
             err_msg = (
-                f"> [!CAUTION] **活动任务悬空引用硬阻断 (BLOCKED)**\n"
+                "> [!CAUTION] **活动任务悬空引用硬阻断 (BLOCKED)**\n"
                 f"> 薄指针指定的任务文件不存在: `{task_ref}`。\n"
-                f"> 严禁猜测或随机执行历史任务，系统处于阻塞保护状态。"
+                "> 严禁猜测或随机执行历史任务，系统处于阻塞保护状态。"
             )
             return err_msg, "BLOCKED_DANGLING_REF", pointer_data
 
         with open(tu_path, "r", encoding="utf-8") as f:
-            tu_data, tu_body = parse_frontmatter(f.read())
+            tu_data, _ = parse_frontmatter(f.read())
 
         status = tu_data.get("status", "UNKNOWN")
         allowed_statuses = {"APPROVED", "READY", "IN_PROGRESS", "COMPLETED", "AUDIT_READY"}
         if status not in allowed_statuses:
             err_msg = (
-                f"> [!CAUTION] **任务状态未获批准 (BLOCKED)**\n"
+                "> [!CAUTION] **任务状态未获批准 (BLOCKED)**\n"
                 f"> 任务 `{task_id}` 状态为 `{status}`，未在获准清单内 ({allowed_statuses})。\n"
-                f"> 未经用户明确授权推进，严禁实施代码修改。"
+                "> 未经用户明确授权推进，严禁实施代码修改。"
             )
             return err_msg, "BLOCKED_UNAPPROVED", tu_data
 
-        # 结构化提纯 Task Unit 核心要素
         scenario = tu_data.get("scenario", "structural")
         impact_tier = tu_data.get("impact_tier", "M")
         objective = tu_data.get("parent_objective", {}).get("expected_result", "未声明具体目标")
@@ -168,7 +163,7 @@ class ContextAssembler:
         scope = cs_spec.get("scope", "未声明范围")
         excludes = cs_spec.get("excludes", [])
         criteria = cs_spec.get("acceptance_criteria", [])
-        
+
         checks = tu_data.get("kcp_verification", {}).get("checks", [])
         verification_lines = []
         for chk in checks:
@@ -202,26 +197,26 @@ class ContextAssembler:
         return "\n".join(formatted_task), "ACTIVE", tu_data
 
     def assemble_bundle(self) -> tuple[bool, str, dict]:
-        """全量组装 Task Context Bundle 并计算遥测。"""
+        """全量组装工作区上下文摘要并计算软预算遥测（纯 Vibe，零工具名）。"""
         manifest = self.load_manifest()
         baseline_text, baseline_status = self.assemble_baseline()
-        task_text, task_status, task_meta = self.assemble_active_task()
+        task_text, task_status, _ = self.assemble_active_task()
 
         timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
         anchors_text = """### 0. 治理导航常驻锚点 (Governance Anchors)
-- **治理总索引**：`specs/governance/00-governance-index.md` (全生命周期与业务流规范)
-- **架构决策目录**：`docs/adrs/` (架构决策记录，当前已接受 ADR-20261116)
-- **任务工件与归档**：`specs/tasks/` (活动 Task Unit 契约与 archive/ 历史归档)
-- **项目事实基线**：`docs/project-context.md` (项目级唯一事实基线真理源)
-- **探针取证纪律**：只读分析与审计（`/ana-solo`）必须且只能调用只读工具（`read_file`、`search_files`、`list_files`）主动阅读物理证据，严禁无证据凭空推演；实施修改（`/bmad-solo`）使用 `replace_in_file` / `write_to_file`。"""
+- **治理总索引**：`specs/governance/00-governance-index.md`（全生命周期与业务流规范）
+- **架构决策目录**：`docs/adrs/`（架构决策提案与已接受记录）
+- **任务工件与归档**：`specs/tasks/`（活动 Task Unit 契约与 archive/ 历史归档）
+- **项目事实基线**：`docs/project-context.md`（项目级唯一事实基线真理源）
+- **取证与写入纪律**：Plan 阶段基于真实一手文件内容取证并仅按文档治理路径结晶，绝不碰生产代码；Act 阶段按获准契约实施并交付真实回执。"""
 
-        bundle = f"""# BMAD-Solo V5 动态任务上下文 (Active Task Context Bundle)
+        bundle = f"""# BMAD-Solo V5.1 工作区上下文摘要 (Workspace Context Snapshot)
 
 > **装配时间戳**：`{timestamp}`  
-> **装配来源**：`specs/governance/v5-context-manifest.yaml` (v{manifest.get('schema_version', '1.1')})  
+> **装配来源**：`specs/governance/v5-context-manifest.yaml` (v{manifest.get('schema_version', '2.0')})  
 > **工作区基线状态**：`{baseline_status}` | **活动任务状态**：`{task_status}`  
-> **定位**：工作区级动态上下文。由 In-Context Push 自动装配，随任务状态动态流转。
+> **定位**：可选只读摘要。V5.1 默认不再向业务仓库注入 `.cline/rules/` 规则文件。
 
 ---
 
@@ -255,21 +250,22 @@ class ContextAssembler:
         }
 
         if tokens > 1500:
-            telemetry["warning"] = f"动态上下文 Token 估算量 ({tokens}) 超过软预算上限 (1200)，建议精简基线或拆分任务"
+            telemetry["warning"] = (
+                f"上下文摘要 Token 估算量 ({tokens}) 超过默认软规划上限 (1500)，仅提醒不静默截断"
+            )
 
         return not is_blocked, bundle, telemetry
 
     def inject_workspace(self, bundle: str, dry_run: bool = False) -> tuple[bool, str]:
-        """将组装好的 Task Context Bundle 原子注入到当前工作区 .cline/rules/active-context.md。"""
+        """可选：将摘要原子写入目标工作区 .cline/rules/active-context.md（V5.1 默认不启用）。"""
         target_dir = self.workspace / ".cline/rules"
         target_file = target_dir / "active-context.md"
 
         if dry_run:
-            return True, f"Dry-run 校验通过，目标注入路径: {target_file}"
+            return True, f"Dry-run 校验通过，目标写入路径: {target_file}"
 
         target_dir.mkdir(parents=True, exist_ok=True)
-        
-        # 原子替换写入：先写入同目录临时文件，刷新刷盘后原子重命名
+
         fd, temp_path = tempfile.mkstemp(dir=target_dir, prefix="active-context.tmp.")
         try:
             with os.fdopen(fd, "w", encoding="utf-8") as f:
@@ -280,17 +276,21 @@ class ContextAssembler:
         except Exception as exc:
             if os.path.exists(temp_path):
                 os.unlink(temp_path)
-            return False, f"原子注入失败: {exc}"
+            return False, f"原子写入失败: {exc}"
 
-        return True, f"成功注入工作区动态上下文: {target_file}"
+        return True, f"已按显式请求写入工作区上下文摘要: {target_file}"
 
 
-def main():
-    parser = argparse.ArgumentParser(description="BMAD-Solo V5 动态任务上下文装配器")
+def main() -> None:
+    parser = argparse.ArgumentParser(description="BMAD-Solo V5.1 工作区上下文只读摘要装配器（可选）")
     parser.add_argument("--workspace", "-w", type=Path, default=DEFAULT_WORKSPACE, help="目标工作区路径")
     parser.add_argument("--manifest", "-m", type=Path, default=DEFAULT_MANIFEST, help="清单规范路径")
     parser.add_argument("--output", "-o", type=Path, help="输出文件路径 (若未指定则输出到标准输出)")
-    parser.add_argument("--inject-workspace", action="store_true", help="原子注入到当前工作区 .cline/rules/active-context.md")
+    parser.add_argument(
+        "--inject-workspace",
+        action="store_true",
+        help="显式启用：写入工作区 .cline/rules/active-context.md（V5.1 默认不推荐，以防规则混杂）",
+    )
     parser.add_argument("--dry-run", action="store_true", help="仅执行装配与软背压预算校验，不写入磁盘")
     args = parser.parse_args()
 
@@ -298,7 +298,7 @@ def main():
     success, bundle, telemetry = assembler.assemble_bundle()
 
     print("=" * 60)
-    print("BMAD-Solo V5 Context Assembler Telemetry")
+    print("BMAD-Solo V5.1 Context Assembler Telemetry")
     print("=" * 60)
     for k, v in telemetry.items():
         print(f"  - {k}: {v}")
@@ -321,7 +321,7 @@ def main():
         else:
             print(f"Output: Dry-run 预检通过 -> {args.output}")
     else:
-        print("Assembled Context Bundle Preview:")
+        print("Assembled Context Snapshot Preview:")
         print("-" * 60)
         print(bundle)
 
