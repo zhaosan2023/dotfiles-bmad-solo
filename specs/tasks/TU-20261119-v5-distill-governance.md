@@ -276,3 +276,28 @@ adr_file: "docs/adrs/ADR-20261125-v51-pure-vibe-thin-router.md"
 
 - 只有 `CRIT-01` 至 `CRIT-06` 均有对应可复核物理回执（或对运行期未知项如实披露并获审阅确认），且未触碰 `~/.gemini/` 与未获二次确认前的真实 `~/.cline/rules/`，方可申请独立审查（SR）验收。
 - 任何关键测试失败、隔离边界突破或未获授权触碰真实宿主目录，立即进入 `BLOCKED`。
+
+---
+
+## 5. 跨窗口接续记忆快照（2026-11-25 独立分支断点）
+
+> 本节为跨窗口快速唤醒锚点（不替代最终独立审查 SR 或 `docs/project-context.md` 事实登记）。新窗口经 `specs/tasks/_active.md` → 本文即可秒级还原现场，继续定位下方未决项。
+
+### 5.1 当前已完成与已固化基线（`[FACT]`）
+- **维护分支**：`feat/v5-in-context-push`（继续单独维护，暂不合并 `main`）；已同步远端基线提交 `bbbbaf4`（14 个 V5.1 核心文件）。
+- **已通过验证**：`scripts/distill_v5_kernel.py` 正向 `39/39`、反向 `19` 项 `0` 违规（薄路由 ~531 tokens）；`tests/test_distill_v5_kernel.py`、`tests/test_dispatch_v5.py`、`tests/test_assemble_v5_context.py` 共 18 项全通过；`aurora2api` 首轮原生工具探针（自定义工具名 `inspect_local_doc`）返回 HTTP 200 与 `finish_reason=tool_calls`。
+- **已部署与体检现状**：本机已完成 `dispatch_v5.sh --deploy`（核心 `~/.local/share/bmad-solo/v5/`、唯一入口 `~/.cline/rules/bmad-v5-router.md`）；旧 V4/V5 规则与 `.cline/skills/` 已备份移至 `~/.local/share/bmad-solo/legacy-cleanup-backup-20261125/`；`dotfiles-bmad-solo` 与 `~/project/*` 全部 20 个工程 `--doctor` 均为 `HEALTHY (exit_code=0)`；`~/.gemini/` 零触碰。
+- **真实 Cline Plan 会话实测回执（2026-11-25 截图）**：升级后的 `ana-solo.md` 已在 `aurora2api` 真实 Cline Plan 会话中触发 8 文件读取 + 6 次代码库搜索的深度取证，并准确遵守诚实降级纪律（未伪造落盘）。
+
+### 5.2 下一窗口立即接续定位的未决问题（核心痛点）
+- **现象（`[FACT]`）**：在 Cline **Plan 模式**下明确授权结晶写 `ADR + Task Unit`（例如 `aurora2api` 的 `ADR-20261125-stream-usage-and-corrupt-tool-call-protocol-guard.md`），Cline 正确产出了完整草案与目标路径，但报告 *“当前回合没有可用的 Plan 模式文件写入能力；我没有落盘”*，无法直接按文档治理路径落盘。
+- **已确认因果边界（`[FACT]` + `[INFERENCE]`）**：
+  - **纯靠注入 Prompt 无法绕过此限制**：Cline 原生 Plan 模式在客户端侧发给网关的 `tools` 列表中物理移除了写文件工具，模型手里没有写文件工具 Schema；强行在 Prompt 逼写只会导致幻觉或假装落盘。
+- **下一窗口待定位与决策的 3 条候选解决路径**：
+  1. **路径 1（Prompt 协同零改造，优先验证）**：在 `bmad-v5-router.md` 与 `bmad-solo.md` 中新增显式 **“Act 仅文档落盘轻量直通（Doc-Only Save）”** 契约——Plan 产出完整草案与目标路径后，用户切 Act 说一句“仅按文档治理路径落盘刚才的 ADR 与 Plan”，模型只写 `docs/adrs/`、`docs/analysis/`、`specs/tasks/TU-*.md` 后立刻停止，严禁顺带修改生产代码或运行终端验证。
+  2. **路径 2（核实本机 Cline Plan 是否放行 MCP 工具，`[UNKNOWN]`）**：下个窗口实测核验本机 Cline Plan 模式是否把已挂载的 MCP 工具发进 `tools` 列表；若放行，再评估是否引入独立、可选的文档路径白名单写入能力（不写死在 dotfiles-V5.1 规则正文里，保持零工具名）。
+  3. **路径 3（核实本机 Cline 扩展版本与设置，`[UNKNOWN]`）**：检查本机 Cline 版本是否存在 Plan 模式开放 Markdown 写入或自定义权限设置。
+
+### 5.3 未决治理与保护边界
+- `docs/adrs/ADR-20261125-v51-pure-vibe-thin-router.md` 仍保持 `PROPOSED`；`docs/project-context.md` 保持未改，待整体独立审查（SR）与上述 Plan 落盘体验收口并获授权后再统一转正与登记事实。
+- `~/project/aurora2api` 工作区保留未提交的 `D .clinerules`（已备份），`dotfiles-bmad-solo` 保留既有未跟踪网关草稿文件，均不自动清理或提交。
